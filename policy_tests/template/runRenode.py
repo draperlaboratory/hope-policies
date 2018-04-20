@@ -16,12 +16,15 @@ printIO = True
 
 # set timeout seconds
 
-timeoutSec = 12
+timeoutSec = 30
 
 # configure the test log files
 
 uartPort = 4444
 uartLogFile = "uart.log"
+
+statusPort = 3344
+statusLogFile = "pex.log"
 
 renodePort = 3320
 
@@ -53,12 +56,12 @@ def connect(host, port):
         print "Failed to connect {0}:{1}...".format(host, port)
     return res
 
-def logPort(name, logFile):
+def logPort(name, logFile, port):
     global testDone
     data = ""
     print "logging ", name, " to: ", logFile
     f = open(logFile, "w")
-    s = connect(socket.gethostname(), uartPort)
+    s = connect(socket.gethostname(), port)
     while(s and not testDone):
         time.sleep(1)
         if terminateMSG in data:
@@ -98,8 +101,10 @@ def runOnRenode():
         renode.start()
         time.sleep(2)
         print "Start Logging..."
-        uartLogger = threading.Thread(target=logPort, args=("Uart", uartLogFile))
+        uartLogger = threading.Thread(target=logPort, args=("Uart", uartLogFile, uartPort))
         uartLogger.start()
+        statusLogger = threading.Thread(target=logPort, args=("Status", statusLogFile, statusPort))
+        statusLogger.start()
         print "Start Renode..."
         s = connect(socket.gethostname(), renodePort)
         if s:
@@ -117,6 +122,7 @@ def runOnRenode():
             s.close()
         wd.join()
         uartLogger.join()
+        statusLogger.join()
         renode.join()
             # TODO: have the watchdog timer kill the renode process
 #            if testDone:
