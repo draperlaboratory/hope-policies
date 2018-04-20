@@ -61,18 +61,18 @@ static void done_task(void *p) {
 }
 
 
-static void hello_task(void *p) {
+static void ping_task(void *p) {
   TickType_t last_wake_time;
   
   (void)p;
   last_wake_time = xTaskGetTickCount();
   while (1) {
-      printf_uart("wake hello\r\n");
+      printf_uart("wake ping\r\n");
       if(pong == false){
           uint64_t raw = xPortRawTime();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
-          printf_uart("hello %x %x\r\n", high, low);
+          printf_uart("ping %x %x\r\n", high, low);
           pong = true;
       }
 #ifdef PREEMPTIVE  
@@ -83,19 +83,19 @@ static void hello_task(void *p) {
   }
 }
 
-static void world_task(void *p) {
+static void pong_task(void *p) {
   TickType_t last_wake_time;
   
   (void)p;
 
   last_wake_time = xTaskGetTickCount();
   while (1) {
-      printf_uart("wake world\r\n");
+      printf_uart("wake pong\r\n");
       if(pong == true){
           uint64_t raw = xPortRawTime();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
-          printf_uart("world %x %x\r\n", high, low);
+          printf_uart("pong %x %x\r\n", high, low);
           pong = false;
           msg_count++;
       }
@@ -113,10 +113,10 @@ int test_main( void )
     test_positive(); // identify test as positive (will complete)
 
   /* no need to init uart */
-  printf_uart("main: create hello task\r\n");
-  xTaskCreate(hello_task, "Hello task", 1000, NULL, 1, NULL);
-  printf_uart("main: create world task\r\n");
-  xTaskCreate(world_task, "World task", 1000, NULL, 1, NULL);
+  printf_uart("main: create ping task\r\n");
+  xTaskCreate(ping_task, "Ping task", 1000, NULL, 1, NULL);
+  printf_uart("main: create pong task\r\n");
+  xTaskCreate(pong_task, "Pong task", 1000, NULL, 1, NULL);
 
   printf_uart("main: create done task\r\n");
   xTaskCreate(done_task, "Done task", 1000, NULL, 1, NULL);
