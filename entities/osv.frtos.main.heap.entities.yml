@@ -1,0 +1,42 @@
+entities:
+  symbol: {
+    name: requires.application.code.function.ucHeap,
+    elf_name: ucHeap,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.dover_ptr_zero,
+    elf_name: dover_ptr_zero,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.pvPortMalloc,
+    elf_name: pvPortMalloc,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.dover_tag,
+    elf_name: dover_tag,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.dover_untag,
+    elf_name: dover_untag,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.dover_remove_tag,
+    elf_name: dover_remove_tag,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.dover_ptr_tag,
+    elf_name: dover_ptr_tag,
+    tag_all: true
+    }
+  symbol: {
+    name: requires.application.code.function.dover_ptr_untag,
+    elf_name: dover_ptr_untag,
+    tag_all: true
+    }
+
