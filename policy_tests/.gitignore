@@ -1,0 +1,8 @@
+.cache/
+fail/
+debug/
+__pycache__/
+assets/
+report.html
+prof_results.log
+*.pyc
