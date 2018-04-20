@@ -1,0 +1,72 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.rwx:
+
+/* Read, Write, Execute policy.
+ * Provides basic memory access protections:
+ *  Load from memory must have Rd tag
+ *  Store to memory must have Wr tag
+ *  Instructions must have Ex tag to be run
+ */
+
+import:
+      osv.riscv
+
+metadata:
+	Rd
+	Wr
+	Ex
+
+
+policy:
+  rwxPol =
+      loadGrp(mem == [-Rd] -> fail "read violation")
+    ^ storeGrp(mem == [-Wr] -> fail "write violation")
+    ^ allGrp(code == [-Ex] -> fail "execute violation")
+    ^ loadGrp  (code == [+Ex], env == _, mem == [+Rd] -> res = {}, env = env)
+    ^ storeGrp (code == [+Ex], env == _, mem == [+Wr] -> mem = mem, env = env)
+    ^ allGrp(code == [+Ex], env == _ -> env = env)
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {Rd}
+    init ISA.RISCV.CSR.MTVec                 {Rd}
+    
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {Rd, Wr}
+    init Tools.Link.MemoryMap.UserStack      {Rd, Wr}
+
+    init SOC.IO.UART_0                       {Rd, Wr}
+    init SOC.Memory.Flash_0                  {Rd}
+    
+    init Tools.Elf.Section.SHF_ALLOC         {Rd}
+    init Tools.Elf.Section.SHF_EXECINSTR     {Ex}
+    init Tools.Elf.Section.SHF_WRITE         {Rd, Wr}
+
+

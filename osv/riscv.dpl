@@ -1,0 +1,349 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.riscv:
+
+policy:
+        // a policy that allows anything and contributes no results
+    allPass = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+            ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+            ^ jumpGrp(code == _, env == _ -> return = {})
+            ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+            ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+            ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+            ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+            ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ privGrp(code == _, env == _ -> env = env)
+//            ^ systemGrp(code == _, env == _ -> env = env)
+
+    notMemPass = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+            ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+            ^ jumpGrp(code == _, env == _ -> return = {})
+            ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+            ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+            ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ privGrp(code == _, env == _ -> env = env)
+//            ^ systemGrp(code == _, env == _ -> env = env)
+
+group:
+    branchGrp(RS1:op1, RS2:op2 -> )
+        beq
+        bne
+        blt
+        bge
+        bltu
+        bgeu
+    retGrp(RS1:target -> )
+        jalr    x0, *
+    jumpRegGrp(RS1:target -> RD:return)
+        jalr
+    jumpGrp( -> RD:return)
+        jal
+    loadUpperGrp(-> RD:dest)
+        lui
+        auipc
+/*
+    moveGrp(RS1:src -> RD:dest)
+        addi    *, *, 0x0
+*/
+    xoriGrp(RS1:op1 -> RD:res)
+        xori
+
+    andiGrp(RS1:op1 -> RD:res)
+        andi
+        
+    immArithGrp(RS1:op1 -> RD:res)
+        addi
+        slli
+        slti
+        sltiu
+        xori
+        srli
+        srai
+        ori
+        andi
+        addiw
+        slliw
+        srliw
+        sraiw
+
+    xorGrp(RS1:op1, RS2:op2 -> RD:res)
+        xor
+
+    arithGrp(RS1:op1, RS2:op2 -> RD:res)
+        add
+        sub
+        sll
+        slt
+        sltu
+        xor
+        srl
+        sra
+        or 
+        and
+        addw
+        subw
+        sllw
+        srlw
+        sraw
+    loadGrp(RS1:addr, MEM:mem -> RD:res)
+        lb
+        lh
+        lw
+        ld
+        lbu
+        lhu
+        lwu
+    storeGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
+        sb
+        sh
+        sw
+        sd
+/*        
+    stackMoveGrp(RS2:src -> MEM:res)
+        sw
+        lw
+ */
+    mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
+        mul
+        mulh
+        mulhsu
+        mulhu
+        div
+        divu
+        rem
+        remu
+
+    csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
+        csrrw
+        csrrs
+        csrrc
+    csriGrp(CSR:csr -> CSR:csr, RD:res)
+        csrrwi
+        csrrsi
+        csrrci
+
+    privGrp( -> )
+        ecall
+        ebreak
+        uret
+        sret
+        mret
+// TODO: finish up defining these groups and update to 1.10
+/*
+        sbreak
+        sfence.vm
+        wfi
+        mrth
+        mrts
+        hrts
+    systemGrp()
+        fence
+        fence.i
+
+*/
+
+    allGrp( -> )
+    // branchGrp(RS1:op1, RS2:op2 -> )
+        beq
+        bne
+        blt
+        bge
+        bltu
+        bgeu
+    // jumpGrp(RS1:target -> RD:return)
+        jalr
+        jal
+    // loadUpperGrp(-> RD:dest)
+        lui
+        auipc
+    // immArithGrp(RS1:op1 -> RD:res)
+        addi
+        slli
+        slti
+        sltiu
+        xori
+        srli
+        srai
+        ori
+        andi
+        addiw
+        slliw
+        srliw
+        sraiw
+    // arithGrp(RS1:op1, RS2:op2 -> RD:res)
+        add
+        sub
+        sll
+        slt
+        sltu
+        xor
+        srl
+        sra
+        or 
+        and
+        addw
+        subw
+        sllw
+        srlw
+        sraw
+    // loadGrp(RS1:addr, MEM:mem -> RD:res)
+        lb
+        lh
+        lw
+        ld
+        lbu
+        lhu
+        lwu
+    // storeGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
+        sb
+        sh
+        sw
+        sd
+    // stackMoveGrp(RS2:src -> MEM:res)
+        sw
+        lw
+    // mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
+        mul
+        mulh
+        mulhsu
+        mulhu
+        div
+        divu
+        rem
+        remu
+
+    // csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
+        csrrw
+        csrrs
+        csrrc
+    // csriGrp(IMM:op1, CSR:csr -> CSR:csr, RD:res)
+        csrrwi
+        csrrsi
+        csrrci
+    // privGrp(op1, op2, res)
+        ecall
+        ebreak
+        uret
+        sret
+        mret
+        sret
+        // sfence.vm
+        wfi
+        // mrth
+        // mrts
+        // hrts
+    // systemGrp()
+        fence
+        // fence.i
+
+
+    notMemGrp( -> )
+    // branchGrp(RS1:op1, RS2:op2 -> )
+        beq
+        bne
+        blt
+        bge
+        bltu
+        bgeu
+    // jumpGrp(RS1:target -> RD:return)
+        jalr
+        jal
+    // loadUpperGrp(-> RD:dest)
+        lui
+        auipc
+    // immArithGrp(RS1:op1 -> RD:res)
+        addi
+        slli
+        slti
+        sltiu
+        xori
+        srli
+        srai
+        ori
+        andi
+        addiw
+        slliw
+        srliw
+        sraiw
+    // arithGrp(RS1:op1, RS2:op2 -> RD:res)
+        add
+        sub
+        sll
+        slt
+        sltu
+        xor
+        srl
+        sra
+        or 
+        and
+        addw
+        subw
+        sllw
+        srlw
+        sraw
+    // stackMoveGrp(RS2:src -> MEM:res)
+        sw
+        lw
+    // mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
+        mul
+        mulh
+        mulhsu
+        mulhu
+        div
+        divu
+        rem
+        remu
+
+    // csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
+        csrrw
+        csrrs
+        csrrc
+    // csriGrp(IMM:op1, CSR:csr -> CSR:csr, RD:res)
+        csrrwi
+        csrrsi
+        csrrci
+    // privGrp(op1, op2, res)
+        ecall
+        ebreak
+        uret
+        sret
+        mret
+        sret
+        // sfence.vm
+        wfi
+        // mrth
+        // mrts
+        // hrts
+    // systemGrp()
+        fence
+        // fence.i

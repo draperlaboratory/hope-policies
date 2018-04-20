@@ -1,0 +1,85 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.frtos.main:
+
+/* Composition of four micro-policies.
+ * All four policies are evaluated in parallel
+ */
+
+import:
+    osv.cfi
+    osv.rwx
+    osv.stack
+    osv.frtos.heap
+    osv.nop
+    osv.none
+    
+policy:
+    none = nonePol
+    cfi =  cfiPol
+    rwx =  rwxPol
+    nop =  nopPol
+    heap = heapPol
+    stack = stackPol
+    
+    cfi-heap = cfiPol & heapPol
+    cfi-nop =  cfiPol & nopPol
+    cfi-rwx =  (cfiPol & rwxPol)
+    cfi-stack =  cfiPol & stackPol
+
+    heap-nop = heapPol & nopPol
+    heap-rwx = heapPol & rwxPol
+    heap-stack = heapPol & stackPol
+
+    nop-rwx =  nopPol & rwxPol  
+    nop-stack =  nopPol & stackPol
+
+    rwx-stack =  rwxPol & stackPol
+
+    cfi-heap-nop = cfiPol & heapPol & nopPol
+    cfi-heap-rwx = cfiPol & heapPol & rwxPol
+    cfi-heap-stack = cfiPol & heapPol & stackPol
+    cfi-nop-rwx =  cfiPol & nopPol & rwxPol
+    cfi-nop-stack =  cfiPol & nopPol & stackPol
+    cfi-rwx-stack =  cfiPol & rwxPol & stackPol
+
+    heap-nop-rwx = heapPol & nopPol & rwxPol
+    heap-nop-stack = heapPol & nopPol & stackPol
+    heap-rwx-stack = heapPol & rwxPol & stackPol
+
+    nop-rwx-stack =  nopPol & rwxPol & stackPol
+
+    cfi-heap-nop-rwx = cfiPol & heapPol & nopPol & rwxPol
+    cfi-heap-nop-stack = cfiPol & heapPol & nopPol & stackPol
+    cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
+    cfi-nop-rwx-stack =  cfiPol & nopPol & rwxPol & stackPol
+    heap-nop-rwx-stack = heapPol & nopPol & rwxPol & stackPol
+
+    cfi-heap-nop-rwx-stack = cfiPol & heapPol & nopPol & rwxPol & stackPol
+
+
+

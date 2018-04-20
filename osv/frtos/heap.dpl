@@ -1,0 +1,127 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.frtos.heap:
+
+import:
+  osv.riscv
+
+type:
+  data Color = Int (20)
+
+metadata:
+  Cell Color        // Color applied to memory cell
+  Pointer Color     // Color applied to a pointer value
+  RawHeap           // Unallocated heap memory
+  ApplyColor        // Function for applying colors
+  RemoveColor       // Function for removing colors
+  NewColor          // Special memory cell used with ApplyColor
+  DelColor          // Special memory cell used with RemoveColor
+  ModColor          // Special value used to modify heap cells
+  AntiPointer       // Special Value that eliminates color from pointers
+  SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
+  SpecialCaseMEMCPY  // Mark memcpy code to enable special case hack
+  
+policy:
+  heapPol =
+// Special case to avoid hacking printf %x
+     andiGrp(code == [SpecialCaseVFPRINTF], env == _, op1 == _ -> env = env, res = {})
+// Special case to avoid hacking memcpy
+   ^ xorGrp (code == [SpecialCaseMEMCPY], env == _, op1 == [(Pointer _)], op2 == [(Pointer _)] -> env = env, res = {AntiPointer})
+
+// Handle generic pointer arithmetic
+   ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
+// since the previous rule didn't fire check for AntiPointer
+   ^ arithGrp(env == _, op1 == [+AntiPointer], op2 == _ -> env = env, res = {})
+   ^ arithGrp(env == _, op1 == _, op2 == [+AntiPointer] -> env = env, res = {})
+// pointer plus scalar retains pointer color   
+   ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [-(Pointer _)] -> env = env, res = op1)
+   ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [+(Pointer color)] -> env = env, res = op2)
+// Allow arithmetic on same colored ptrs
+   ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [+(Pointer color)] -> env = env, res = op1)
+   ^ arithGrp(env == _, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
+   ^ immArithGrp(env == _, op1 == [-(Pointer _)] -> env = env, res = {})
+   ^ immArithGrp(env == _, op1 == [+(Pointer color)] -> env = env, res = op1)
+
+// Apply and remove color from heap allocations
+   ^ storeGrp(   code == [ApplyColor], mem == [RawHeap], addr == [+(Pointer color)], val == [ModColor], env == _
+              -> mem = {(Cell color)}, env = env )
+   ^ storeGrp(   code == [RemoveColor], mem == [+(Cell color)], addr == [+(Pointer color)], val == [ModColor], env == _
+              -> mem = {RawHeap}, env = env)
+// Allow load and store to heap
+   ^ loadGrp(    mem == [+(Cell color)], addr == [+(Pointer color)], env == _
+             -> res = mem[-(Cell _)], env = env )
+   ^ storeGrp(   mem == [+(Cell color)], addr == [+(Pointer color)], val == _, env == _
+              -> mem = val[+(Cell color)], env = env )
+
+// Create new colors
+   ^ storeGrp(   code == [ApplyColor], mem == [+NewColor], env == _
+              -> mem = mem[(Pointer new)], env = env )
+   ^ storeGrp(   code == [RemoveColor], mem == [+DelColor], env == _
+              -> mem = mem, env = env )
+   ^ loadGrp(   code == [ApplyColor], mem == [+NewColor], env == _
+             -> res = mem[-NewColor], env = env )
+   ^ loadGrp(   code == [RemoveColor], mem == [+DelColor], env == _
+             -> res = {}, env = env )
+             
+// Any other write to pallette needs to maintain its tags
+   ^ storeGrp(   code == _, mem == [+NewColor], env == _
+              -> mem = mem, env = env )
+   ^ storeGrp(   code == _, mem == [+DelColor], env == _
+              -> mem = mem, env = env )
+   ^ storeGrp(   code == _, mem == [+ModColor], env == _
+              -> mem = mem, env = env )
+
+// Allow malloc to load store raw heap locations
+   ^ loadGrp(   mem == [RawHeap], addr == [-(Pointer _)], env == _
+             -> res = {}, env = env )
+   ^ storeGrp(   mem == [RawHeap], addr == [-(Pointer _)], val == _, env == _
+              -> mem = {RawHeap}, env = env )
+
+// Allow load and store to non-heap locations
+   ^ loadGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], env == _
+             -> res = mem, env = env )
+   ^ storeGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], val == _, env == _
+              -> mem = val, env = env )
+
+// non-memory operations
+   ^ notMemPass
+
+
+require:
+
+    init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
+    init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
+
+    init dover.Kernel.Code.ApplyTag.pvPortMalloc        {}
+    init dover.Kernel.Code.ApplyTag.dover_tag           {ApplyColor}
+    init dover.Kernel.Code.ApplyTag.dover_untag         {RemoveColor}
+    init dover.Kernel.Code.ApplyTag.dover_remove_tag    {RemoveColor}
+    init dover.Kernel.Code.ApplyTag.dover_ptr_tag       {NewColor}
+    init dover.Kernel.Code.ApplyTag.dover_ptr_untag     {DelColor}
+    init dover.Tools.RTL._vfprintf_r                    {SpecialCaseVFPRINTF}
+    init dover.Tools.RTL.memcpy                         {SpecialCaseMEMCPY}
+    

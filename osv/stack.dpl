@@ -1,0 +1,85 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.stack:
+
+import:
+    osv.riscv
+
+/*
+ * Stack policy protects data stored in Frame regions created by function
+ * prologue and epilogue code. User code can't overwrite Frame region, but
+ * has read write access to other stack regions.
+ */
+
+metadata:
+    Frame
+    Prologue
+    Epilogue
+    ClearAuthority
+
+policy:
+
+    stackPol =
+                // Prologue and Epilog rules
+               storeGrp (code == [+Prologue], env == _, addr == _, val == _, mem == _ -> mem = {Frame}, env = env)
+             ^ storeGrp (code == [+Epilogue], env == _, addr == _, val == _, mem == _ -> mem = mem[-Frame], env = env)
+
+                // Authority for clearing swaths of stack (e.g. for longjmp)
+             ^ storeGrp (code == [ClearAuthority], env == _, addr == _, val == _, mem == _ -> mem = mem[-Frame], env = env)
+             
+                // Explicit violation for regular code to modify stack frame
+             ^ storeGrp (code == [-Prologue, -Epilogue], env == _, addr == _, val == _, mem == [+Frame] -> fail "Illegal stack access")
+                // Allow regular stores to non-frame memory
+             ^ storeGrp (code == _, env == _, addr == _, val == _, mem == [-Frame] -> mem = mem, env = env)
+                // Strip Frame Tags on load to keep out of registers
+             ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+                // Everything else allowed
+             ^ notMemGrp(code == _, env == _ -> env = env)
+
+    
+require:
+
+    init dover.Tools.RTL.longjmp                       {ClearAuthority}
+
+    init dover.Kernel.MemoryMap.Default       {}
+    init dover.riscv.Mach.PC                           {}
+    init dover.riscv.User.PC                           {}
+    init dover.riscv.Mach.Reg                          {}
+    init dover.riscv.User.Reg                          {}
+    init dover.riscv.Mach.RegZero                      {}
+    init dover.riscv.User.RegZero                      {}
+    init dover.Kernel.MemoryMap.UserStack     {}
+    init dover.Kernel.MemoryMap.UserHeap      {}
+    init dover.SOC.IO.UART                             {}
+    init dover.SOC.IO.Flash                            {}
+    init dover.SOC.CSR.Default                         {}
+    init dover.SOC.CSR.MTVec                           {}
+    init dover.Kernel.Code.ElfSection.SHF_WRITE     {}
+    init dover.Kernel.Code.ElfSection.SHF_ALLOC     {}
+    init dover.Kernel.Code.ElfSection.SHF_EXECINSTR {}
+
+
