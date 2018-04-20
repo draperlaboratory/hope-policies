@@ -25,8 +25,9 @@
 
 #define TICK_INTERVAL 2
 #define MSG_MAX 4
+#define TIMER_INTERVAL (TICK_INTERVAL * configTICK_CLOCK_HZ / configTICK_RATE_HZ)
 
-//#define PREEMPTIVE
+#define PREEMPTIVE
 
 extern uint64_t xPortRawTime( void );
 
@@ -120,7 +121,7 @@ int test_main( void )
   printf_uart("main: create done task\r\n");
   xTaskCreate(done_task, "Done task", 1000, NULL, 1, NULL);
 
-  printf_uart("timer ticks: 0x%x\r\n", TICK_INTERVAL);
+  printf_uart("timer ticks: 0x%x\r\n", TIMER_INTERVAL);
 
   printf_uart("start scheduler\r\n");
   vTaskStartScheduler();
