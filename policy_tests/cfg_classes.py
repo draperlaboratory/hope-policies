@@ -16,6 +16,7 @@ class AllTests:
         "printf_works_1.c",
         "hello_works_1.c", 
         "stanford_int_treesort_fixed.c",
+        "ping_pong_works_1.c",
         "link_list_works_1.c", 
         "ptr_arith_works_1.c",
         "malloc_works_1.c",
@@ -47,6 +48,7 @@ class WorkingTests(AllTests):
         "printf_works_1.c",
         "hello_works_1.c", 
         "stanford_int_treesort_fixed.c",
+        "ping_pong_works_1.c",
         "link_list_works_1.c", 
         "malloc_works_1.c",
         "malloc_works_2.c",
@@ -57,7 +59,8 @@ class WorkingTests(AllTests):
 class DebugTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
     policies = ["rwx"]
-    positive_tests = [ ]
+    positive_tests = [ "hello_works_1.c" ]
+    negative_tests = [ ]
 
 
 class FRTOSTests(AllTests):
