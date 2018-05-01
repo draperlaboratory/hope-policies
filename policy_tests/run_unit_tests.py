@@ -500,6 +500,7 @@ Metadata related commnads:
    pvm      - print violation message
    env-m    - get the env metadata
    reg-m n  - get register n metadata
+   areg-m   - get all register metadata
    csr-m a  - get csr metadata at addr a
    mem-m a  - get mem metadata at addr a
 Watchpoints halt simulation when metadata changes
@@ -540,6 +541,14 @@ end
 
 document reg-m
    get register metadata
+end
+
+define areg-m
+   monitor sysbus.cpu AllRegMetadata
+end
+
+document areg-m
+   get all register metadata
 end
 
 define csr-m
