@@ -498,6 +498,7 @@ Renode simulator commands:
    rquit    - renode quit
 Metadata related commnads:
    pvm      - print violation message
+   lre      - print last rule evaluation
    env-m    - get the env metadata
    reg-m n  - get register n metadata
    areg-m   - get all register metadata
@@ -517,6 +518,14 @@ end
 document pvm
    Command to print last policy violation info
    Only captures the last violation info.
+end
+
+define lre
+   monitor sysbus.cpu RuleEvalLog
+end
+
+document lre
+   Command to print last rule evaluation info
 end
 
 define rstart
