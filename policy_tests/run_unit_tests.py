@@ -301,8 +301,6 @@ def checkResult(dp, policy, rpt):
                         for l2 in statuslines:
                             if "Policy Violation:" in l2:
                                 return True
-    fh.close()
-    sh.close()
     return False #   User code did not produce correct result
 
 # FIXME: The -d has become obsolete (I think)
