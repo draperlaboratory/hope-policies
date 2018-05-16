@@ -13,9 +13,9 @@ Install Instructions
        * `pip2 install pytest-html`
        * `pip2 install pytest-timeout`
 
-   * Create env var DOVER points to: `/home/user_name/dover-install`
-   * Create env var DOVER_SOURCES that points to: `/home/user_name/dover-repos`
-   * Create env var FREE_RTOS_BASE that points to: `/home/user_name/dover-repos/FreeRTOS`
+   * Create env var `DOVER` points to: `/home/user_name/dover-install`
+   * Create env var `DOVER_SOURCES` that points to: `/home/user_name/dover-repos`
+   * Create env var `FREE_RTOS_DIR` that points to: `/home/user_name/dover-repos/FreeRTOS`
 
    * Build policytool:
        * See README.md in policy-tool
