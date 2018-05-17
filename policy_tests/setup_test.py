@@ -52,11 +52,12 @@ def pName(os, pol):
 def doMkPolicy(osPol, params):
     polParam = [osPol[2]]
     mod_dir = os.path.join(os.environ['DOVER_SOURCES'], "policies")
+    ent_dir = os.path.join(mod_dir, "entities")
     gen_dir = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "policy")
     ptpth = os.path.join(os.environ['HOME'], ".local", "bin")
     ptcmd = "policy-tool"
 
-    ptarg = params + ["-m", mod_dir, "-o", gen_dir] + polParam
+    ptarg = params + ["-t", ent_dir, "-m", mod_dir, "-o", gen_dir] + polParam
 
     shutil.rmtree(gen_dir, ignore_errors=True)
     os.makedirs(gen_dir)
@@ -84,7 +85,7 @@ def doInstallPolicy(osPol, installPath):
             shutil.copyfile(os.path.join(pol_dir, fn), os.path.join(installPath, fn))
     entDir = os.path.abspath("../entities")
     entFile = os.path.join(entDir, polNm + ".entities.yml")
-    destEnt = os.path.join(installPath, "entities.yml")
+    destEnt = os.path.join(installPath, polNm + ".entities.yml")
     if os.path.isfile(entFile):
         shutil.copyfile(entFile, destEnt)
     else:

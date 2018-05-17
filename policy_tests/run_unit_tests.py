@@ -249,10 +249,10 @@ def doMakefile(policy, dp, main, opt, debug):
 # Generate the makefile
 def doReSc(policy, dp):
     if "dos" in policy:
-        rs = rescScript(dp)
+        rs = rescScript(dp, policy)
         gs = gdbScript(dp)
     elif "frtos" in policy:
-        rs = rescScript(dp)
+        rs = rescScript(dp, policy)
         gs = gdbScript(dp)
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
@@ -426,16 +426,11 @@ spike:
 	  --mtvec=0xff000100
 
 inits:
-	cp $(DOVER)/kernels/{policies}/librv32-renode-validator.so .
-	cp $(DOVER)/kernels/{policies}/policy_group.yml .
-	cp $(DOVER)/kernels/{policies}/policy_init.yml .
-	cp $(DOVER)/kernels/{policies}/policy_meta.yml .
-	cp $(DOVER)/kernels/{policies}/entities.yml .
-	cp -r $(DOVER)/kernels/{policies}/soc_cfg .
-	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info $(DOVER)/kernels/{policies} build/main.taginfo build/main build/main.text
-	$(DOVER_SOURCES)/policy-engine/build/md_entity $(DOVER)/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann $(DOVER)/kernels/{policies} build/main.taginfo build/main.text
+	cp -r $(DOVER)/kernels/{policies} .
+	$(DOVER)/bin/riscv32-unknown-elf-objdump --source build/main > build/main.text
+	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info ./{policies} build/main.taginfo build/main build/main.text
+	$(DOVER_SOURCES)/policy-engine/build/md_entity ./{policies} build/main build/main.taginfo ./{policies}/{policies}.entities.yml {main}.entities.yml
+	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann ./{policies} build/main.taginfo build/main.text
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -468,7 +463,7 @@ fs:
 """.format(opt=opt, debug=debug, main = main.replace('/', '-'),
            policies=policy.lower())
 
-def rescScript(dir):
+def rescScript(dir, policy):
     return """
 mach create
 machine LoadPlatformDescription @platforms/boards/miv-board.repl
@@ -479,11 +474,11 @@ connector Connect sysbus.uart uart-socket
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
-sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo
+sysbus.cpu SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo
 sysbus.cpu StartGdbServer 3333
 logLevel 1 sysbus.cpu
 sysbus.cpu StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir))
+""".format(path = os.path.join(os.getcwd(), dir), policies=policy.lower())
 
 def gdbScript(dir):
     return """
