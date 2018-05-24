@@ -49,7 +49,7 @@ class CFIRWXTests:
     os_modules = ["osv.frtos.main.{pol}"]
 
     # policies to test
-    policies = ["cfi", "rwx"]
+    policies = ["cfi-rwx"]
 
     #positive tests go in the tests dir
     positive_tests = [
