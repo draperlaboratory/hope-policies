@@ -433,7 +433,7 @@ inits:
 	cp $(DOVER)/kernels/{policies}/entities.yml .
 	cp -r $(DOVER)/kernels/{policies}/soc_cfg .
 	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info -d $(DOVER)/kernels/{policies} -t build/main.taginfo -b build/main -p cfi
+	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info -d $(DOVER)/kernels/{policies} -t build/main.taginfo -b build/main -p rwx cfi
 	$(DOVER_SOURCES)/policy-engine/build/md_entity $(DOVER)/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
 	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann $(DOVER)/kernels/{policies} build/main.taginfo build/main.text
 
