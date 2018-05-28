@@ -62,6 +62,7 @@ policy:
 
 require:
     init dover.Tools.GCC.CFI_Target                    {Target}
+    init dover.Tools.GCC.NoCFI                         {NoCFI}
     
     init dover.Kernel.MemoryMap.Default       {}
     init dover.riscv.Mach.PC                           {}
