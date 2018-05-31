@@ -61,6 +61,12 @@ policy:
     main = cfiPol
 
 require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
     init dover.Tools.GCC.CFI_Target                    {Target}
     init dover.Tools.GCC.NoCFI                         {NoCFI}
     
