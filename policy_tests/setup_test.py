@@ -53,7 +53,6 @@ def doMkPolicy(osPol, params):
     polParam = [osPol[2]]
     mod_dir = os.path.join(os.environ['DOVER_SOURCES'], "policies")
     gen_dir = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "policy")
-    ptpth = os.path.join(os.environ['HOME'], ".local", "bin")
     ptcmd = "policy-tool"
 
     ptarg = params + ["-m", mod_dir, "-o", gen_dir] + polParam
@@ -62,7 +61,7 @@ def doMkPolicy(osPol, params):
     os.makedirs(gen_dir)
 # faster if we trust cmake & don't clean, but that can leave you with stale .so file
     runit(None, "", "make", ["-C", os.path.join(os.environ['DOVER_SOURCES'], "policy-engine/build"), "clean"])
-    runit(None, ptpth, ptcmd, ptarg)
+    runit(None, "", ptcmd, ptarg)
     runit(None, "", "make", ["-C", os.path.join(os.environ['DOVER_SOURCES'], "policy-engine/build")])
 
 def doInstallPolicy(osPol, installPath):
