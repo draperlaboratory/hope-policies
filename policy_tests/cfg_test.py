@@ -10,6 +10,7 @@ cfg = 'cfirwx'
 simulator = "renode"
 #simulator = "verilator"
 #simulator = "fpga"
+#simulator = "qemu"
 
 
 # Nothing to configure below here

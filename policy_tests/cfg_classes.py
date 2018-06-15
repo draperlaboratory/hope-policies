@@ -6,7 +6,7 @@ class AllTests:
 
     # list of module hierarchies in python string format syntax.
     # {pol} gets replaced with one of the policies from below
-    os_modules = ["osv.dos.main.{pol}", "osv.frtos.main.{pol}"]
+    os_modules = ["osv.dos.main.{pol}", "osv.frtos.main.{pol}", "osv.hifive.main.{pol}"]
 
     # policies to test
     policies = ["none", "cfi", "nop", "rwx", "stack", "heap"]
@@ -46,7 +46,7 @@ class CFIRWXTests:
 
     # list of module hierarchies in python string format syntax.
     # {pol} gets replaced with one of the policies from below
-    os_modules = ["osv.frtos.main.{pol}"]
+    os_modules = ["osv.frtos.main.{pol}", "osv.hifive.main.{pol}"]
 
     # policies to test
     policies = ["cfi-rwx"]
@@ -107,4 +107,3 @@ configs = {'all' : AllTests,
            'cfirwx' : CFIRWXTests
 }
 
-    

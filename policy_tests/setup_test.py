@@ -72,6 +72,8 @@ def doInstallPolicy(osPol, installPath):
     dst = os.path.join(installPath, f)
     pol_dir = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "policy")
     soc_src = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "soc_cfg")
+    if "hifive" in polNm:
+        soc_src = soc_src.replace("soc_cfg", "soc_cfg_hifive")
     soc_dst = os.path.join(installPath, "soc_cfg")
 
     shutil.rmtree(installPath, ignore_errors=True)

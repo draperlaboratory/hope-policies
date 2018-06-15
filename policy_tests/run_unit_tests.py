@@ -202,17 +202,24 @@ def doMkApp(policy, dp, main, opt):
     elif "frtos" in policy:
         runit(dp, "", "cp", [os.path.join("template", "frtos-mem.h"), os.path.join(dp, "mem.h")])
         runit(dp, "", "cp", [os.path.join("template", "frtos.cmake"), os.path.join(dp, "CMakeLists.txt")])
+    elif "hifive" in policy:
+        runit(dp, "", "cp", [os.path.join("template", "hifive-mem.h"), os.path.join(dp, "mem.h")])
+        shutil.copytree(os.getenv("DOVER_SOURCES")+"/freedom-e-sdk/bsp", os.path.join(dp, "build/bsp"))
+        makefile = os.path.join(dp, "build/Makefile")
+        shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
     else:
         pytest.fail("Unknown OS, can't copy app files")
     runit(dp, "", "cp", [os.path.join("template", "doverlib.h"), dp])
 #    runit(dp, "", "cp", [os.path.join("template", "print.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c")])
     runit(dp, "", "cp", [os.path.join("template", "frtos.c"), os.path.join(dp, "frtos.c")])
+    runit(dp, "", "cp", [os.path.join("template", "hifive.c"), os.path.join(dp, "hifive.c")])
     runit(dp, "", "cp", [os.path.join("template", "test.h"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.h"), dp])
     runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
     runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
+    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
     runit(dp, "", "cp", [os.path.join("tests", main), os.path.join(dp, "test.c")])
     # create entity for file elements
     entDir = os.path.abspath("../entities")
@@ -231,6 +238,8 @@ def doMakefile(policy, dp, main, opt, debug):
         mf = dosMakefile(policy, opt, debug)
     elif "frtos" in policy:
         mf = frtosMakefile(policy, main, opt, debug)
+    elif "hifive" in policy:
+        mf = hifiveMakefile(policy, main, opt, debug)
     else:
         pytest.fail("Unknown OS, can't generate Makefile")
 
@@ -254,6 +263,8 @@ def doReSc(policy, dp):
     elif "frtos" in policy:
         rs = rescScript(dp)
         gs = gdbScript(dp)
+    elif "hifive" in policy:
+        return
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
 
@@ -407,6 +418,67 @@ clean:
 fs:
 	cp $(DOVER)/empty.fs .
 """.format(opt=opt, debug=debug,
+           policies=policy.lower())
+
+# The makefile that is generated in the test dir for hifive bare-metal tests
+def hifiveMakefile(policy, main, opt, debug):
+    return """
+build/main: hifive.c test.c
+	cd build && make
+
+spike:
+	$(DOVER)/dover-spike/bin/spike --pex=1 --xosj=1 --isa=RV32IM -m8 {debug} \\
+	  --mem-startup-value=0x00 --echo-ttyS0=1 --echo-ttyS1=1 --skew=1 \\
+	  --init-mem-device=0xff000000,ro,bootrom.rom \\
+	  --init-mem-device=0xc8000000,ro,pex.rom \\
+	  --init-mem-device=0xc8030000,ro,main.out.rom \\
+	  --init-mem-device=0xc8800000,ro,empty.fs \\
+	  --tag-name-resolver=$(DOVER)/kernels/{policies}/tag_name_resolver.so \\
+	  --mtvec=0xff000100
+
+inits: build/main
+	cp $(DOVER)/kernels/{policies}/librv32-renode-validator.so .
+	cp $(DOVER)/kernels/{policies}/policy_group.yml .
+	cp $(DOVER)/kernels/{policies}/policy_init.yml .
+	cp $(DOVER)/kernels/{policies}/policy_meta.yml .
+	cp $(DOVER)/kernels/{policies}/entities.yml .
+	cp -r $(DOVER)/kernels/{policies}/soc_cfg .
+	riscv32-unknown-elf-objdump --source build/main > build/main.text
+	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info -d $(DOVER)/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
+	$(DOVER_SOURCES)/policy-engine/build/md_entity $(DOVER)/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
+	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann $(DOVER)/kernels/{policies} build/main.taginfo build/main.text
+
+verilator:
+	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
+	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
+	cp all.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
+	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif TEST=unit_test TIMEOUT=50000000 FPGA=1 TRACE_START=50000000
+	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart0.log .
+	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
+
+fpga:
+	python runFPGA.py
+
+renode:
+	python runRenode.py
+
+renode-console:
+	$(DOVER_SOURCES)/renode/renode main.resc
+
+qemu:
+	python runQEMU.py
+
+gdb:
+	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
+
+clean:
+	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
+
+fs:
+	cp $(DOVER)/empty.fs .
+""".format(opt=opt, debug=debug,
+           main_src=main, main_bin=main.replace(".c", ""),
+           main=main.replace('/', '-'),
            policies=policy.lower())
 
 # The makefile that is generated in the test dir for frtos tests
