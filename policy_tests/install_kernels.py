@@ -46,7 +46,7 @@ def doFixture(cfg, policyParams):
 #    doMkOS(cfg)
 
 def doTest(osPolicyF):
-    installPath = os.path.join(os.environ['DOVER'], "kernels", osPolicyF[2])
+    installPath = os.path.join('kernel_dir', "kernels", osPolicyF[2])
     doInstallPolicy(osPolicyF, installPath)
     print "Checking install: " + installPath
     assert os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so"))
@@ -55,5 +55,3 @@ def doTest(osPolicyF):
 #    assert os.path.isfile(os.path.join(installPath, "pex.rom"))
 #    assert os.path.isfile(os.path.join(installPath, "post_meta"))
 #    assert os.path.isfile(os.path.join(installPath, "tag_name_resolver.so"))
-
-

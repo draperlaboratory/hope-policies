@@ -6,3 +6,4 @@ assets/
 report.html
 prof_results.log
 *.pyc
+/kernel_dir

@@ -80,10 +80,12 @@ def logPort(name, logFile, port):
 def launchRenode():
     global testDone
     try:
-        cmdpth = os.path.join(os.environ['DOVER_SOURCES'], "renode")
-        runcmd = "renode"
-        opts = [ "--plain", "--disable-xwt", "--port={0}".format(renodePort)]
-        rc = subprocess.Popen([os.path.join(cmdpth, runcmd)] + opts)
+        cmd = ["renode",
+               "--plain",
+               "--disable-xwt",
+               "--port={0}".format(renodePort)
+        ]
+        rc = subprocess.Popen(cmd)
         while rc.poll() is None:
             time.sleep(0.01)
     finally:
