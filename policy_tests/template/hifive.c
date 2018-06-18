@@ -8,11 +8,16 @@ uint32_t uiPortGetWallTimestampUs() {
 }
 
 int t_printf(const char *s, ...) {
+  char buf[128];
   va_list vl;
 
+  const char *p = &buf[0];
+
   va_start(vl, s);
-  printf(s, vl);
+  vsnprintf(buf, sizeof buf, s, vl);
   va_end(vl);
+
+  puts(p);
 }
 
 int main(void) {
