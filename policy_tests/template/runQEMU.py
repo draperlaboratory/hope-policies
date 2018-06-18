@@ -45,12 +45,14 @@ def launchQEMU():
                  "-kernel", "build/main",
                  "-serial", "file:{}".format(uartLogFile),
                  "-D", statusLogFile,
+                 "-singlestep", #need to instrument every target instruction
                  "--policy-validator-cfg",
                  "policy-path={policyDir},tag-info-file={tagFile}".
                  format(policyDir=cwd, tagFile=cwd+"/build/main.taginfo")]
 
         qemu_env = os.environ.copy()
         qemu_env['LD_LIBRARY_PATH'] = qemu_env['LD_LIBRARY_PATH'] + ':' + cwd
+        print("Running qemu cmd:{}\n", str([runcmd] + opts))
         rc = subprocess.Popen([runcmd] + opts, env=qemu_env)
         while rc.poll() is None:
             time.sleep(0.01)
