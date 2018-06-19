@@ -51,11 +51,12 @@ def launchQEMU():
                  format(policyDir=cwd, tagFile=cwd+"/build/main.taginfo")]
 
         qemu_env = os.environ.copy()
-        qemu_env['LD_LIBRARY_PATH'] = qemu_env['LD_LIBRARY_PATH'] + ':' + cwd
+        old_library_path = qemu_env['LD_LIBRARY_PATH'] + ':' if 'LD_LIBRARY_PATH' in qemu_env else ''
+        qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd
         print("Running qemu cmd:{}\n", str([runcmd] + opts))
         rc = subprocess.Popen([runcmd] + opts, env=qemu_env)
         while rc.poll() is None:
-            time.sleep(0.01)
+            time.sleep(0.5)
             try:
                 with open(uartLogFile, 'r') as f:
                     for line in f.readlines():
