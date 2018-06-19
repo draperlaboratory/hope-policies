@@ -1,13 +1,17 @@
 cmake_minimum_required(VERSION 3.5) # or other version
 
+if (NOT DEFINED ISP_PREFIX)
+  set(ISP_PREFIX "/opt/isp/")
+endif()
+
 if (NOT DEFINED FREE_RTOS_DIR)
-  set(FREE_RTOS_DIR "$ENV{FREE_RTOS_DIR}")
+  set(FREE_RTOS_DIR "${ISP_PREFIX}/FreeRTOS")
 endif()
 
 if (NOT DEFINED CMAKE_TOOLCHAIN_FILE)
    set(CMAKE_TOOLCHAIN_FILE "${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/riscv.cmake")
  endif()
- 
+
 if (NOT DEFINED CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release CACHE STRING "" FORCE)
 endif()
@@ -43,11 +47,8 @@ add_library(free-rtos ${FREE_RTOS_DIR}/Source/tasks.c
 		      ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/arch/boot.S)
 
 add_library(free-rtos-miv ${FREE_RTOS_DIR}/Demo/RISCV_MIV_GCC/MIV/src/miv_core_uart.c)
-                    
+
 add_executable(main frtos.c test_status.c test.c)
 
 
 target_link_libraries(main free-rtos free-rtos-miv)
-
-
-                    

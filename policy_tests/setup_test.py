@@ -50,10 +50,10 @@ def pName(os, pol):
     return os.format(pol = "-".join(pol))
 
 def doMkPolicy(osPol, params):
+    repo_root = os.path.join('..', '..')
     polParam = [osPol[2]]
-    mod_dir = os.path.join(os.environ['DOVER_SOURCES'], "policies")
-    gen_dir = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "policy")
-    ptpth = os.path.join(os.environ['HOME'], ".local", "bin")
+    mod_dir = os.path.join(repo_root, "policies")
+    gen_dir = os.path.join(repo_root, "policy-engine", "policy")
     ptcmd = "policy-tool"
 
     ptarg = params + ["-m", mod_dir, "-o", gen_dir] + polParam
@@ -61,17 +61,18 @@ def doMkPolicy(osPol, params):
     shutil.rmtree(gen_dir, ignore_errors=True)
     os.makedirs(gen_dir)
 # faster if we trust cmake & don't clean, but that can leave you with stale .so file
-    runit(None, "", "make", ["-C", os.path.join(os.environ['DOVER_SOURCES'], "policy-engine/build"), "clean"])
-    runit(None, ptpth, ptcmd, ptarg)
-    runit(None, "", "make", ["-C", os.path.join(os.environ['DOVER_SOURCES'], "policy-engine/build")])
+    runit(None, "", "make", ["-C", os.path.join(repo_root, "policy-engine/build"), "clean"])
+    runit(None, "", ptcmd, ptarg)
+    runit(None, "", "make", ["-C", os.path.join(repo_root, "policy-engine/build")])
 
 def doInstallPolicy(osPol, installPath):
+    repo_root = os.path.join('..', '..')
     polNm = osPol[2]
     f = "librv32-renode-validator.so"
-    src = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "build", f)
+    src = os.path.join(repo_root, "policy-engine", "build", f)
     dst = os.path.join(installPath, f)
-    pol_dir = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "policy")
-    soc_src = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "soc_cfg")
+    pol_dir = os.path.join(repo_root, "policy-engine", "policy")
+    soc_src = os.path.join(repo_root, "policy-engine", "soc_cfg")
     if "hifive" in polNm:
         soc_src = soc_src.replace("soc_cfg", "soc_cfg_hifive")
     soc_dst = os.path.join(installPath, "soc_cfg")
@@ -92,7 +93,6 @@ def doInstallPolicy(osPol, installPath):
     else:
         shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
 
-         
 def installTarget(osPol):
     if osPol[0] == "dos":
         return "install-kernel"
@@ -100,11 +100,6 @@ def installTarget(osPol):
         return "install-no-kernel"
     pytest.fail( "Unknown kernel for install target")
     return ""
-
-#def doMkOS(osPol):
-#    runit(None, "", "configure", ["--prefix=$(DOVER)/riscv64-unknown-elf", "--host=riscv64-unknown-elf", is32os(target)]
-#    runit(None, "", "make", ["-C", os.path.join(os.environ['DOVER_SOURCES'], "dover-os/build")])
-#    runit(None, "", "make", ["-C", os.path.join(os.environ['DOVER_SOURCES'], "dover-os/build"), installTarget(osPol)])
 
 def runit(dp, path, cmd, args):
     runcmd = [os.path.join(path,cmd)] + args
@@ -122,4 +117,3 @@ def runit(dp, path, cmd, args):
         rc = subprocess.Popen(runcmd)
         while rc.poll() is None:
             time.sleep(0.01)
-

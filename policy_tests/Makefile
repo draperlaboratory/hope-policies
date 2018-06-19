@@ -1,8 +1,9 @@
-
 # This silences python error trace backs, better for running tests
 ERROR_MSGS = --tb=no
 # This allows python error trace backs, better for debugging scripts
 #ERROR_MSGS =
+
+KERNEL_DIR = kernel_dir
 
 simple:
 	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS)  -v -k test_simple run_unit_tests.py
@@ -32,15 +33,14 @@ install-kernels-full:
 	python -m pytest --timeout=180 $(ERROR_MSGS) -v -k test_full install_kernels.py
 
 install-kernel-%:
-	rm -rf $(DOVER)/kernels/$*
+	rm -rf $(KERNEL_DIR)/kernels/$*
 	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS) -v -k test_kernel[$*] install_kernels.py
 
 list-kernels:
 	python -m pytest --collect-only install_kernels.py
 
-clean:
+clean: clean-kernels
 	rm -rf fail debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
 
 clean-kernels:
-	rm -rf $(DOVER)/kernels/*
-
+	rm -rf $(KERNEL_DIR)/kernels/*
