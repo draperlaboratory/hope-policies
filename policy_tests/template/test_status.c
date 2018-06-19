@@ -27,7 +27,7 @@ void test_positive(){
   //  uint32_t sec = tv.tv_sec;
   //  uint32_t usec = tv.tv_usec;
   t_printf("MSG: Positive test.\n");
-  t_printf("Start time: %d\n", uiPortGetWallTimestampUs());
+  t_printf("Start time: %u\n", uiPortGetWallTimestampUs());
   // t_printf("Clock time: %d.%06d\n", sec, usec);
 }
 
@@ -61,7 +61,7 @@ int test_done(){
     //  uint32_t sec = tv.tv_sec;
     //  uint32_t usec = tv.tv_usec;
   t_printf("PASS: test passed.\n");
-  t_printf("End time: %d\n", uiPortGetWallTimestampUs());
+  t_printf("End time: %u\n", uiPortGetWallTimestampUs());
   //  t_printf("Clock time: %d.%06d\n", sec, usec);
   t_printf("MSG: End test.\n");
   return 0;

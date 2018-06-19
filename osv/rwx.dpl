@@ -64,6 +64,11 @@ require:
 
     init SOC.IO.UART_0                       {Rd, Wr}
     init SOC.Memory.Flash_0                  {Rd}
+
+    init SOC.IO.Debug                        {Rd, Wr, Ex}
+    init SOC.IO.CLINT                        {Rd, Wr}
+    init SOC.IO.ITIM                         {Rd, Wr, Ex}
+    init SOC.IO.PLIC                         {Rd, Wr}
     
     init Tools.Elf.Section.SHF_ALLOC         {Rd}
     init Tools.Elf.Section.SHF_EXECINSTR     {Ex}
