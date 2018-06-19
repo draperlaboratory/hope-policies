@@ -204,7 +204,7 @@ def doMkApp(policy, dp, main, opt):
         runit(dp, "", "cp", [os.path.join("template", "frtos.cmake"), os.path.join(dp, "CMakeLists.txt")])
     elif "hifive" in policy:
         runit(dp, "", "cp", [os.path.join("template", "hifive-mem.h"), os.path.join(dp, "mem.h")])
-        shutil.copytree(os.getenv("DOVER_SOURCES")+"/freedom-e-sdk/bsp", os.path.join(dp, "build/bsp"))
+        shutil.copytree(os.getenv("ISP_PREFIX")+"hifive_bsp", os.path.join(dp, "build/bsp"))
         makefile = os.path.join(dp, "build/Makefile")
         shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
     else:
@@ -357,31 +357,23 @@ def runit(dp, path, cmd, args):
 
 # The makefile that is generated in the test dir for hifive bare-metal tests
 def hifiveMakefile(policy, main, opt, debug):
+    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
 build/main: hifive.c test.c
 	cd build && make
 
-spike:
-	$(DOVER)/dover-spike/bin/spike --pex=1 --xosj=1 --isa=RV32IM -m8 {debug} \\
-	  --mem-startup-value=0x00 --echo-ttyS0=1 --echo-ttyS1=1 --skew=1 \\
-	  --init-mem-device=0xff000000,ro,bootrom.rom \\
-	  --init-mem-device=0xc8000000,ro,pex.rom \\
-	  --init-mem-device=0xc8030000,ro,main.out.rom \\
-	  --init-mem-device=0xc8800000,ro,empty.fs \\
-	  --tag-name-resolver=$(DOVER)/kernels/{policies}/tag_name_resolver.so \\
-	  --mtvec=0xff000100
-
-inits: build/main
-	cp $(DOVER)/kernels/{policies}/librv32-renode-validator.so .
-	cp $(DOVER)/kernels/{policies}/policy_group.yml .
-	cp $(DOVER)/kernels/{policies}/policy_init.yml .
-	cp $(DOVER)/kernels/{policies}/policy_meta.yml .
-	cp $(DOVER)/kernels/{policies}/entities.yml .
-	cp -r $(DOVER)/kernels/{policies}/soc_cfg .
+inits:
+	cp {kernel_dir}/kernels/{policies}/librv32-renode-validator.so .
+	cp {kernel_dir}/kernels/{policies}/policy_group.yml .
+	cp {kernel_dir}/kernels/{policies}/policy_init.yml .
+	cp {kernel_dir}/kernels/{policies}/policy_meta.yml .
+	cp {kernel_dir}/kernels/{policies}/entities.yml .
+	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
 	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info -d $(DOVER)/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
-	$(DOVER_SOURCES)/policy-engine/build/md_entity $(DOVER)/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann $(DOVER)/kernels/{policies} build/main.taginfo build/main.text
+	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
+	md_entity {kernel_dir}/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
+	md_asm_ann {kernel_dir}/kernels/{policies} build/main.taginfo build/main.text
+
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -398,7 +390,7 @@ renode:
 	python runRenode.py
 
 renode-console:
-	$(DOVER_SOURCES)/renode/renode main.resc
+	renode main.resc
 
 qemu:
 	python runQEMU.py
@@ -408,13 +400,10 @@ gdb:
 
 clean:
 	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-
-fs:
-	cp $(DOVER)/empty.fs .
 """.format(opt=opt, debug=debug,
            main_src=main, main_bin=main.replace(".c", ""),
            main=main.replace('/', '-'),
-           policies=policy.lower())
+           policies=policy.lower(), kernel_dir=kernel_dir)
 
 # The makefile that is generated in the test dir for frtos tests
 def frtosMakefile(policy, main, opt, debug):
