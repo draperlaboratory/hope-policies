@@ -227,9 +227,7 @@ def doMkApp(policy, dp, main, opt):
 
 # Generate the makefile
 def doMakefile(policy, dp, main, opt, debug):
-    if "dos" in policy:
-        mf = dosMakefile(policy, opt, debug)
-    elif "frtos" in policy:
+    if "frtos" in policy:
         mf = frtosMakefile(policy, main, opt, debug)
     else:
         pytest.fail("Unknown OS, can't generate Makefile")
@@ -302,7 +300,6 @@ def checkResult(dp, policy, rpt):
                             if "Policy Violation:" in l2:
                                 return True
     fh.close()
-    sh.close()
     return False #   User code did not produce correct result
 
 # FIXME: The -d has become obsolete (I think)
@@ -348,94 +345,24 @@ def runit(dp, path, cmd, args):
             time.sleep(0.01)
 
 
-# The makefile that is generated in the test dir for dos tests
-def dosMakefile(policy, opt, debug):
-    return """
-dos: dos.c
-	$(DOVER)/bin/riscv64-unknown-elf-gcc -{opt} -m32 -msoft-float \\
-	-L$(DOVER)/kernels/{policies}/lib test_status.c test.c dos.c -o main.out
-	$(DOVER)/bin/riscv64-unknown-elf-objdump -d main.out > main.out.text 
-	$(DOVER)/kernels/{policies}/post_meta main.out main.out.taginfo main.out.text 
-	$(DOVER)/bin/riscv64-unknown-elf-objcopy --add-section .dover_taginfo=main.out.taginfo main.out
-	$(DOVER)/bin/riscv64-unknown-elf-strip -d main.out
-	hexdump -v -e'/4 "%08X""\\n"' < main.out > main.out.hex
-
-spike:
-	$(DOVER)/dover-spike/bin/spike --pex=1 --xosj=1 --isa=RV32IM -m8 {debug} \\
-	  --mem-startup-value=0x00 --echo-ttyS0=1 --echo-ttyS1=1 --skew=1 \\
-	  --init-mem-device=0xff000000,ro,bootrom.rom \\
-	  --init-mem-device=0xc8000000,ro,pex.rom \\
-	  --init-mem-device=0xc8030000,ro,ap_kernel.rom \\
-	  --init-mem-device=0xc8050000,ro,main.out \\
-	  --init-mem-device=0xc8800000,ro,empty.fs \\
-	  --tag-name-resolver=$(DOVER)/kernels/{policies}/tag_name_resolver.so \\
-	  --mtvec=0xff000100
-
-inits:
-	cp $(DOVER)/kernels/{policies}/pex.rom .
-	cp $(DOVER)/kernels/{policies}/pex.hex .
-	cp $(DOVER)/kernels/{policies}/pex.text .
-	cp $(DOVER)/kernels/{policies}/ap_kernel.rom .
-	cp $(DOVER)/kernels/{policies}/ap_kernel.hex .
-	cp $(DOVER)/kernels/{policies}/ap_kernel.text.tagged .
-	cp $(DOVER)/kernels/{policies}/bootrom.rom .
-	cp $(DOVER)/kernels/{policies}/bootrom.hex .
-	cp bootrom.hex bl.vh
-	echo "@0" > all.vh
-	cat pex.hex >> all.vh
-	echo "@c000" >> all.vh
-	cat ap_kernel.hex >> all.vh
-	echo "@14000" >> all.vh
-	cat main.out.hex >> all.vh
-	$(DOVER)/pex/bin/gen_flash_init auto.init 0x0 ap_kernel.rom 0xc0000 pex.rom 0x100000 main.out
-	$(DOVER)/pex/bin/gen_flash_init flash.init 0xc8000000 pex.rom 0xC8030000 ap_kernel.rom 0xc8050000 main.out
-
-verilator:
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
-	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	cp all.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif TEST=unit_test TIMEOUT=50000000 FPGA=1 TRACE_START=50000000
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart0.log .
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
-
-fpga:
-	python runFPGA.py
-
-clean:
-	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-
-fs:
-	cp $(DOVER)/empty.fs .
-""".format(opt=opt, debug=debug,
-           policies=policy.lower())
-
 # The makefile that is generated in the test dir for frtos tests
 def frtosMakefile(policy, main, opt, debug):
+    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
 rtos: frtos.c
 	cd build && cmake .. && make
 
-spike:
-	$(DOVER)/dover-spike/bin/spike --pex=1 --xosj=1 --isa=RV32IM -m8 {debug} \\
-	  --mem-startup-value=0x00 --echo-ttyS0=1 --echo-ttyS1=1 --skew=1 \\
-	  --init-mem-device=0xff000000,ro,bootrom.rom \\
-	  --init-mem-device=0xc8000000,ro,pex.rom \\
-	  --init-mem-device=0xc8030000,ro,main.out.rom \\
-	  --init-mem-device=0xc8800000,ro,empty.fs \\
-	  --tag-name-resolver=$(DOVER)/kernels/{policies}/tag_name_resolver.so \\
-	  --mtvec=0xff000100
-
 inits:
-	cp $(DOVER)/kernels/{policies}/librv32-renode-validator.so .
-	cp $(DOVER)/kernels/{policies}/policy_group.yml .
-	cp $(DOVER)/kernels/{policies}/policy_init.yml .
-	cp $(DOVER)/kernels/{policies}/policy_meta.yml .
-	cp $(DOVER)/kernels/{policies}/entities.yml .
-	cp -r $(DOVER)/kernels/{policies}/soc_cfg .
+	cp {kernel_dir}/kernels/{policies}/librv32-renode-validator.so .
+	cp {kernel_dir}/kernels/{policies}/policy_group.yml .
+	cp {kernel_dir}/kernels/{policies}/policy_init.yml .
+	cp {kernel_dir}/kernels/{policies}/policy_meta.yml .
+	cp {kernel_dir}/kernels/{policies}/entities.yml .
+	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
 	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info -d $(DOVER)/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
-	$(DOVER_SOURCES)/policy-engine/build/md_entity $(DOVER)/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann $(DOVER)/kernels/{policies} build/main.taginfo build/main.text
+	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
+	md_entity {kernel_dir}/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
+	md_asm_ann {kernel_dir}/kernels/{policies} build/main.taginfo build/main.text
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -452,7 +379,7 @@ renode:
 	python runRenode.py
 
 renode-console:
-	$(DOVER_SOURCES)/renode/renode main.resc
+	renode main.resc
 
 gdb:
 	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
@@ -462,11 +389,8 @@ socat:
 
 clean:
 	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-
-fs:
-	cp $(DOVER)/empty.fs .
 """.format(opt=opt, debug=debug, main = main.replace('/', '-'),
-           policies=policy.lower())
+           policies=policy.lower(), kernel_dir=kernel_dir)
 
 def rescScript(dir):
     return """
