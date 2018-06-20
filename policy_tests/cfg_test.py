@@ -4,7 +4,7 @@
 from cfg_classes import configs
 
 # Choose a test config from the classes defined in module testClasses
-cfg = 'cfirwx'
+cfg = 'working'
 
 # Which simulator to use for testing
 simulator = "renode"
