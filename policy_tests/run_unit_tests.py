@@ -262,7 +262,8 @@ def doReSc(policy, dp):
         rs = rescScript(dp)
         gs = gdbScript(dp)
     elif "hifive" in policy:
-        return
+        rs = rescScriptHifive(dp)
+        gs = gdbScript(dp)
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
 
@@ -463,6 +464,29 @@ connector Connect sysbus.uart uart-socket
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
+sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo
+sysbus.cpu StartGdbServer 3333
+logLevel 1 sysbus.cpu
+sysbus.cpu StartStatusServer 3344
+""".format(path = os.path.join(os.getcwd(), dir))
+
+
+def rescScriptHifive(dir):
+    return """
+using sysbus
+mach create
+machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
+sysbus.cpu MaximumBlockSize 1
+emulation CreateServerSocketTerminal 4444 "uart-socket"
+connector Connect uart0 uart-socket
+#showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
+#emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
+#connector Connect sysbus.uart uart-pty
+sysbus LoadELF @{path}/build/main
+sysbus Tag <0x10008000 4> "PRCI_HFROSCCFG" 0xFFFFFFFF
+sysbus Tag <0x10008008 4> "PRCI_PLLCFG" 0xFFFFFFFF
+cpu PC `sysbus GetSymbolAddress "vinit"`
+cpu PerformanceInMips 320
 sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo
 sysbus.cpu StartGdbServer 3333
 logLevel 1 sysbus.cpu
