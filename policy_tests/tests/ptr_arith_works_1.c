@@ -41,7 +41,7 @@
 int test_main(void)
   {
     uintptr_t *ptr, *write_ptr, *read_ptr;
-    volatile uintptr_t temp;
+    volatile unsigned long long temp;
 
     test_positive(); // identify test as positive (will complete)
     test_begin();
