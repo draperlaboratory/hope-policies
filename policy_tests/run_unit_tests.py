@@ -425,10 +425,7 @@ spike:
 
 inits:
 	cp -r $(DOVER)/kernels/{policies} .
-	$(DOVER)/bin/riscv32-unknown-elf-objdump --source build/main > build/main.text
-	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info ./{policies} build/main.taginfo build/main build/main.text
-	$(DOVER_SOURCES)/policy-engine/build/md_entity ./{policies} build/main build/main.taginfo ./{policies}/{policies}.entities.yml {main}.entities.yml
-	$(DOVER_SOURCES)/policy-engine/build/md_asm_ann ./{policies} build/main.taginfo build/main.text
+	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info ./{policies} build/main.taginfo build/main ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
