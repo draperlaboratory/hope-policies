@@ -86,6 +86,7 @@ require:
 
     init SOC.IO.UART_0                       {AllowIO}
     init SOC.Memory.Flash_0                  {AllowRom}
+    init SOC.Memory.Ram_0                    {AllowMem}
     
     init Tools.Elf.Section.SHF_ALLOC         {AllowMem}
     init Tools.Elf.Section.SHF_EXECINSTR     {AllowCode}
