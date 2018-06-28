@@ -86,3 +86,12 @@ require:
     init dover.Kernel.Code.ElfSection.SHF_WRITE     {}
     init dover.Kernel.Code.ElfSection.SHF_ALLOC     {}
     init dover.Kernel.Code.ElfSection.SHF_EXECINSTR {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
