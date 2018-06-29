@@ -66,6 +66,7 @@ def launchQEMU():
             except IOError:
                 #keep trying if fail to open uart log
                 pass
+        testDone = True
     except Exception as e:
         print "QEMU run failed for exception {}.\n".format(e) 
         raise
