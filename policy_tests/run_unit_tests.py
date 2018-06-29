@@ -9,6 +9,7 @@ import os
 import shutil
 import time
 import glob
+import errno
 
 # Modify the test_cfg module to add policies and test cases:
 from setup_test import *
@@ -181,8 +182,15 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir):
     doCleanup(policy, testOK, dirPath, main, opt, removeDir)
 
 def doMkDir(dir):
-    if not os.path.isdir(dir):
-        os.makedirs(dir)
+    try:
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+    except OSError as e:
+        if e.errno == errno.EEXIST:
+            print("{} already exists\n".format(dir))
+        else:
+            raise
+
 
 def doBinDir(dp):
     shutil.rmtree(dp, ignore_errors=True)
