@@ -1,7 +1,6 @@
-# This silences python error trace backs, better for running tests
-ERROR_MSGS = --tb=no
-# This allows python error trace backs, better for debugging scripts
-#ERROR_MSGS =
+# This silences python error trace backs, better for running tests set
+# ERROR_MSGS to an empty string to print error trace backs
+ERROR_MSGS ?= --tb=no
 
 KERNEL_DIR = kernel_dir
 
