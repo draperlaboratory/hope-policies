@@ -1,0 +1,15 @@
+-
+  name: ISA.RISCV.CSR.Default
+  kind: isa
+-
+  name: ISA.RISCV.CSR.MTVec
+  kind: isa
+-
+  name: ISA.RISCV.Reg.Default
+  kind: isa
+-
+  name: ISA.RISCV.Reg.Env
+  kind: isa
+-
+  name: ISA.RISCV.Reg.RZero
+  kind: isa

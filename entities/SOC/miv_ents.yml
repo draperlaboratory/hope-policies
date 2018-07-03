@@ -1,0 +1,6 @@
+-
+  name: SOC.IO.UART_0
+  kind: soc
+-
+  name: SOC.Memory.Flash_0
+  kind: soc

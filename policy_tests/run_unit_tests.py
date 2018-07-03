@@ -264,9 +264,11 @@ def doMakefile(policy, dp, main, opt, debug):
 # Generate the makefile
 def doReSc(policy, dp, simulator):
     if "dos" in policy:
-        rs = rescScript(dp)
+        rs = rescScript(dp, policy)
+        gs = gdbScript(dp)
     elif "frtos" in policy:
-        rs = rescScript(dp)
+        rs = rescScript(dp, policy)
+        gs = gdbScript(dp)
     elif "hifive" in policy:
         rs = rescScriptHifive(dp)
     else:
@@ -431,9 +433,8 @@ inits:
 	cp {kernel_dir}/kernels/{policies}/entities.yml .
 	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
 	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
-	md_entity {kernel_dir}/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	md_asm_ann {kernel_dir}/kernels/{policies} build/main.taginfo build/main.text
+	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies} -e entities.yml
+
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -463,7 +464,7 @@ clean:
 """.format(opt=opt, debug=debug, main = main.replace('/', '-'),
            policies=policy.lower(), kernel_dir=kernel_dir)
 
-def rescScript(dir):
+def rescScript(dir, policy):
     return """
 mach create
 machine LoadPlatformDescription @platforms/boards/miv-board.repl
@@ -474,11 +475,11 @@ connector Connect sysbus.uart uart-socket
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
-sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo
+sysbus.cpu SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo
 sysbus.cpu StartGdbServer 3333
 logLevel 1 sysbus.cpu
 sysbus.cpu StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir))
+""".format(path = os.path.join(os.getcwd(), dir), policies=policy.lower())
 
 
 def rescScriptHifive(dir):
@@ -516,8 +517,10 @@ Renode simulator commands:
    rquit    - renode quit
 Metadata related commnads:
    pvm      - print violation message
+   lre      - print last rule evaluation
    env-m    - get the env metadata
    reg-m n  - get register n metadata
+   areg-m   - get all register metadata
    csr-m a  - get csr metadata at addr a
    mem-m a  - get mem metadata at addr a
 Watchpoints halt simulation when metadata changes
@@ -534,6 +537,14 @@ end
 document pvm
    Command to print last policy violation info
    Only captures the last violation info.
+end
+
+define lre
+   monitor sysbus.cpu RuleEvalLog
+end
+
+document lre
+   Command to print last rule evaluation info
 end
 
 define rstart
@@ -558,6 +569,14 @@ end
 
 document reg-m
    get register metadata
+end
+
+define areg-m
+   monitor sysbus.cpu AllRegMetadata
+end
+
+document areg-m
+   get all register metadata
 end
 
 define csr-m
