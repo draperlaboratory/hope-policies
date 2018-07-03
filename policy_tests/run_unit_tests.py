@@ -373,16 +373,8 @@ build/main: hifive.c test.c
 	cd build && make
 
 inits:
-	cp {kernel_dir}/kernels/{policies}/librv32-renode-validator.so .
-	cp {kernel_dir}/kernels/{policies}/policy_group.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_init.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_meta.yml .
-	cp {kernel_dir}/kernels/{policies}/entities.yml .
-	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
-	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
-	md_entity {kernel_dir}/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	md_asm_ann {kernel_dir}/kernels/{policies} build/main.taginfo build/main.text
+	cp -r {kernel_dir}/kernels/{policies} .
+	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 
 verilator:
@@ -426,14 +418,8 @@ rtos: frtos.c
 	cd build && cmake .. && make
 
 inits:
-	cp {kernel_dir}/kernels/{policies}/librv32-renode-validator.so .
-	cp {kernel_dir}/kernels/{policies}/policy_group.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_init.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_meta.yml .
-	cp {kernel_dir}/kernels/{policies}/entities.yml .
-	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
-	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies} -e entities.yml
+	cp -r {kernel_dir}/kernels/{policies} .
+	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 
 verilator:
