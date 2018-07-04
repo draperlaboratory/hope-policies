@@ -265,16 +265,14 @@ def doMakefile(policy, dp, main, opt, debug):
 def doReSc(policy, dp, simulator):
     if "dos" in policy:
         rs = rescScript(dp, policy)
-        gs = gdbScript(dp)
     elif "frtos" in policy:
         rs = rescScript(dp, policy)
-        gs = gdbScript(dp)
     elif "hifive" in policy:
         rs = rescScriptHifive(dp)
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
 
-    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript
+    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
 
     print("Renode Script: {}".format(dp))
     with open(os.path.join(dp,'main.resc'), 'w') as f:
