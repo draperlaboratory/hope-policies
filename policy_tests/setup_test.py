@@ -74,11 +74,14 @@ def doInstallPolicy(osPol, installPath):
     pol_dir = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "policy")
     soc_src = os.path.join(os.environ['DOVER_SOURCES'], "policy-engine", "soc_cfg")
     soc_dst = os.path.join(installPath, "soc_cfg")
+    platform_src = os.path.join(os.environ['DOVER_SOURCES'], "renode-plugins", "platforms")
+    platform_dst = os.path.join(installPath, "platforms")
 
     shutil.rmtree(installPath, ignore_errors=True)
     os.makedirs(installPath)
     shutil.copyfile(src, dst)
     shutil.copytree(soc_src, soc_dst)
+    shutil.copytree(platform_src, platform_dst)
     f_names = os.listdir(pol_dir)
     for fn in f_names:
         if "yml" in fn:

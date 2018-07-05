@@ -425,6 +425,7 @@ spike:
 
 inits:
 	cp -r $(DOVER)/kernels/{policies} .
+	cp -r {policies}platform .
 	$(DOVER_SOURCES)/policy-engine/tagging_tools/gen_tag_info ./{policies} build/main.taginfo build/main ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 verilator:
