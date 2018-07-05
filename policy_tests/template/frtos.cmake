@@ -1,10 +1,14 @@
 cmake_minimum_required(VERSION 3.5) # or other version
 
-if (NOT DEFINED ISP_PREFIX)
+if (DEFINED ENV{ISP_PREFIX})
+  set(ISP_PREFIX $ENV{ISP_PREFIX})
+ else()
   set(ISP_PREFIX "/opt/isp/")
 endif()
 
-if (NOT DEFINED FREE_RTOS_DIR)
+if (DEFINED ENV{FREE_RTOS_DIR})
+  set(FREE_RTOS_DIR $ENV{FREE_RTOS_DIR})
+else()
   set(FREE_RTOS_DIR "${ISP_PREFIX}/FreeRTOS")
 endif()
 
