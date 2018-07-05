@@ -374,7 +374,6 @@ inits:
 	cp -r {kernel_dir}/kernels/{policies} .
 	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
-
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
 	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
@@ -393,10 +392,10 @@ renode-console:
 	renode main.resc
 
 qemu:
-	python runQEMU.py
+	python runQEMU.py {policies}
 
 qemu-console:
-	python runQEMU.py -d
+	python runQEMU.py {policies} -d
 
 gdb:
 	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main

@@ -32,8 +32,7 @@ opts = [ "-nographic",
          "-D", statusLogFile,
          "-singlestep", #need to instrument every target instruction
          "--policy-validator-cfg",
-         "policy-path={policyDir},tag-info-file={tagFile}".
-         format(policyDir=cwd, tagFile=cwd+"/build/main.taginfo")]
+         "policy-path={policyDir},tag-info-file={tagFile}"]
 
 
 def watchdog():
@@ -46,12 +45,12 @@ def watchdog():
     print "Watchdog timeout"
     testDone = True
 
-def launchQEMU():
+def launchQEMU(policies):
     global testDone
     try:
         qemu_env = os.environ.copy()
         old_library_path = qemu_env['LD_LIBRARY_PATH'] + ':' if 'LD_LIBRARY_PATH' in qemu_env else ''
-        qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd
+        qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd + '/' + policies
         print("Running qemu cmd:{}\n", str([runcmd] + opts))
         rc = subprocess.Popen([runcmd] + opts, env=qemu_env)
         while rc.poll() is None:
@@ -71,11 +70,11 @@ def launchQEMU():
         print "QEMU run failed for exception {}.\n".format(e) 
         raise
 
-def launchQEMUDebug():
+def launchQEMUDebug(policies):
     global opts
     qemu_env = os.environ.copy()
     old_library_path = qemu_env['LD_LIBRARY_PATH'] + ':' if 'LD_LIBRARY_PATH' in qemu_env else ''
-    qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd
+    qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd + '/' + policies
     opts += ["-S", "-gdb", "tcp::3333"]
     print("Running qemu cmd:{}\n", str([runcmd] + opts))
     rc = subprocess.Popen([runcmd] + opts, env=qemu_env)
@@ -84,13 +83,18 @@ def launchQEMUDebug():
 def runOnQEMU():
     try:
         print "Begin QEMU test... (timeout: ", timeoutSec, ")"
-        if len(sys.argv) == 2 and sys.argv[1] == "-d":
-            launchQEMUDebug()
+        if len(sys.argv) == 3 and sys.argv[2] == "-d":
+            policies = sys.argv[1]
+            launchQEMUDebug(policies)
         else:
+            if len(sys.argv) != 2:
+                print "Please pass policy directory name."
+            policies = sys.argv[1]
+            opts[-1] = opts[-1].format(policyDir=cwd + '/' + policies, tagFile=cwd+"/build/main.taginfo")
             wd = threading.Thread(target=watchdog)
             wd.start()
             print "Launch QEMU..."
-            qemu = threading.Thread(target=launchQEMU)
+            qemu = threading.Thread(target=launchQEMU, args=(policies,))
             qemu.start()
             wd.join()
             qemu.join()
