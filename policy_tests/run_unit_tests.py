@@ -461,7 +461,7 @@ fs:
 def rescScript(dir, policy):
     return """
 mach create
-machine LoadPlatformDescription @platforms/boards/miv-board.repl
+machine LoadPlatformDescription @platforms/boards/dover-riscv-board.repl
 sysbus.cpu MaximumBlockSize 1
 emulation CreateServerSocketTerminal 4444 "uart-socket"
 connector Connect sysbus.uart uart-socket
