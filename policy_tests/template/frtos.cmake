@@ -40,7 +40,6 @@ add_library(free-rtos ${FREE_RTOS_DIR}/Source/tasks.c
 		      ${FREE_RTOS_DIR}/Source/event_groups.c
 		      ${FREE_RTOS_DIR}/Source/list.c
 		      ${FREE_RTOS_DIR}/Source/portable/MemMang/heap_2.c
-		      ${FREE_RTOS_DIR}/Source/portable/Common/mpu_wrappers.c
 		      ${FREE_RTOS_DIR}/Source/portable/GCC/RISCV/port.c
 		      ${FREE_RTOS_DIR}/Source/portable/GCC/RISCV/portasm.S
 		      ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/arch/syscall.c
