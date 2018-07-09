@@ -272,7 +272,7 @@ def doReSc(policy, dp, simulator):
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
 
-    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript
+    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
 
     print("Renode Script: {}".format(dp))
     with open(os.path.join(dp,'main.resc'), 'w') as f:
