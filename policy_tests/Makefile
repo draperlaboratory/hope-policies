@@ -1,24 +1,25 @@
-# This silences python error trace backs, better for running tests
-ERROR_MSGS = --tb=no
-# This allows python error trace backs, better for debugging scripts
-#ERROR_MSGS =
+# This silences python error trace backs, better for running tests set
+# ERROR_MSGS to an empty string to print error trace backs
+ERROR_MSGS ?= --tb=no
 
 KERNEL_DIR = kernel_dir
+TEST_FORMAT ?= junitxml
+TEST_OUTPUT_FILE ?= report.xml
 
 simple:
-	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS)  -v -k test_simple run_unit_tests.py
+	python -m pytest --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) --timeout=180 $(ERROR_MSGS)  -v -k test_simple run_unit_tests.py
 
 full:
-	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS) -v -k test_full run_unit_tests.py
+	python -m pytest --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) --timeout=180 $(ERROR_MSGS) -v -k test_full run_unit_tests.py
 
 allOs:
-	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS) -v -k test_all run_unit_tests.py
+	python -m pytest --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) --timeout=180 $(ERROR_MSGS) -v -k test_all run_unit_tests.py
 
 broken:
 	python -m pytest $(ERROR_MSGS) -v -k test_broken run_unit_tests.py
 
 debug-%:
-	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS) -v -k test_debug[$*] run_unit_tests.py
+	python -m pytest --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) --timeout=180 $(ERROR_MSGS) -v -k test_debug[$*] run_unit_tests.py
 
 profile:
 	python -m pytest $(ERROR_MSGS) -v -k test_profile run_unit_tests.py
@@ -34,7 +35,7 @@ install-kernels-full:
 
 install-kernel-%:
 	rm -rf $(KERNEL_DIR)/kernels/$*
-	python -m pytest --html=report.html --timeout=180 $(ERROR_MSGS) -v -k test_kernel[$*] install_kernels.py
+	python -m pytest --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) --timeout=180 $(ERROR_MSGS) -v -k test_kernel[$*] install_kernels.py
 
 list-kernels:
 	python -m pytest --collect-only install_kernels.py

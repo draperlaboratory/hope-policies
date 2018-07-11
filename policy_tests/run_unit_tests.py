@@ -252,8 +252,7 @@ def doMakefile(policy, dp, main, opt, debug):
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
-    # generate empty file system
-#    runit(dp, "", "make", ["-C", dp, "fs"])
+
     # compile the test
     runit(dp, "", "make", ["-C", dp])
     # copy over support files

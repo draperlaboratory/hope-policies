@@ -119,9 +119,13 @@ def runOnRenode():
                 if ready_r:
                     print s.recv(1024).replace('\r', '')
         if s:
-            s.send('quit\r\n')
-            time.sleep(1)
-            s.close()
+            try:
+                s.send('quit\r\n')
+                time.sleep(1)
+                s.close()
+            except:
+                pass
+
         wd.join()
         uartLogger.join()
         statusLogger.join()
@@ -131,10 +135,13 @@ def runOnRenode():
 #                rc.kill()
         print "Test Completed"
     finally:
-        if s:
-            s.send('quit\r\n')
-            time.sleep(1)
-            s.close()
+        try:
+            if s:
+                s.send('quit\r\n')
+                time.sleep(1)
+                s.close()
+        except:
+            pass
            
 if __name__ == "__main__":
     runOnRenode()

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5) # or other version
 
 if (DEFINED ENV{ISP_PREFIX})
   set(ISP_PREFIX $ENV{ISP_PREFIX})
- else()
+else()
   set(ISP_PREFIX "/opt/isp/")
 endif()
 

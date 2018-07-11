@@ -1,0 +1,18 @@
+#!/bin/bash
+
+apt-get update
+
+apt-get install -y \
+        cmake \
+        locales \
+        locales-all \
+        make \
+        python \
+        python2.7 \
+        python3 \
+        python3-pip \
+        python-pip \
+        python-pytest
+
+pip2 install pytest-timeout
+pip3 install pyelftools
