@@ -77,11 +77,14 @@ def doInstallPolicy(osPol, installPath):
     if "hifive" in polNm:
         soc_src = soc_src.replace("soc_cfg", "soc_cfg_hifive")
     soc_dst = os.path.join(installPath, "soc_cfg")
+    platform_src = os.path.join(os.environ['DOVER_SOURCES'], "renode-plugins", "platforms")
+    platform_dst = os.path.join(installPath, "platforms")
 
     shutil.rmtree(installPath, ignore_errors=True)
     os.makedirs(installPath)
     shutil.copyfile(src, dst)
     shutil.copytree(soc_src, soc_dst)
+    shutil.copytree(platform_src, platform_dst)
     f_names = os.listdir(pol_dir)
     for fn in f_names:
         if "yml" in fn:

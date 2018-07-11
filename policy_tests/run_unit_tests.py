@@ -416,8 +416,8 @@ rtos: frtos.c
 
 inits:
 	cp -r {kernel_dir}/kernels/{policies} .
+	cp -r {policies}/platforms .
 	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
-
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -450,18 +450,18 @@ clean:
 def rescScript(dir, policy):
     return """
 mach create
-machine LoadPlatformDescription @platforms/boards/miv-board.repl
-sysbus.cpu MaximumBlockSize 1
+machine LoadPlatformDescription @platforms/boards/dover-riscv-board.repl
+sysbus.ap_core MaximumBlockSize 1
 emulation CreateServerSocketTerminal 4444 "uart-socket"
-connector Connect sysbus.uart uart-socket
+connector Connect sysbus.uart1 uart-socket
 #showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
-sysbus.cpu SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo
-sysbus.cpu StartGdbServer 3333
-logLevel 1 sysbus.cpu
-sysbus.cpu StartStatusServer 3344
+sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo
+sysbus.ap_core StartGdbServer 3333
+logLevel 1 sysbus.ap_core
+sysbus.ap_core StartStatusServer 3344
 """.format(path = os.path.join(os.getcwd(), dir), policies=policy.lower())
 
 
@@ -514,7 +514,7 @@ Watchpoints halt simulation when metadata changes
 end
 
 define pvm
-   monitor sysbus.cpu PolicyViolationMsg
+   monitor sysbus.ap_core PolicyViolationMsg
 end
 
 document pvm
@@ -523,7 +523,7 @@ document pvm
 end
 
 define lre
-   monitor sysbus.cpu RuleEvalLog
+   monitor sysbus.ap_core RuleEvalLog
 end
 
 document lre
@@ -539,7 +539,7 @@ define rquit
 end
 
 define env-m
-   monitor sysbus.cpu EnvMetadata
+   monitor sysbus.ap_core EnvMetadata
 end
 
 document env-m
@@ -547,7 +547,7 @@ document env-m
 end
 
 define reg-m
-   monitor sysbus.cpu RegMetadata $arg0
+   monitor sysbus.ap_core RegMetadata $arg0
 end
 
 document reg-m
@@ -555,7 +555,7 @@ document reg-m
 end
 
 define areg-m
-   monitor sysbus.cpu AllRegMetadata
+   monitor sysbus.ap_core AllRegMetadata
 end
 
 document areg-m
@@ -563,42 +563,42 @@ document areg-m
 end
 
 define csr-m
-   monitor sysbus.cpu CsrMetadata $arg0
+   monitor sysbus.ap_core CsrMetadata $arg0
 end
 document csr-m
    get csr metadata at addr
 end
 
 define mem-m
-   monitor sysbus.cpu MemMetadata $arg0
+   monitor sysbus.ap_core MemMetadata $arg0
 end
 document mem-m
    get mem metadata at addr
 end
 
 define env-mw
-   monitor sysbus.cpu EnvMetadataWatch true
+   monitor sysbus.ap_core EnvMetadataWatch true
 end
 document env-mw
    set watch on the env metadata
 end
 
 define reg-mw
-   monitor sysbus.cpu RegMetadataWatch $arg0
+   monitor sysbus.ap_core RegMetadataWatch $arg0
 end
 document reg-mw
    set watch on register metadata
 end
 
 define csr-mw
-   monitor sysbus.cpu CsrMetadataWatch $arg0
+   monitor sysbus.ap_core CsrMetadataWatch $arg0
 end
 document csr-mw
    set watch on csr metadata at addr
 end
 
 define mem-mw
-   monitor sysbus.cpu MemMetadataWatch $arg0
+   monitor sysbus.ap_core MemMetadataWatch $arg0
 end
 document mem-mw
    set watch on mem metadata at addr
