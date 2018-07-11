@@ -14,5 +14,5 @@ apt-get install -y \
         python-pip \
         python-pytest
 
-pip2 install pytest-html pytest-timeout
+pip2 install pytest-timeout
 pip3 install pyelftools
