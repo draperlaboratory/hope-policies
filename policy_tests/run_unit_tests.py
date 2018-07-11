@@ -252,8 +252,7 @@ def doMakefile(policy, dp, main, opt, debug):
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
-    # generate empty file system
-#    runit(dp, "", "make", ["-C", dp, "fs"])
+
     # compile the test
     runit(dp, "", "make", ["-C", dp])
     # copy over support files
@@ -272,7 +271,7 @@ def doReSc(policy, dp, simulator):
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
 
-    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript
+    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
 
     print("Renode Script: {}".format(dp))
     with open(os.path.join(dp,'main.resc'), 'w') as f:

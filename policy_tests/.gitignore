@@ -4,6 +4,8 @@ debug/
 __pycache__/
 assets/
 report.html
+report.xml
 prof_results.log
 *.pyc
 /kernel_dir
+.pytest_cache
