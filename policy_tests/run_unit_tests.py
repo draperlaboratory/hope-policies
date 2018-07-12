@@ -255,10 +255,14 @@ def doMakefile(policy, dp, main, opt, debug):
 
     # compile the test
     runit(dp, "", "make", ["-C", dp])
-    # copy over support files
-    runit(dp, "", "make", ["-C", dp, "inits"])
     # check that build succeeded
     assert os.path.isfile(os.path.join(dp, "build", "main"))
+    # copy over support files
+    runit(dp, "", "make", ["-C", dp, "inits"])
+    # Check for tag information
+    assert os.path.isfile(os.path.join(dp, "build", "main.taginfo"))
+    assert os.path.isfile(os.path.join(dp, "build", "main.text"))
+    assert os.path.isfile(os.path.join(dp, "build", "main.text.tagged"))
 
 # Generate the makefile
 def doReSc(policy, dp, simulator):
