@@ -255,17 +255,21 @@ def doMakefile(policy, dp, main, opt, debug):
 
     # compile the test
     runit(dp, "", "make", ["-C", dp])
-    # copy over support files
-    runit(dp, "", "make", ["-C", dp, "inits"])
     # check that build succeeded
     assert os.path.isfile(os.path.join(dp, "build", "main"))
+    # copy over support files
+    runit(dp, "", "make", ["-C", dp, "inits"])
+    # Check for tag information
+    assert os.path.isfile(os.path.join(dp, "build", "main.taginfo"))
+    assert os.path.isfile(os.path.join(dp, "build", "main.text"))
+    assert os.path.isfile(os.path.join(dp, "build", "main.text.tagged"))
 
 # Generate the makefile
 def doReSc(policy, dp, simulator):
     if "dos" in policy:
-        rs = rescScript(dp)
+        rs = rescScript(dp, policy)
     elif "frtos" in policy:
-        rs = rescScript(dp)
+        rs = rescScript(dp, policy)
     elif "hifive" in policy:
         rs = rescScriptHifive(dp)
     else:
@@ -370,17 +374,8 @@ build/main: hifive.c test.c
 	cd build && make
 
 inits:
-	cp {kernel_dir}/kernels/{policies}/librv32-renode-validator.so .
-	cp {kernel_dir}/kernels/{policies}/policy_group.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_init.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_meta.yml .
-	cp {kernel_dir}/kernels/{policies}/entities.yml .
-	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
-	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
-	md_entity {kernel_dir}/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	md_asm_ann {kernel_dir}/kernels/{policies} build/main.taginfo build/main.text
-
+	cp -r {kernel_dir}/kernels/{policies} .
+	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -400,10 +395,10 @@ renode-console:
 	renode main.resc
 
 qemu:
-	python runQEMU.py
+	python runQEMU.py {policies}
 
 qemu-console:
-	python runQEMU.py -d
+	python runQEMU.py {policies} -d
 
 gdb:
 	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
@@ -423,16 +418,8 @@ rtos: frtos.c
 	cd build && cmake .. && make
 
 inits:
-	cp {kernel_dir}/kernels/{policies}/librv32-renode-validator.so .
-	cp {kernel_dir}/kernels/{policies}/policy_group.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_init.yml .
-	cp {kernel_dir}/kernels/{policies}/policy_meta.yml .
-	cp {kernel_dir}/kernels/{policies}/entities.yml .
-	cp -r {kernel_dir}/kernels/{policies}/soc_cfg .
-	riscv32-unknown-elf-objdump --source build/main > build/main.text
-	gen_tag_info -d {kernel_dir}/kernels/{policies} -t build/main.taginfo -b build/main -p {policies}
-	md_entity {kernel_dir}/kernels/{policies} build/main build/main.taginfo {main}.entities.yml
-	md_asm_ann {kernel_dir}/kernels/{policies} build/main.taginfo build/main.text
+	cp -r {kernel_dir}/kernels/{policies} .
+	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -462,22 +449,22 @@ clean:
 """.format(opt=opt, debug=debug, main = main.replace('/', '-'),
            policies=policy.lower(), kernel_dir=kernel_dir)
 
-def rescScript(dir):
+def rescScript(dir, policy):
     return """
 mach create
-machine LoadPlatformDescription @platforms/boards/miv-board.repl
-sysbus.cpu MaximumBlockSize 1
+machine LoadPlatformDescription @platforms/boards/dover-riscv-board.repl
+sysbus.ap_core MaximumBlockSize 1
 emulation CreateServerSocketTerminal 4444 "uart-socket"
-connector Connect sysbus.uart uart-socket
+connector Connect sysbus.uart1 uart-socket
 #showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
-sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo
-sysbus.cpu StartGdbServer 3333
-logLevel 1 sysbus.cpu
-sysbus.cpu StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir))
+sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo
+sysbus.ap_core StartGdbServer 3333
+logLevel 1 sysbus.ap_core
+sysbus.ap_core StartStatusServer 3344
+""".format(path = os.path.join(os.getcwd(), dir), policies=policy.lower())
 
 
 def rescScriptHifive(dir):
@@ -515,8 +502,10 @@ Renode simulator commands:
    rquit    - renode quit
 Metadata related commnads:
    pvm      - print violation message
+   lre      - print last rule evaluation
    env-m    - get the env metadata
    reg-m n  - get register n metadata
+   areg-m   - get all register metadata
    csr-m a  - get csr metadata at addr a
    mem-m a  - get mem metadata at addr a
 Watchpoints halt simulation when metadata changes
@@ -527,12 +516,20 @@ Watchpoints halt simulation when metadata changes
 end
 
 define pvm
-   monitor sysbus.cpu PolicyViolationMsg
+   monitor sysbus.ap_core PolicyViolationMsg
 end
 
 document pvm
    Command to print last policy violation info
    Only captures the last violation info.
+end
+
+define lre
+   monitor sysbus.ap_core RuleEvalLog
+end
+
+document lre
+   Command to print last rule evaluation info
 end
 
 define rstart
@@ -544,7 +541,7 @@ define rquit
 end
 
 define env-m
-   monitor sysbus.cpu EnvMetadata
+   monitor sysbus.ap_core EnvMetadata
 end
 
 document env-m
@@ -552,50 +549,58 @@ document env-m
 end
 
 define reg-m
-   monitor sysbus.cpu RegMetadata $arg0
+   monitor sysbus.ap_core RegMetadata $arg0
 end
 
 document reg-m
    get register metadata
 end
 
+define areg-m
+   monitor sysbus.ap_core AllRegMetadata
+end
+
+document areg-m
+   get all register metadata
+end
+
 define csr-m
-   monitor sysbus.cpu CsrMetadata $arg0
+   monitor sysbus.ap_core CsrMetadata $arg0
 end
 document csr-m
    get csr metadata at addr
 end
 
 define mem-m
-   monitor sysbus.cpu MemMetadata $arg0
+   monitor sysbus.ap_core MemMetadata $arg0
 end
 document mem-m
    get mem metadata at addr
 end
 
 define env-mw
-   monitor sysbus.cpu EnvMetadataWatch true
+   monitor sysbus.ap_core EnvMetadataWatch true
 end
 document env-mw
    set watch on the env metadata
 end
 
 define reg-mw
-   monitor sysbus.cpu RegMetadataWatch $arg0
+   monitor sysbus.ap_core RegMetadataWatch $arg0
 end
 document reg-mw
    set watch on register metadata
 end
 
 define csr-mw
-   monitor sysbus.cpu CsrMetadataWatch $arg0
+   monitor sysbus.ap_core CsrMetadataWatch $arg0
 end
 document csr-mw
    set watch on csr metadata at addr
 end
 
 define mem-mw
-   monitor sysbus.cpu MemMetadataWatch $arg0
+   monitor sysbus.ap_core MemMetadataWatch $arg0
 end
 document mem-mw
    set watch on mem metadata at addr

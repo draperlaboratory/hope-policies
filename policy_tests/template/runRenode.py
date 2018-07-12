@@ -16,7 +16,7 @@ printIO = True
 
 # set timeout seconds
 
-timeoutSec = 30
+timeoutSec = 60
 
 # configure the test log files
 
