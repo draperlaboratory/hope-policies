@@ -1,0 +1,113 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved.
+ *
+ * Use and disclosure subject to the following license.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.threeClass:
+
+/* Calls can only target the beginning of functions, tagged "Call"
+ * Branches can only target insturctions tagged "Branch" -- note this overkill and adds
+ *    no security barring some novel attack.  But hey, its free.
+ * Returns can only target the instruction after a call, i.e., valid return targets
+ */
+
+import:
+    osv.riscv
+
+metadata:
+  //3 cfi classes
+  Call
+  Return
+  Branch
+
+	//State for the 3 cfi classes
+  Jumping-Call
+  Jumping-Return
+  Jumping-Branch
+
+  //get out of jail free
+  NoCFI
+  None
+
+policy:
+    threeClassPol =
+         // Case for not checking cfi (asm code)
+    allGrp    (code == [+NoCFI], env == _ -> env = env)
+
+         // cases for landing on a jump (bounce)
+         // * this seems odd but sure, why not.  Though, this provides some
+         //   attack surface w/ how I handle env here, we can only "remember"
+         //   the prior instruction.
+    ^ branchGrp  (code == [Branch], env == [Jumping-Branch] -> env = {Jumping-Branch})
+    ^ branchGrp  (code == [Branch], env == [Jumping-Return] -> env = {Jumping-Branch})
+    //^ branchGrp  (code == [Branch], env == [Jumping-Call] -> env = [Jumping-Branch]) call can't target a branch b/c prolog
+
+    ^ retGrp     (code == [Return], env == [Jumping-Branch] -> env = {Jumping-Return})
+    ^ retGrp     (code == [Return], env == [Jumping-Return] -> env = {Jumping-Return})
+
+         // cases for a jump to target
+    ^ branchGrp  (code == [-Branch, -Call, -Return], env == [-Jumping-Branch] -> env = env[Jumping-Branch])
+    ^ retGrp     (code == [-Branch, -Call, -Return], env == [-Jumping-Return] -> env = env[Jumping-Return])
+    ^ callGrp    (code == [-Branch, -Call, -Return], env == [-Jumping-Call] -> return = {}, env = env[Jumping-Call])
+
+         // Case for landing on a target
+    ^ allGrp    (code == [+Call], env == [+Jumping-Call] -> env = env[-Jumping-Call])
+    ^ allGrp    (code == [+Return], env == [+Jumping-Return] -> env = env[-Jumping-Return])
+    ^ allGrp    (code == [+Branch], env == [+Jumping-Branch] -> env = env[-Jumping-Branch])
+
+         // Case for normal execution
+    ^ allGrp    (env == [-Jumping-Branch, -Jumping-Return, -Jumping-Call] -> env = env)
+    ^ allGrp (-> fail "Illegal control flow detected")
+
+    //main = threeClassPol
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    /* TODO - this needs to be adjusted for my new tags somehow */
+    init llvm.CFI_Call                                 {Call}
+    init llvm.CFI_Branch                               {Branch}
+    init llvm.CFI_Return                               {Return}
+    init dover.Tools.GCC.NoCFI                         {NoCFI}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
+
+    init Tools.Elf.Section.SHF_ALLOC         {}
+    init Tools.Elf.Section.SHF_EXECINSTR     {}
+    init Tools.Elf.Section.SHF_WRITE         {}

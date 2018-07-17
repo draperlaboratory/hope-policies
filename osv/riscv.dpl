@@ -68,6 +68,13 @@ group:
         jalr
     jumpGrp( -> RD:return)
         jal
+    callGrp( -> RD:return)
+        jal
+        jalr
+
+    pcGrp(-> RD:dest)
+        auipc
+
     loadUpperGrp(-> RD:dest)
         lui
         auipc
