@@ -214,7 +214,8 @@ def doMkApp(policy, dp, main, opt):
         runit(dp, "", "cp", [os.path.join("template", "hifive-mem.h"), os.path.join(dp, "mem.h")])
         shutil.copytree(os.getenv("ISP_PREFIX")+"hifive_bsp", os.path.join(dp, "build/bsp"))
         makefile = os.path.join(dp, "build/Makefile")
-        shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
+        #shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
+        shutil.copy(os.path.join("template", "hifive_clang_musl.makefile"), makefile)
     else:
         pytest.fail("Unknown OS, can't copy app files")
     runit(dp, "", "cp", [os.path.join("template", "doverlib.h"), dp])
@@ -408,7 +409,7 @@ clean:
 """.format(opt=opt, debug=debug,
            main_src=main, main_bin=main.replace(".c", ""),
            main=main.replace('/', '-'),
-           policies=policy.lower(), kernel_dir=kernel_dir)
+           policies=policy, kernel_dir=kernel_dir)
 
 # The makefile that is generated in the test dir for frtos tests
 def frtosMakefile(policy, main, opt, debug):
