@@ -111,7 +111,7 @@ class FRTOSTests(AllTests):
 
 class LLVMTests:
     os_modules = ["osv.hifive.main.{pol}"]
-    policies = ["rwx", "stack"]
+    policies = ["rwx", "stack", "threeClass"]
     positive_tests = [
         "printf_works_1.c",
         "hello_works_1.c",
