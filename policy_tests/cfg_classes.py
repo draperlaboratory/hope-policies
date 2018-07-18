@@ -111,7 +111,7 @@ class FRTOSTests(AllTests):
 
 class LLVMTests:
     os_modules = ["osv.hifive.main.{pol}"]
-    policies = ["rwx", "stack"]
+    policies = ["rwx", "stack", "threeClass"]
     positive_tests = [
         "printf_works_1.c",
         "hello_works_1.c",
@@ -123,13 +123,15 @@ class LLVMTests:
         "malloc_works_2.c",
         "string_works_1.c",
         "longjump_works_1.c",
-        "code_read_works_1.c"
+        "code_read_works_1.c",
+        "function_pointer_works_1.c"
     ]
     negative_tests = [
         "rwx/code_write_fails_1.c",
         "rwx/data_exe_fails_1.c",
         "cfi/jump_data_fails_1.c",
-        "stack/stack_fails_1.c"
+        "stack/stack_fails_1.c",
+        "cpi/cpi_fails_1.c"
     ]
 
 configs = {'all' : AllTests,
