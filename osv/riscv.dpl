@@ -72,6 +72,16 @@ group:
         jal
         jalr
 
+    controlFlowGrp( -> )
+        beq
+        bne
+        blt
+        bge
+        bltu
+        bgeu
+        jal
+        jalr
+
     pcGrp(-> RD:dest)
         auipc
 

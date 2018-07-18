@@ -36,10 +36,15 @@ import:
     osv.riscv
 
 metadata:
-  //3 cfi classes
-  Call
-  Return
-  Branch
+  //3 cfi classes: targets
+  Call-Tgt
+  Return-Tgt
+  Branch-Tgt
+
+  //3 cfi classes: instr that sets state, state checked at target
+  Call-Instr
+  Return-Instr
+  Branch-Instr
 
 	//State for the 3 cfi classes
   Jumping-Call
@@ -56,25 +61,21 @@ policy:
     allGrp    (code == [+NoCFI], env == _ -> env = env)
 
          // cases for landing on a jump (bounce)
-         // * this seems odd but sure, why not.  Though, this provides some
-         //   attack surface w/ how I handle env here, we can only "remember"
-         //   the prior instruction.
-    ^ branchGrp  (code == [Branch], env == [Jumping-Branch] -> env = {Jumping-Branch})
-    ^ branchGrp  (code == [Branch], env == [Jumping-Return] -> env = {Jumping-Branch})
-    //^ branchGrp  (code == [Branch], env == [Jumping-Call] -> env = [Jumping-Branch]) call can't target a branch b/c prolog
+    ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr], env == [Jumping-Branch] -> env = {Jumping-Branch})
+    ^ controlFlowGrp  (code == [Return-Tgt, Branch-Instr], env == [Jumping-Return] -> env = {Jumping-Branch})
 
-    ^ retGrp     (code == [Return], env == [Jumping-Branch] -> env = {Jumping-Return})
-    ^ retGrp     (code == [Return], env == [Jumping-Return] -> env = {Jumping-Return})
+    ^ controlFlowGrp     (code == [Branch-Tgt, Return-Instr], env == [Jumping-Branch] -> env = {Jumping-Return})
+    ^ controlFlowGrp     (code == [Branch-Tgt, Return-Instr], env == [Jumping-Return] -> env = {Jumping-Return})
 
          // cases for a jump to target
-    ^ branchGrp  (code == [-Branch, -Call, -Return], env == [-Jumping-Branch] -> env = env[Jumping-Branch])
-    ^ retGrp     (code == [-Branch, -Call, -Return], env == [-Jumping-Return] -> env = env[Jumping-Return])
-    ^ callGrp    (code == [-Branch, -Call, -Return], env == [-Jumping-Call] -> return = {}, env = env[Jumping-Call])
+    ^ controlFlowGrp  (code == [Branch-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Branch] -> env = {Jumping-Branch})
+    ^ controlFlowGrp  (code == [Return-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Return] -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Call-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Call] -> env = {Jumping-Call})
 
-         // Case for landing on a target
-    ^ allGrp    (code == [+Call], env == [+Jumping-Call] -> env = env[-Jumping-Call])
-    ^ allGrp    (code == [+Return], env == [+Jumping-Return] -> env = env[-Jumping-Return])
-    ^ allGrp    (code == [+Branch], env == [+Jumping-Branch] -> env = env[-Jumping-Branch])
+         // Case for landing on a target -- has to be allGrp
+    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-Call] -> env = env[-Jumping-Call])
+    ^ allGrp    (code == [Return-Tgt], env == [+Jumping-Return] -> env = env[-Jumping-Return])
+    ^ allGrp    (code == [Branch-Tgt], env == [+Jumping-Branch] -> env = env[-Jumping-Branch])
 
          // Case for normal execution
     ^ allGrp    (env == [-Jumping-Branch, -Jumping-Return, -Jumping-Call] -> env = env)
@@ -90,10 +91,13 @@ require:
     init ISA.RISCV.CSR.MTVec                 {}
 
     /* TODO - this needs to be adjusted for my new tags somehow */
-    init llvm.CFI_Call                                 {Call}
-    init llvm.CFI_Branch                               {Branch}
-    init llvm.CFI_Return                               {Return}
-    init dover.Tools.GCC.NoCFI                         {NoCFI}
+    init llvm.CFI_Call-Tgt                   {Call-Tgt}
+    init llvm.CFI_Branch-Tgt                 {Branch-Tgt}
+    init llvm.CFI_Return-Tgt                 {Return-Tgt}
+    init llvm.CFI_Call-Instr                 {Call-Instr}
+    init llvm.CFI_Branch-Instr               {Branch-Instr}
+    init llvm.CFI_Return-Instr               {Return-Instr}
+    init dover.Tools.GCC.NoCFI               {NoCFI}
 
     init Tools.Link.MemoryMap.Default        {}
     init Tools.Link.MemoryMap.UserHeap       {}
