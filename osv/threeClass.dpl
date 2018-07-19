@@ -53,12 +53,13 @@ metadata:
 
   //get out of jail free
   NoCFI
+  Jumping-NoCFI
   None
 
 policy:
     threeClassPol =
          // Case for not checking cfi (asm code)
-    allGrp    (code == [+NoCFI], env == _ -> env = env)
+    allGrp    (code == [+NoCFI], env == _ -> env = {Jumping-NoCFI})
 
          // cases for landing on a jump (bounce)
     ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr], env == [Jumping-Branch] -> env = {Jumping-Branch})
@@ -74,6 +75,7 @@ policy:
 
          // Case for landing on a target -- has to be allGrp
     ^ allGrp    (code == [Call-Tgt], env == [+Jumping-Call] -> env = env[-Jumping-Call])
+    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-NoCFI] -> env = env[-Jumping-NoCFI])
     ^ allGrp    (code == [Return-Tgt], env == [+Jumping-Return] -> env = env[-Jumping-Return])
     ^ allGrp    (code == [Branch-Tgt], env == [+Jumping-Branch] -> env = env[-Jumping-Branch])
 
