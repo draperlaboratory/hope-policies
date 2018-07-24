@@ -30,7 +30,7 @@ def negative_tests():
     
 # Test that should work, but don't for a known reason
 broken_tests = [ 
-    "CFI/jump_data_fails_1.c"  # Awaiting a compiler fix for cfi metadata
+#"CFI/jump_data_fails_1.c"  # Awaiting a compiler fix for cfi metadata
 ]
 
 # tests to be used with performance profiling target
