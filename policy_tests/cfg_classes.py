@@ -130,6 +130,7 @@ class LLVMTests:
         "rwx/code_write_fails_1.c",
         "rwx/data_exe_fails_1.c",
         "threeClass/jump_data_fails_1.c",
+        "threeClass/call_fails_1.c",
         "stack/stack_fails_1.c",
         "cpi/cpi_fails_1.c"
     ]
