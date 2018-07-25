@@ -37,6 +37,7 @@ import:
     osv.nop
     osv.none
     osv.threeClass
+    osv.cpi
 
 policy:
     none = nonePol
@@ -45,16 +46,20 @@ policy:
     nop =  nopPol
     stack = stackPol
     threeClass = threeClassPol
+    cpi = cpiPol
 
     nop-threeClass =  threeClassPol & nopPol
     rwx-threeClass =  (threeClassPol & rwxPol)
     stack-threeClass =  threeClassPol & stackPol
 
-
     cfi-nop =  cfiPol & nopPol
     cfi-rwx =  (cfiPol & rwxPol)
     cfi-stack =  cfiPol & stackPol
 
+    cpi-nop =  cpiPol & nopPol
+    cpi-rwx =  (cpiPol & rwxPol)
+    cpi-stack =  cpiPol & stackPol
+    
     nop-rwx =  nopPol & rwxPol  
     nop-stack =  nopPol & stackPol
 
@@ -64,12 +69,18 @@ policy:
     nop-stack-threeClass =  threeClassPol & nopPol & stackPol
     rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
 
-
     cfi-nop-rwx =  cfiPol & nopPol & rwxPol
     cfi-nop-stack =  cfiPol & nopPol & stackPol
     cfi-rwx-stack =  cfiPol & rwxPol & stackPol
 
+    cpi-nop-rwx =  cpiPol & nopPol & rwxPol
+    cpi-nop-stack =  cpiPol & nopPol & stackPol
+    cpi-rwx-stack =  cpiPol & rwxPol & stackPol
+    
     nop-rwx-stack =  nopPol & rwxPol & stackPol
 
     nop-rwx-stack-threeClass =  threeClassPol & nopPol & rwxPol & stackPol
     cfi-nop-rwx-stack =  cfiPol & nopPol & rwxPol & stackPol
+    cpi-nop-rwx-stack =  cfiPol & nopPol & rwxPol & stackPol
+
+    cpi-rwx-stack-threeClass = cpiPol & rwxPol & stackPol & threeClassPol

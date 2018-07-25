@@ -38,25 +38,27 @@ import:
     osv.riscv
 
 metadata:
-  FPtr
+  FPtrStore
+  FPtrCreate
+  FPtrMem
+  Return-Instr
 
 policy:
     cpiPol =
        //When to set FPtr
-       storeGrp (code == [+FPtr], mem == _ -> mem = mem[+FPtr])
-     ^ loadGrp (mem == [+FPtr]  -> res = {FPtr})
+       pcGrp (code == [+FPtrCreate] -> dest = {FPtrMem}) 
+     ^ storeGrp (code == [+FPtrStore], val == [+FPtrMem], mem == _ -> mem = mem[+FPtrMem])
+     ^ loadGrp (mem == [+FPtrMem]  -> res = {FPtrMem})
      
-       //auipc w/ jalr is always safe - can only add an immediate to the pc
-     ^ pcGrp ( -> dest = {FPtr}) 
-
        //When to clear FPtr
-     ^ storeGrp (code == [-FPtr], mem == _ -> mem = mem[-FPtr])
-     ^ loadGrp (mem == [-FPtr] -> res = {})
+     ^ storeGrp (code == [-FPtrCreate], mem == _ -> mem = mem[-FPtrMem])
+     ^ loadGrp (mem == [-FPtrMem] -> res = {})
 
        //Enforcement -- get out of jail free for returns
-     ^ retGrp (env == _ -> env = env)
-     ^ jumpRegGrp (target == [-FPtr] -> fail "unauthorized fptr being used for indirect jump")
-     
+     ^ retGrp (code == [+Return-Instr], env == _ -> env = env)
+     ^ jumpRegGrp (target == [-FPtrMem] -> fail "unauthorized fptr being used for indirect jump")
+     ^ storeGrp (code == [FPtrStore], val == [-FPtrMem] -> fail "fptr store inst not storing a fptr value")
+
        //Case for all other instructions
        //TODO - Chris, wasn't sure how to write a "else allow exectuion" rule, does this work?
      ^ allGrp( env == _ -> env = env)
@@ -70,8 +72,13 @@ require:
     init ISA.RISCV.CSR.Default               {}
     init ISA.RISCV.CSR.MTVec                 {}
 
-    init llvm.CPI                                      {FPtr}
+    init llvm.CPI.FPtrCreate                 {FPtrCreate}
+    init llvm.CPI.FPtrStore                  {FPtrStore}
+    init llvm.CFI_Return-Instr               {Return-Instr}
     
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
 
     init SOC.IO.UART_0                       {}
     init SOC.Memory.Flash_0                  {}
@@ -81,3 +88,7 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
+   
+    init Tools.Elf.Section.SHF_ALLOC         {}
+    init Tools.Elf.Section.SHF_EXECINSTR     {}
+    init Tools.Elf.Section.SHF_WRITE         {}

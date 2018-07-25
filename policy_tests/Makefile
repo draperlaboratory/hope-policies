@@ -1,6 +1,6 @@
 # This silences python error trace backs, better for running tests set
 # ERROR_MSGS to an empty string to print error trace backs
-ERROR_MSGS ?= --tb=no
+ERROR_MSGS ?= --tb=long
 
 KERNEL_DIR = kernel_dir
 TEST_FORMAT ?= junitxml
