@@ -64,9 +64,15 @@ policy:
          // cases for landing on a jump (bounce)
     ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr], env == [Jumping-Branch] -> env = {Jumping-Branch})
     ^ controlFlowGrp  (code == [Return-Tgt, Branch-Instr], env == [Jumping-Return] -> env = {Jumping-Branch})
+    ^ controlFlowGrp  (code == [Call-Tgt, Branch-Instr], env == [Jumping-Call] -> env = {Jumping-Branch})
 
-    ^ controlFlowGrp     (code == [Branch-Tgt, Return-Instr], env == [Jumping-Branch] -> env = {Jumping-Return})
-    ^ controlFlowGrp     (code == [Branch-Tgt, Return-Instr], env == [Jumping-Return] -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Branch-Tgt, Return-Instr], env == [Jumping-Branch] -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Return-Tgt, Return-Instr], env == [Jumping-Return] -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Call-Tgt, Return-Instr], env == [Jumping-Call] -> env = {Jumping-Return})
+
+    ^ controlFlowGrp  (code == [Branch-Tgt, Call-Instr], env == [Jumping-Branch] -> env = {Jumping-Call})
+    ^ controlFlowGrp  (code == [Return-Tgt, Call-Instr], env == [Jumping-Return] -> env = {Jumping-Call})
+    ^ controlFlowGrp  (code == [Call-Tgt, Call-Instr], env == [Jumping-Call] -> env = {Jumping-Call})
 
          // cases for a jump to target
     ^ controlFlowGrp  (code == [Branch-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Branch] -> env = {Jumping-Branch})
