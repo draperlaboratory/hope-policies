@@ -85,6 +85,9 @@ group:
     pcGrp(-> RD:dest)
         auipc
 
+    addiGrp( -> RD:dest)
+        addi
+
     loadUpperGrp(-> RD:dest)
         lui
         auipc

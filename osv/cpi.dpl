@@ -45,8 +45,10 @@ metadata:
 
 policy:
     cpiPol =
-       //When to set FPtr
-       pcGrp (code == [+FPtrCreate] -> dest = {FPtrMem}) 
+       //When to set FPtr -- always allow jumps through registers set by auipc. this is a must for compatability with
+       //handwrite asm.  
+       pcGrp ( -> dest = {FPtrMem})
+     ^ addiGrp (code == [+FPtrCreate] -> dest = {FPtrMem}) 
      ^ storeGrp (code == [+FPtrStore], val == [+FPtrMem], mem == _ -> mem = mem[+FPtrMem])
      ^ loadGrp (mem == [+FPtrMem]  -> res = {FPtrMem})
      
