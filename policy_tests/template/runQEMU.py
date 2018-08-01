@@ -31,6 +31,7 @@ opts = [ "-nographic",
          "-serial", "file:{}".format(uartLogFile),
          "-D", statusLogFile,
          "-singlestep", #need to instrument every target instruction
+         "-d", "nochain",
          "--policy-validator-cfg",
          "policy-path={policyDir},tag-info-file={tagFile}"]
 
@@ -85,6 +86,7 @@ def runOnQEMU():
         print "Begin QEMU test... (timeout: ", timeoutSec, ")"
         if len(sys.argv) == 3 and sys.argv[2] == "-d":
             policies = sys.argv[1]
+            opts[-1] = opts[-1].format(policyDir=cwd + '/' + policies, tagFile=cwd+"/build/main.taginfo")
             launchQEMUDebug(policies)
         else:
             if len(sys.argv) != 2:
