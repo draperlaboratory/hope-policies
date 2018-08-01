@@ -31,6 +31,7 @@ opts = [ "-nographic",
          "-serial", "file:{}".format(uartLogFile),
          "-D", statusLogFile,
          "-singlestep", #need to instrument every target instruction
+         "-d", "nochain",
          "--policy-validator-cfg",
          "policy-path={policyDir},tag-info-file={tagFile}"]
 
