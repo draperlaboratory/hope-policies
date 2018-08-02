@@ -92,6 +92,8 @@ class WorkingTests(AllTests):
         "code_read_works_1.c",
 # timer test does not work with renode+FreeRTOS
 #        "timer_works_1.c"
+        "function_pointer_works_1.c",
+        "function_pointer_works_2.c"
    ]
     negative_tests = [
         "rwx/code_write_fails_1.c",
@@ -112,38 +114,10 @@ class FRTOSTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
 
 
-class LLVMTests:
-    os_modules = ["osv.hifive.main.{pol}"]
-    policies = ["rwx", "stack", "threeClass"]
-    positive_tests = [
-        "printf_works_1.c",
-        "hello_works_1.c",
-       # "stanford_int_treesort_fixed.c", runs out of memory on hifive
-       # "ping_pong_works_1.c", requires freertos
-        "link_list_works_1.c",
-        "ptr_arith_works_1.c",
-        "malloc_works_1.c",
-        "malloc_works_2.c",
-        "string_works_1.c",
-        "longjump_works_1.c",
-        "code_read_works_1.c",
-        "function_pointer_works_1.c",
-        "function_pointer_works_2.c"
-    ]
-    negative_tests = [
-        "rwx/code_write_fails_1.c",
-        "rwx/data_exe_fails_1.c",
-        "threeClass/jump_data_fails_1.c",
-        "threeClass/call_fails_1.c",
-        "stack/stack_fails_1.c",
-        "cpi/cpi_fails_1.c"
-    ]
-
 configs = {'all' : AllTests,
            'working' : WorkingTests,
            'debug' : DebugTests,
            'frtos' : FRTOSTests,
-           'cfirwx' : CFIRWXTests,
-           'llvm' : LLVMTests
+           'cfirwx' : CFIRWXTests
 }
 
