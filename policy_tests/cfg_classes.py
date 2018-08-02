@@ -113,7 +113,6 @@ class DebugTests(AllTests):
 class FRTOSTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
 
-
 configs = {'all' : AllTests,
            'working' : WorkingTests,
            'debug' : DebugTests,
