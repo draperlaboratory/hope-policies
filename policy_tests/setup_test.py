@@ -8,6 +8,7 @@ import os
 import shutil
 import time
 import glob
+import multiprocessing
 
 # Modify the test_cfg module to add policies and test cases:
 from cfg_test import *
@@ -57,14 +58,15 @@ def doMkPolicy(osPol, params):
     gen_dir = os.path.join(repo_root, "policy-engine", "policy")
     ptcmd = "policy-tool"
 
-    ptarg = params + ["-d", "-t", ent_dir, "-m", mod_dir, "-o", gen_dir] + polParam 
+    ptarg = params + ["-t", ent_dir, "-m", mod_dir, "-o", gen_dir] + polParam 
 
     shutil.rmtree(gen_dir, ignore_errors=True)
     os.makedirs(gen_dir)
 # faster if we trust cmake & don't clean, but that can leave you with stale .so file
     runit(None, "", "make", ["-C", os.path.join(repo_root, "policy-engine/build"), "clean"])
     runit(None, "", ptcmd, ptarg)
-    runit(None, "", "make", ["-C", os.path.join(repo_root, "policy-engine/build")])
+    num_cores = str(multiprocessing.cpu_count())
+    runit(None, "", "make", ["-C", os.path.join(repo_root, "policy-engine/build"), "-j"+num_cores])
 
 def doInstallPolicy(osPol, installPath):
     repo_root = os.path.join('..', '..')
