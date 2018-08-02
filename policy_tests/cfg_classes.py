@@ -77,7 +77,7 @@ class CFIRWXTests:
 
 class WorkingTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
-    policies = ["rwx"]
+    policies = ["rwx", "stack", "threeClass"]
     positive_tests = [
         "printf_works_1.c",
         "hello_works_1.c", 
@@ -87,7 +87,8 @@ class WorkingTests(AllTests):
         "malloc_works_1.c",
         "malloc_works_2.c",
         "string_works_1.c",
-        "longjump_works_1.c",
+# Broken with clang
+#        "longjump_works_1.c",
         "code_read_works_1.c",
 # timer test does not work with renode+FreeRTOS
 #        "timer_works_1.c"
@@ -95,7 +96,9 @@ class WorkingTests(AllTests):
     negative_tests = [
         "rwx/code_write_fails_1.c",
         "rwx/data_exe_fails_1.c",
-        "cfi/jump_data_fails_1.c",
+        "threeClass/jump_data_fails_1.c",
+        "threeClass/call_fails_1.c",
+        "stack/stack_fails_1.c",
     ]
     
 class DebugTests(AllTests):

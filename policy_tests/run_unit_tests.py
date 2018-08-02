@@ -447,7 +447,7 @@ socat:
 clean:
 	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
 """.format(opt=opt, debug=debug, main = main.replace('/', '-'),
-           policies=policy.lower(), kernel_dir=kernel_dir)
+           policies=policy, kernel_dir=kernel_dir)
 
 def rescScript(dir, policy):
     return """
@@ -464,7 +464,7 @@ sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
 sysbus.ap_core StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir), policies=policy.lower())
+""".format(path = os.path.join(os.getcwd(), dir), policies=policy)
 
 
 def rescScriptHifive(dir):
