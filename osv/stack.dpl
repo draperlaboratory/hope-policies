@@ -63,23 +63,21 @@ policy:
     
 require:
 
-    init dover.Tools.RTL.longjmp                       {ClearAuthority}
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
 
-    init dover.Kernel.MemoryMap.Default       {}
-    init dover.riscv.Mach.PC                           {}
-    init dover.riscv.User.PC                           {}
-    init dover.riscv.Mach.Reg                          {}
-    init dover.riscv.User.Reg                          {}
-    init dover.riscv.Mach.RegZero                      {}
-    init dover.riscv.User.RegZero                      {}
-    init dover.Kernel.MemoryMap.UserStack     {}
-    init dover.Kernel.MemoryMap.UserHeap      {}
-    init dover.SOC.IO.UART                             {}
-    init dover.SOC.IO.Flash                            {}
-    init dover.SOC.CSR.Default                         {}
-    init dover.SOC.CSR.MTVec                           {}
-    init dover.Kernel.Code.ElfSection.SHF_WRITE     {}
-    init dover.Kernel.Code.ElfSection.SHF_ALLOC     {}
-    init dover.Kernel.Code.ElfSection.SHF_EXECINSTR {}
+    init dover.Tools.RTL.longjmp             {ClearAuthority}
+    init dover.Tools.GCC.Prologue            {Prologue}
+    init dover.Tools.GCC.Epilogue            {Epilogue}
 
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
 
+    init SOC.IO.Debug                        {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}

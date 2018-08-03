@@ -37,6 +37,7 @@ import:
     osv.frtos.heap
     osv.nop
     osv.none
+    osv.threeClass
     
 policy:
     none = nonePol
@@ -45,6 +46,11 @@ policy:
     nop =  nopPol
     heap = heapPol
     stack = stackPol
+    threeClass = threeClassPol
+
+    nop-threeClass =  threeClassPol & nopPol
+    rwx-threeClass =  (threeClassPol & rwxPol)
+    stack-threeClass =  threeClassPol & stackPol
     
     cfi-heap = cfiPol & heapPol
     cfi-nop =  cfiPol & nopPol
@@ -73,6 +79,11 @@ policy:
 
     nop-rwx-stack =  nopPol & rwxPol & stackPol
 
+    nop-rwx-threeClass =  threeClassPol & nopPol & rwxPol
+    nop-stack-threeClass =  threeClassPol & nopPol & stackPol
+    rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
+
+    nop-rwx-stack-threeClass =  threeClassPol & nopPol & rwxPol & stackPol
     cfi-heap-nop-rwx = cfiPol & heapPol & nopPol & rwxPol
     cfi-heap-nop-stack = cfiPol & heapPol & nopPol & stackPol
     cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.5) # or other version
 
+set(USE_CLANG 1)
+
 if (DEFINED ENV{ISP_PREFIX})
   set(ISP_PREFIX $ENV{ISP_PREFIX})
 else()

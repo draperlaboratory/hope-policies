@@ -68,6 +68,26 @@ group:
         jalr
     jumpGrp( -> RD:return)
         jal
+    callGrp( -> RD:return)
+        jal
+        jalr
+
+    controlFlowGrp( -> )
+        beq
+        bne
+        blt
+        bge
+        bltu
+        bgeu
+        jal
+        jalr
+
+    pcGrp(-> RD:dest)
+        auipc
+
+    addiGrp( -> RD:dest)
+        addi
+
     loadUpperGrp(-> RD:dest)
         lui
         auipc
