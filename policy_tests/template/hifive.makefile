@@ -1,6 +1,6 @@
 TARGET = main
 C_SRCS += ../test.c ../hifive.c ../test_status.c
-CFLAGS += -O2 -fno-builtin-printf -fno-integrated-as -I$(ISP_PREFIX)/riscv32-unknown-elf/include
+CFLAGS += -O2 -fno-builtin-printf -I$(ISP_PREFIX)/riscv32-unknown-elf/include
 RISCV_PATH ?= $(ISP_PREFIX)
 RISCV_GCC     ?= $(abspath $(RISCV_PATH)/bin/clang)
 RISCV_GXX     ?= $(abspath $(RISCV_PATH)/bin/clang)
