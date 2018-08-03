@@ -77,7 +77,7 @@ class CFIRWXTests:
 
 class WorkingTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
-    policies = ["rwx", "stack", "threeClass"]
+    policies = ["rwx", "stack"]
     positive_tests = [
         "printf_works_1.c",
         "hello_works_1.c", 
