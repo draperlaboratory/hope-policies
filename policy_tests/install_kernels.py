@@ -15,13 +15,13 @@ from setup_test import *
 # Nothing to configure below this point
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(params=fullK(), ids=map(trd, fullK()))
+@pytest.fixture(params=fullK(), ids=list(map(trd, fullK())))
 def fullF(request):
     doFixture(request.param, [])
     return request.param
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(params=simpleK(), ids=map(trd, simpleK()))
+@pytest.fixture(params=simpleK(), ids=list(map(trd, simpleK())))
 def simpleF(request):
     doFixture(request.param, [])
     return request.param
@@ -48,7 +48,7 @@ def doFixture(cfg, policyParams):
 def doTest(osPolicyF):
     installPath = os.path.join('kernel_dir', "kernels", osPolicyF[2])
     doInstallPolicy(osPolicyF, installPath)
-    print "Checking install: " + installPath
+    print("Checking install: " + installPath)
     assert os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so"))
 #    if osPolicyF[0] == "dos":
 #        assert os.path.isfile(os.path.join(installPath, "ap_kernel.rom"))
