@@ -30,7 +30,7 @@ list:
 	$(PYTHON) -m pytest $(ERROR_MSGS) --collect-only run_unit_tests.py
 
 install-kernels:
-	$(PYTHON) -m pytest --timeout=180 $(ERROR_MSGS) $(XDIST) -v -k test_simple install_kernels.py
+	$(PYTHON) -m pytest --timeout=180 $(ERROR_MSGS) -v -k test_simple install_kernels.py
 
 install-kernels-full:
 	$(PYTHON) -m pytest --timeout=180 $(ERROR_MSGS) $(XDIST) -v -k test_full install_kernels.py
