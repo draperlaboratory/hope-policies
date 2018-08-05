@@ -308,6 +308,7 @@ def checkResult(dp, policy, rpt):
     print("Checking result...")
     with open(os.path.join(dp,"uart.log"), "r") as fh:
         searchlines = fh.readlines()
+    searchlines = [line for line in searchlines if line != "\n"]
     for i, line in enumerate(searchlines):
         if "MSG: Positive test." in line:
             rpt.start(searchlines[i+1])
