@@ -373,6 +373,8 @@ def runit(dp, path, cmd, args):
 def hifiveMakefile(policy, main, opt, debug):
     kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
+PYTHON ?= python3
+
 build/main: hifive.c test.c
 	cd build && make
 
@@ -389,19 +391,19 @@ verilator:
 	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
 
 fpga:
-	python runFPGA.py
+	$(PYTHON) runFPGA.py
 
 renode:
-	python runRenode.py
+	$(PYTHON) runRenode.py
 
 renode-console:
 	renode main.resc
 
 qemu:
-	python runQEMU.py {policies}
+	$(PYTHON) runQEMU.py {policies}
 
 qemu-console:
-	python runQEMU.py {policies} -d
+	$(PYTHON) runQEMU.py {policies} -d
 
 gdb:
 	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
@@ -417,6 +419,8 @@ clean:
 def frtosMakefile(policy, main, opt, debug):
     kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
+PYTHON ?= python3
+
 rtos: frtos.c
 	cd build && cmake .. && make
 
@@ -433,10 +437,10 @@ verilator:
 	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
 
 fpga:
-	python runFPGA.py
+	$(PYTHON) runFPGA.py
 
 renode:
-	python runRenode.py
+	$(PYTHON) runRenode.py
 
 renode-console:
 	renode main.resc

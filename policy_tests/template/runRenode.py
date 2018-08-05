@@ -69,7 +69,7 @@ def logPort(name, logFile, port):
         data = ""
         ready_r, ready_w, err = select.select([s], [], [],1)
         if ready_r:
-            data = s.recv(1024).replace('\r', '')
+            data = s.recv(1024).decode().replace('\r', '')
             f.write(data)
                 
 
@@ -111,16 +111,16 @@ def runOnRenode():
         s = connect(socket.gethostname(), renodePort)
         if s:
             with open('main.resc', 'r') as f:
-                s.send(f.read().replace('\n', '\r\n'))
-                s.send('start\r\n')
+                s.send(f.read().replace('\n', '\r\n').encode())
+                s.send('start\r\n'.encode())
             while not testDone:
                 time.sleep(0.1)
                 ready_r, ready_w, err = select.select([s], [], [],1)
                 if ready_r:
-                    print(s.recv(1024).replace('\r', ''))
+                    print(s.recv(1024).decode().replace('\r', ''))
         if s:
             try:
-                s.send('quit\r\n')
+                s.send('quit\r\n'.encode())
                 time.sleep(1)
                 s.close()
             except:
@@ -137,7 +137,7 @@ def runOnRenode():
     finally:
         try:
             if s:
-                s.send('quit\r\n')
+                s.send('quit\r\n'.encode())
                 time.sleep(1)
                 s.close()
         except:
