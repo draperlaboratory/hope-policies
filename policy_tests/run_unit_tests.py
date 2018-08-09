@@ -18,7 +18,8 @@ from setup_test import *
 
 
 # Generate a test name string from test tuple
-def tName((pol,fil,opt)):
+def tName(pol_fil_opt):
+    (pol, fil, opt) = pol_fil_opt
     return '-'.join([pol, fName(fil),opt])
 
 # Generate a file name string
@@ -32,7 +33,7 @@ def testConfigs(tests, opts):
 # filter fn for removing negative test cases that will fail due to 
 #     missing the necessary policy
 def valid(pol, test):
-    print pol
+    print(pol)
     if os.path.dirname(test) == '':
         return True
     elif os.path.dirname(test) in pol:
@@ -60,7 +61,7 @@ class Profiler:
 
     def report(self):
         self.rpt = open("prof_results.log", "w")
-        map(self.rptFmt, sorted(self.results, key=self.file_key))
+        list(map(self.rptFmt, sorted(self.results, key=self.file_key)))
         self.rpt.close()
 
     def toInt(self, str):
@@ -69,13 +70,14 @@ class Profiler:
     
     def rptFmt(self, res):
         (p,m,o,s,e) = res
-        print >> self.rpt ,  tName((p,m,o)), s, e, e-s
+        print(tName((p,m,o)), s, e, e-s, file=self.rpt)
 
-    def file_key(self,(p,m,o,s,e)):
+    def file_key(self, p_m_o_s_e):
+        (p,m,o,s,e) = p_m_o_s_e
         return m
 
 # build list of test cases, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=positive_tests()+negative_tests(), ids=map(fName, positive_tests()+negative_tests()))
+@pytest.fixture(scope="module", params=positive_tests()+negative_tests(), ids=list(map(fName, positive_tests()+negative_tests())))
 def simpleFiles(request, simpleF):
     testFile = request.param
     if(valid(simpleF, testFile)):
@@ -84,7 +86,7 @@ def simpleFiles(request, simpleF):
        pytest.skip(testFile)
 
 # build list of test cases from broken list, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=broken_tests, ids=map(fName, broken_tests))
+@pytest.fixture(scope="module", params=broken_tests, ids=list(map(fName, broken_tests)))
 def brokenFiles(request, simpleF):
     testFile = request.param
     if(valid(simpleF, testFile)):
@@ -93,17 +95,17 @@ def brokenFiles(request, simpleF):
        pytest.skip(testFile)
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(scope="session", params=simpleK(), ids=map(trd, simpleK()))
+@pytest.fixture(scope="session", params=simpleK(), ids=list(map(trd, simpleK())))
 def simpleF(request):
     return request.param[2]
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(scope="session", params=fullK(), ids=map(trd, fullK()))
+@pytest.fixture(scope="session", params=fullK(), ids=list(map(trd, fullK())))
 def fullF(request):
     return request.param[2]
 
 # build list of test cases, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=positive_tests()+negative_tests(), ids=map(fName, positive_tests()+negative_tests()))
+@pytest.fixture(scope="module", params=positive_tests()+negative_tests(), ids=list(map(fName, positive_tests()+negative_tests())))
 def fullFiles(request, fullF):
     testFile = request.param
     if(valid(fullF, testFile)):
@@ -112,7 +114,7 @@ def fullFiles(request, fullF):
        pytest.skip(testFile)
 
 # build list of test cases, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=profile_tests, ids=map(fName, profile_tests))
+@pytest.fixture(scope="module", params=profile_tests, ids=list(map(fName, profile_tests)))
 def profileFiles(request, simpleF):
     testFile = request.param
     if(valid(simpleF, testFile)):
@@ -296,7 +298,7 @@ def checkPolicy(dp, policy, rpt):
             pexPolicy = line.split(":")[-1].strip().lower()
             testPolicy = policy.lower()
             if testPolicy != pexPolicy:
-                print "ERROR: Wrong policy {pex} != {test}".format(pex = pexPolicy, test = testPolicy)
+                print("ERROR: Wrong policy {pex} != {test}".format(pex = pexPolicy, test = testPolicy))
                 return False
             else:
                 return True
@@ -306,6 +308,7 @@ def checkResult(dp, policy, rpt):
     print("Checking result...")
     with open(os.path.join(dp,"uart.log"), "r") as fh:
         searchlines = fh.readlines()
+    searchlines = [line for line in searchlines if line != "\n"]
     for i, line in enumerate(searchlines):
         if "MSG: Positive test." in line:
             rpt.start(searchlines[i+1])
@@ -338,7 +341,7 @@ def doCleanup(policy, testOK, dp, main, opt, removeDir):
 # this way seems to have process sync issues
 def runitCall(dp, path, cmd, args):
     runcmd = [os.path.join(path,cmd)] + args
-    print runcmd
+    print(runcmd)
     if dp != None:
         se = open(os.path.join(dp,"build.log"), "a")
         so = open(os.path.join(dp,"test.log"), "a")
@@ -346,12 +349,12 @@ def runitCall(dp, path, cmd, args):
         se.close()
         so.close()
     else:
-        print (str(runcmd))
+        print(str(runcmd))
         rc = subprocess.call(runcmd)
 
 def runit(dp, path, cmd, args):
     runcmd = [os.path.join(path,cmd)] + args
-    print runcmd
+    print(runcmd)
     if dp != None:
         se = open(os.path.join(dp,"spike.log"), "a")
         so = open(os.path.join(dp,"test.log"), "a")
@@ -361,7 +364,7 @@ def runit(dp, path, cmd, args):
         se.close()
         so.close()
     else:
-        print (str(runcmd))
+        print(str(runcmd))
         rc = subprocess.Popen(runcmd)
         while rc.poll() is None:
             time.sleep(0.01)
@@ -370,6 +373,8 @@ def runit(dp, path, cmd, args):
 def hifiveMakefile(policy, main, opt, debug):
     kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
+PYTHON ?= python3
+
 build/main: hifive.c test.c
 	cd build && make
 
@@ -386,19 +391,19 @@ verilator:
 	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
 
 fpga:
-	python runFPGA.py
+	$(PYTHON) runFPGA.py
 
 renode:
-	python runRenode.py
+	$(PYTHON) runRenode.py
 
 renode-console:
 	renode main.resc
 
 qemu:
-	python runQEMU.py {policies}
+	$(PYTHON) runQEMU.py {policies}
 
 qemu-console:
-	python runQEMU.py {policies} -d
+	$(PYTHON) runQEMU.py {policies} -d
 
 gdb:
 	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
@@ -414,6 +419,8 @@ clean:
 def frtosMakefile(policy, main, opt, debug):
     kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
+PYTHON ?= python3
+
 rtos: frtos.c
 	cd build && cmake .. && make
 
@@ -430,10 +437,10 @@ verilator:
 	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
 
 fpga:
-	python runFPGA.py
+	$(PYTHON) runFPGA.py
 
 renode:
-	python runRenode.py
+	$(PYTHON) runRenode.py
 
 renode-console:
 	renode main.resc

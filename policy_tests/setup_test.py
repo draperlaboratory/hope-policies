@@ -12,6 +12,7 @@ import multiprocessing
 
 # Modify the test_cfg module to add policies and test cases:
 from cfg_test import *
+from functools import reduce
 
 
 # Nothing to configure below this point
@@ -21,18 +22,18 @@ def fullK():
     for o in os_modules():
         for p in permutePols(policies()):
             r.append((o, p, pName(o,p)))
-    return filter(lambda x: len(x[1]) == 1 or not "none" in x[2], r)
+    return [x for x in r if len(x[1]) == 1 or not "none" in x[2]]
 
 def simpleK():
-    return filter(lambda x: len(x[1]) == 1 or len(x[1]) == len(policies()) , fullK())
+    return [x for x in fullK() if len(x[1]) == 1 or len(x[1]) == len(policies())]
 
 # generate the permutations of policies to compose
 def permutePols(polStrs):
     p = sorted(polStrs)
     # list of number of policies
-    ns = range(1,len(p)+1)
+    ns = list(range(1,len(p)+1))
     # list of combinations for each n
-    combs = map(lambda n:map(sorted,itertools.combinations(p, n)), ns)
+    combs = [list(map(sorted,itertools.combinations(p, n))) for n in ns]
     # flatten list
     return (reduce(operator.concat, combs, []))
 
@@ -106,7 +107,7 @@ def installTarget(osPol):
 
 def runit(dp, path, cmd, args):
     runcmd = [os.path.join(path,cmd)] + args
-    print runcmd
+    print(runcmd)
     if dp != None:
         se = open(os.path.join(dp,"spike.log"), "a")
         so = open(os.path.join(dp,"test.log"), "a")
@@ -116,7 +117,7 @@ def runit(dp, path, cmd, args):
         se.close()
         so.close()
     else:
-        print (str(runcmd))
+        print(str(runcmd))
         rc = subprocess.Popen(runcmd)
         while rc.poll() is None:
             time.sleep(0.01)

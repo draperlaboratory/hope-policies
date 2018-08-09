@@ -78,10 +78,10 @@ def resetChip(s):
         for j in range(10):
             prompt = getPrompt(s)
             if printIO:
-                print "syscon: ", prompt
+                print("syscon: ", prompt)
             if prompt == "0123456789ABCDEF":
                 return
-    print "Failed to reset chip"
+    print("Failed to reset chip")
     testDone = True
     assert False 
 
@@ -97,11 +97,11 @@ def loadTest(s, initFile):
 #            time.sleep(0.0002) # delay 200 uSec between bytes
             count = count + 1
             if count > tick:
-                print "*",
+                print("*", end=' ')
                 sys.stdout.flush()
                 count = 0
         # add a newline
-        print
+        print()
         
 def getLine(s):
     line = ""
@@ -119,14 +119,14 @@ testDone = False
 
 def logPort(name, uart, logFile):
     global testDone
-    print "logging ", name, " to: ", logFile
+    print("logging ", name, " to: ", logFile)
     f = open(logFile, "w")
     while(not testDone):
         try:
             l = getLine(uart)
             if l != '':
                 if printIO:
-                    print name, ": ", l,
+                    print(name, ": ", l, end=' ')
                 f.write(l)
             if terminateMSG in l:
                 testDone = True
@@ -145,18 +145,18 @@ def watchdog():
 def runOnFPGA():
     global testDone
     try:
-        print "Begin serial test... (timeout: ", timeoutSec, ")"
+        print("Begin serial test... (timeout: ", timeoutSec, ")")
         wd = threading.Thread(target=watchdog)
         wd.start()
         syscon = connect(sysconUART, sysconBAUD)
         pex = connect(pexUART, pexBAUD)
         ap = connect(apUART, apBAUD)
         resetChip(syscon)
-        print "Chip Reset"
-        print "loading test..."
+        print("Chip Reset")
+        print("loading test...")
         loadTest(pex, testInit)
-        print "test file loaded"
-        print "logging..."
+        print("test file loaded")
+        print("logging...")
         pexLogger = threading.Thread(target=logPort, args=("Pex", pex, pexLogFile))
         apLogger = threading.Thread(target=logPort, args=("AP", ap, apLogFile))
         pexLogger.start()
@@ -166,7 +166,7 @@ def runOnFPGA():
         pexLogger.join()
         apLogger.join()
         wd.join()
-        print "Test Completed"
+        print("Test Completed")
     finally:
         testDone = True
         disconnect(syscon)

@@ -43,7 +43,7 @@ def watchdog():
             time.sleep(0.1)
         else:
             return
-    print "Watchdog timeout"
+    print("Watchdog timeout")
     testDone = True
 
 def launchQEMU(policies):
@@ -68,7 +68,7 @@ def launchQEMU(policies):
                 pass
         testDone = True
     except Exception as e:
-        print "QEMU run failed for exception {}.\n".format(e) 
+        print("QEMU run failed for exception {}.\n".format(e))
         raise
 
 def launchQEMUDebug(policies):
@@ -83,24 +83,24 @@ def launchQEMUDebug(policies):
 
 def runOnQEMU():
     try:
-        print "Begin QEMU test... (timeout: ", timeoutSec, ")"
+        print("Begin QEMU test... (timeout: ", timeoutSec, ")")
         if len(sys.argv) == 3 and sys.argv[2] == "-d":
             policies = sys.argv[1]
             opts[-1] = opts[-1].format(policyDir=cwd + '/' + policies, tagFile=cwd+"/build/main.taginfo")
             launchQEMUDebug(policies)
         else:
             if len(sys.argv) != 2:
-                print "Please pass policy directory name."
+                print("Please pass policy directory name.")
             policies = sys.argv[1]
             opts[-1] = opts[-1].format(policyDir=cwd + '/' + policies, tagFile=cwd+"/build/main.taginfo")
             wd = threading.Thread(target=watchdog)
             wd.start()
-            print "Launch QEMU..."
+            print("Launch QEMU...")
             qemu = threading.Thread(target=launchQEMU, args=(policies,))
             qemu.start()
             wd.join()
             qemu.join()
-            print "Test Completed"
+            print("Test Completed")
     finally:
         pass
 

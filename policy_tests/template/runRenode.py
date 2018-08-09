@@ -35,7 +35,7 @@ def watchdog():
     for i in range(timeoutSec * 10):
         if not testDone:
             time.sleep(0.1)
-    print "Watchdog timeout"
+    print("Watchdog timeout")
     testDone = True
 
 def connect(host, port):
@@ -48,18 +48,18 @@ def connect(host, port):
             s.connect((host, port))
             connecting = False
             res = s
-            print "connected {0}:{1}".format(host, port)
+            print("connected {0}:{1}".format(host, port))
         except:
-            print "trying {0}:{1}...".format(host, port)
+            print("trying {0}:{1}...".format(host, port))
             time.sleep(1)
     if connecting:
-        print "Failed to connect {0}:{1}...".format(host, port)
+        print("Failed to connect {0}:{1}...".format(host, port))
     return res
 
 def logPort(name, logFile, port):
     global testDone
     data = ""
-    print "logging ", name, " to: ", logFile
+    print("logging ", name, " to: ", logFile)
     f = open(logFile, "w")
     s = connect(socket.gethostname(), port)
     while(s and not testDone):
@@ -69,7 +69,7 @@ def logPort(name, logFile, port):
         data = ""
         ready_r, ready_w, err = select.select([s], [], [],1)
         if ready_r:
-            data = s.recv(1024).replace('\r', '')
+            data = s.recv(1024).decode().replace('\r', '')
             f.write(data)
                 
 
@@ -95,32 +95,32 @@ def runOnRenode():
     global testDone
     global connecting
     try:
-        print "Begin Renode test... (timeout: ", timeoutSec, ")"
+        print("Begin Renode test... (timeout: ", timeoutSec, ")")
         wd = threading.Thread(target=watchdog)
         wd.start()
-        print "Launch Renode..."
+        print("Launch Renode...")
         renode = threading.Thread(target=launchRenode)
         renode.start()
         time.sleep(2)
-        print "Start Logging..."
+        print("Start Logging...")
         uartLogger = threading.Thread(target=logPort, args=("Uart", uartLogFile, uartPort))
         uartLogger.start()
         statusLogger = threading.Thread(target=logPort, args=("Status", statusLogFile, statusPort))
         statusLogger.start()
-        print "Start Renode..."
+        print("Start Renode...")
         s = connect(socket.gethostname(), renodePort)
         if s:
             with open('main.resc', 'r') as f:
-                s.send(f.read().replace('\n', '\r\n'))
-                s.send('start\r\n')
+                s.send(f.read().replace('\n', '\r\n').encode())
+                s.send('start\r\n'.encode())
             while not testDone:
                 time.sleep(0.1)
                 ready_r, ready_w, err = select.select([s], [], [],1)
                 if ready_r:
-                    print s.recv(1024).replace('\r', '')
+                    print(s.recv(1024).decode().replace('\r', ''))
         if s:
             try:
-                s.send('quit\r\n')
+                s.send('quit\r\n'.encode())
                 time.sleep(1)
                 s.close()
             except:
@@ -133,11 +133,11 @@ def runOnRenode():
             # TODO: have the watchdog timer kill the renode process
 #            if testDone:
 #                rc.kill()
-        print "Test Completed"
+        print("Test Completed")
     finally:
         try:
             if s:
-                s.send('quit\r\n')
+                s.send('quit\r\n'.encode())
                 time.sleep(1)
                 s.close()
         except:
