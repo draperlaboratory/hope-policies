@@ -15,16 +15,16 @@ from setup_test import *
 # Nothing to configure below this point
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(params=fullK(), ids=list(map(trd, fullK())))
-def fullF(request):
-    doFixture(request.param, [])
-    return request.param
+@pytest.yield_fixture(scope="session")
+def fullF(fullPol):
+    doFixture(fullPol, [])
+    return fullPol
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(params=simpleK(), ids=list(map(trd, simpleK())))
-def simpleF(request):
-    doFixture(request.param, [])
-    return request.param
+@pytest.yield_fixture(scope="session")
+def simpleF(simplePol):
+    doFixture(simplePol, [])
+    return simplePol
 
 
 def test_full(fullF):
