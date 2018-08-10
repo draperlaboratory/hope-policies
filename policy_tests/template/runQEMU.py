@@ -49,11 +49,10 @@ def watchdog():
 def launchQEMU(policies):
     global testDone
     try:
-        qemu_env = os.environ.copy()
-        old_library_path = qemu_env['LD_LIBRARY_PATH'] + ':' if 'LD_LIBRARY_PATH' in qemu_env else ''
-        qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd + '/' + policies
         print("Running qemu cmd:{}\n", str([runcmd] + opts))
-        rc = subprocess.Popen([runcmd] + opts, env=qemu_env)
+        rc = subprocess.Popen([runcmd] + opts,
+                              env={"LD_LIBRARY_PATH": cwd + '/' + policies,
+                                   "PATH": os.environ["PATH"]})
         while rc.poll() is None:
             time.sleep(0.5)
             try:
@@ -66,6 +65,8 @@ def launchQEMU(policies):
             except IOError:
                 #keep trying if fail to open uart log
                 pass
+        if rc.returncode != 0:
+            raise Exception("exited with return code " + str(rc.returncode))
         testDone = True
     except Exception as e:
         print("QEMU run failed for exception {}.\n".format(e))
@@ -73,12 +74,11 @@ def launchQEMU(policies):
 
 def launchQEMUDebug(policies):
     global opts
-    qemu_env = os.environ.copy()
-    old_library_path = qemu_env['LD_LIBRARY_PATH'] + ':' if 'LD_LIBRARY_PATH' in qemu_env else ''
-    qemu_env['LD_LIBRARY_PATH'] = old_library_path + cwd + '/' + policies
     opts += ["-S", "-gdb", "tcp::3333"]
     print("Running qemu cmd:{}\n", str([runcmd] + opts))
-    rc = subprocess.Popen([runcmd] + opts, env=qemu_env)
+    rc = subprocess.Popen([runcmd] + opts,
+                          env={"LD_LIBRARY_PATH": cwd + '/' + policies,
+                               "PATH": os.environ["PATH"]})
     rc.wait()
 
 def runOnQEMU():
