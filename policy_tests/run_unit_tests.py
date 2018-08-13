@@ -11,24 +11,12 @@ import time
 import glob
 import errno
 
-# Modify the test_cfg module to add policies and test cases:
 from setup_test import *
+#TODO make these cmd-line options?
+quick_opt = ["O2"]
+more_opts = ["O1", "O3"]
 
 # Nothing to configure below this point
-
-
-# Generate a test name string from test tuple
-def tName(pol_fil_opt):
-    (pol, fil, opt) = pol_fil_opt
-    return '-'.join([pol, fName(fil),opt])
-
-# Generate a file name string
-def fName(file):
-    return file.replace('/', '_')
-
-# Compute the list of tests, each specified by (test, opt)
-def testConfigs(tests, opts):
-    return list(itertools.product(tests, opts))
 
 # filter fn for removing negative test cases that will fail due to 
 #     missing the necessary policy
@@ -77,46 +65,44 @@ class Profiler:
         return m
 
 # build list of test cases, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=positive_tests()+negative_tests(), ids=list(map(fName, positive_tests()+negative_tests())))
-def simpleFiles(request, simpleF):
-    testFile = request.param
+@pytest.yield_fixture(scope="session")
+def simpleFiles(testFile, simpleF):
     if(valid(simpleF, testFile)):
        return testFile
     else:
        pytest.skip(testFile)
 
 # build list of test cases from broken list, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=broken_tests, ids=list(map(fName, broken_tests)))
-def brokenFiles(request, simpleF):
-    testFile = request.param
+@pytest.yield_fixture(scope="session")
+def brokenFiles(brokenTestFile, simpleF):
+    testFile = brokenTestFile
     if(valid(simpleF, testFile)):
        return testFile
     else:
        pytest.skip(testFile)
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(scope="session", params=simpleK(), ids=list(map(trd, simpleK())))
-def simpleF(request):
-    return request.param[2]
+@pytest.yield_fixture(scope="session")
+def simpleF(simplePol):
+    return simplePol[2]
 
 # build tools and kernel for the policy combination to be tested
-@pytest.fixture(scope="session", params=fullK(), ids=list(map(trd, fullK())))
-def fullF(request):
-    return request.param[2]
+@pytest.yield_fixture(scope="session")
+def fullF(fullPol):
+    return fullPol[2]
 
 # build list of test cases, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=positive_tests()+negative_tests(), ids=list(map(fName, positive_tests()+negative_tests())))
-def fullFiles(request, fullF):
-    testFile = request.param
+@pytest.yield_fixture(scope="session")
+def fullFiles(testFile, fullF):
     if(valid(fullF, testFile)):
        return testFile
     else:
        pytest.skip(testFile)
 
 # build list of test cases, skip tests where required policy is not included in tools
-@pytest.fixture(scope="module", params=profile_tests, ids=list(map(fName, profile_tests)))
-def profileFiles(request, simpleF):
-    testFile = request.param
+@pytest.yield_fixture(scope="session")
+def profileFiles(profileTestFile, simpleF):
+    testFile = profileTestFile
     if(valid(simpleF, testFile)):
        return testFile
     else:
@@ -131,45 +117,41 @@ def profileRpt():
 
 # test targets that can be run with py.test - k <target prefix>
 @pytest.mark.parametrize("opt", quick_opt + more_opts)
-def test_all(fullF, fullFiles, opt, profileRpt):
+def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, removePassing, "fail")
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
 
 @pytest.mark.parametrize("opt", quick_opt)
-def test_full(fullF, fullFiles, opt, profileRpt):
+def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, removePassing, "fail")
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
 
 @pytest.mark.parametrize("opt", quick_opt)
-def test_simple(simpleF, simpleFiles, opt, profileRpt):
+def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing):
     policyParams = []
-    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, removePassing, "fail")
+    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
 
 #debug target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_debug(fullF, fullFiles, opt, profileRpt):
+def test_debug(fullF, fullFiles, opt, profileRpt, sim):
     policyParams = []
-    global removePassing
-    removePassing = False
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug")
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug", sim)
 
 #broken target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_broken(simpleF, brokenFiles, opt, profileRpt):
+def test_broken(simpleF, brokenFiles, opt, profileRpt, sim):
     policyParams = []
-    global removePassing
-    removePassing = False
-    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken")
+    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken", sim)
 
 #profile target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_profile(profileF, profileFiles, opt, profileRpt):
+def test_profile(profileF, profileFiles, opt, profileRpt, sim):
     policyParams = []
-    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof")
+    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof", sim)
 
 
 # Test execution function
-def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir):
+def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
     name = tName((policy, main,opt))
     rpt.test(policy, main,opt)
     doMkDir(outDir)

@@ -11,21 +11,33 @@ import glob
 import multiprocessing
 
 # Modify the test_cfg module to add policies and test cases:
-from cfg_test import *
 from functools import reduce
 
 
 # Nothing to configure below this point
 
-def fullK():
+# Generate a test name string from test tuple
+def tName(pol_fil_opt):
+    (pol, fil, opt) = pol_fil_opt
+    return '-'.join([pol, fName(fil),opt])
+
+# Generate a file name string
+def fName(file):
+    return file.replace('/', '_')
+
+# Compute the list of tests, each specified by (test, opt)
+def testConfigs(tests, opts):
+    return list(itertools.product(tests, opts))
+
+def fullK(modules, policies):
     r = []
-    for o in os_modules():
-        for p in permutePols(policies()):
+    for o in modules:
+        for p in permutePols(policies):
             r.append((o, p, pName(o,p)))
     return [x for x in r if len(x[1]) == 1 or not "none" in x[2]]
 
-def simpleK():
-    return [x for x in fullK() if len(x[1]) == 1 or len(x[1]) == len(policies())]
+def simpleK(modules, policies):
+    return [x for x in fullK(modules, policies) if len(x[1]) == 1 or len(x[1]) == len(policies)]
 
 # generate the permutations of policies to compose
 def permutePols(polStrs):
