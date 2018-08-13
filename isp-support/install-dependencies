@@ -12,7 +12,8 @@ apt-get install -y \
         python3 \
         python3-pip \
         python-pip \
-        python-pytest
+        python-pytest \
+        python3-pytest
 
 pip2 install pytest-timeout
-pip3 install pyelftools pyyaml
+pip3 install pyelftools pyyaml pytest-timeout
