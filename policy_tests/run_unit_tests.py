@@ -362,7 +362,7 @@ build/main: hifive.c test.c
 
 inits:
 	cp -r {kernel_dir}/kernels/{policies} .
-	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
+	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
@@ -408,7 +408,7 @@ rtos: frtos.c
 
 inits:
 	cp -r {kernel_dir}/kernels/{policies} .
-	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -p {policies} -e ./{policies}/{policies}.entities.yml {main}.entities.yml
+	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -e ./{policies}/{policies}.entities.yml {main}.entities.yml
 
 verilator:
 	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
