@@ -50,6 +50,7 @@ policy:
             ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
             ^ privGrp(code == _, env == _ -> env = env)
+            ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
 //            ^ systemGrp(code == _, env == _ -> env = env)
 
 require:

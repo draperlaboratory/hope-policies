@@ -40,6 +40,7 @@ policy:
             ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
             ^ privGrp(code == _, env == _ -> env = env)
+	    ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
 //            ^ systemGrp(code == _, env == _ -> env = env)
 
     notMemPass = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
@@ -178,6 +179,7 @@ group:
         uret
         sret
         mret
+
 // TODO: finish up defining these groups and update to 1.10
 /*
         sbreak
@@ -191,6 +193,11 @@ group:
         fence.i
 
 */
+
+    atomicGrp(RS1:op1, RS2:op2 -> RD:dest)
+        amoadd
+        amoswap
+
 
     allGrp( -> )
     // branchGrp(RS1:op1, RS2:op2 -> )
@@ -285,7 +292,9 @@ group:
     // systemGrp()
         fence
         // fence.i
-
+    // atomicGrp()
+        amoor
+        amoswap
 
     notMemGrp( -> )
     // branchGrp(RS1:op1, RS2:op2 -> )
