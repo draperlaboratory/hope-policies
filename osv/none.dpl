@@ -37,7 +37,36 @@ metadata:
         Nothing
 
 policy:
-  nonePol = allPass
+        // a policy that allows anything and contributes no results
+    nonePol = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+            ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+            ^ jumpGrp(code == _, env == _ -> return = {})
+            ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+            ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+            ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+            ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+            ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ privGrp(code == _, env == _ -> env = env)
+//            ^ systemGrp(code == _, env == _ -> env = env)
 
 require:
-    init dover.Kernel.MemoryMap.Default       {Nothing}
+    init ISA.RISCV.Reg.Env                   {Nothing}
+    init ISA.RISCV.Reg.Default               {Nothing}
+    init ISA.RISCV.Reg.RZero                 {Nothing}
+    init ISA.RISCV.CSR.Default               {Nothing}
+    init ISA.RISCV.CSR.MTVec                 {Nothing}
+
+    init Tools.Link.MemoryMap.Default        {Nothing}
+    init Tools.Link.MemoryMap.UserHeap       {Nothing}
+    init Tools.Link.MemoryMap.UserStack      {Nothing}
+
+    init SOC.IO.UART_0                       {Nothing}
+    init SOC.Memory.Flash_0                  {Nothing}
+    init SOC.Memory.Ram_0                    {Nothing}
+
+    init Tools.Elf.Section.SHF_ALLOC         {Nothing}
+    init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
+    init Tools.Elf.Section.SHF_WRITE         {Nothing}
