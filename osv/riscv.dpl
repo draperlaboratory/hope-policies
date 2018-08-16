@@ -40,8 +40,8 @@ policy:
             ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
             ^ privGrp(code == _, env == _ -> env = env)
-	    ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
-//            ^ systemGrp(code == _, env == _ -> env = env)
+            ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
+            ^ systemGrp(code == _, env == _ -> env = env)
 
     notMemPass = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
             ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
@@ -53,7 +53,7 @@ policy:
             ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
             ^ privGrp(code == _, env == _ -> env = env)
-//            ^ systemGrp(code == _, env == _ -> env = env)
+            ^ systemGrp(code == _, env == _ -> env = env)
 
 group:
     branchGrp(RS1:op1, RS2:op2 -> )
@@ -196,7 +196,20 @@ group:
 
     atomicGrp(RS1:op1, RS2:op2 -> RD:dest)
         amoadd
+        amoor
         amoswap
+        amoadd.w
+        amoswap.w
+        amoor.w
+        amoadd.d
+        amoswap.d
+        amoor.d
+
+    systemGrp( -> )
+        fence
+        fence.i
+        wfi
+        sfence.vma
 
 
     allGrp( -> )

@@ -51,7 +51,7 @@ policy:
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
             ^ privGrp(code == _, env == _ -> env = env)
             ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
-//            ^ systemGrp(code == _, env == _ -> env = env)
+            ^ systemGrp(code == _, env == _ -> env = env)
 
 require:
     init ISA.RISCV.Reg.Env                   {Nothing}
