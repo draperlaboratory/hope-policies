@@ -52,6 +52,7 @@ policy:
             ^ privGrp(code == _, env == _ -> env = env)
             ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
             ^ systemGrp(code == _, env == _ -> env = env)
+            ^ dummyFloatGrp(code == _, env == _ -> env = env)
 
 require:
     init ISA.RISCV.Reg.Env                   {Nothing}

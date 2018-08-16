@@ -42,6 +42,7 @@ policy:
             ^ privGrp(code == _, env == _ -> env = env)
             ^ atomicGrp(code == _, env == _ -> env = env, dest = {})
             ^ systemGrp(code == _, env == _ -> env = env)
+            ^ dummyFloatGrp(code == _, env == _ -> env = env)
 
     notMemPass = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
             ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
@@ -212,6 +213,12 @@ group:
         sfence.vma
 
 
+    dummyFloatGrp( -> )
+        fmv.x.w
+        fmv.w.x
+        fsd
+        fld
+
     allGrp( -> )
     // branchGrp(RS1:op1, RS2:op2 -> )
         beq
@@ -308,6 +315,11 @@ group:
     // atomicGrp()
         amoor
         amoswap
+    // dummyFloatGrp()
+        fmv.x.w
+        fmv.w.x
+        fsd
+        fld
 
     notMemGrp( -> )
     // branchGrp(RS1:op1, RS2:op2 -> )
