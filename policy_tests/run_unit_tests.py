@@ -255,7 +255,7 @@ def doReSc(policy, dp, simulator):
     elif "frtos" in policy:
         rs = rescScript(dp, policy)
     elif "hifive" in policy:
-        rs = rescScriptHifive(dp)
+        rs = rescScriptHifive(dp, policy)
     else:
         pytest.fail("Unknown OS, can't generate Scripts")
 
@@ -449,14 +449,14 @@ connector Connect sysbus.uart1 uart-socket
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
-sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo
+sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies} @{path}/build/main.taginfo @{path}/{policies}/soc_cfg/dover_cfg.yml
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
 sysbus.ap_core StartStatusServer 3344
 """.format(path = os.path.join(os.getcwd(), dir), policies=policy)
 
 
-def rescScriptHifive(dir):
+def rescScriptHifive(dir, policy):
     return """
 using sysbus
 mach create
@@ -472,11 +472,11 @@ sysbus Tag <0x10008000 4> "PRCI_HFROSCCFG" 0xFFFFFFFF
 sysbus Tag <0x10008008 4> "PRCI_PLLCFG" 0xFFFFFFFF
 cpu PC `sysbus GetSymbolAddress "vinit"`
 cpu PerformanceInMips 320
-sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo
+sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo @{path}/{policies}/soc_cfg/hifive_e_cfg.yml
 sysbus.cpu StartGdbServer 3333
 logLevel 1 sysbus.cpu
 sysbus.cpu StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir))
+""".format(path = os.path.join(os.getcwd(), dir), policies=policy)
 
 def gdbScript(dir):
     return """
