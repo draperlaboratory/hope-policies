@@ -88,7 +88,7 @@ class FRTOSTests(AllTests):
 
 class HifiveTests(AllTests):
     os_modules = ["osv.hifive.main.{pol}"]
-    policies = ["rwx", "stack"]
+    policies = ["rwx", "stack", "threeClass"]
     positive_tests = [test for test in AllTests.positive_tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1.c",
