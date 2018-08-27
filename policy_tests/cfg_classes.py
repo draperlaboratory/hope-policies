@@ -60,7 +60,7 @@ class CFIRWXTests(AllTests):
 
 class WorkingTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
-    policies = ["rwx", "stack"]
+    policies = ["none", "rwx", "stack"]
     positive_tests = [test for test in AllTests.positive_tests
                       if not any(test in s for s in
                                  ["timer_works_1.c"
@@ -88,7 +88,7 @@ class FRTOSTests(AllTests):
 
 class HifiveTests(AllTests):
     os_modules = ["osv.hifive.main.{pol}"]
-    policies = ["rwx", "stack", "threeClass"]
+    policies = ["none", "rwx", "stack", "threeClass"]
     positive_tests = [test for test in AllTests.positive_tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1.c",
