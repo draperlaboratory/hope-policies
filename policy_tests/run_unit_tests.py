@@ -10,6 +10,7 @@ import shutil
 import time
 import glob
 import errno
+import pdb
 
 from setup_test import *
 #TODO make these cmd-line options?
@@ -160,6 +161,7 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
     doMkApp(policy, dirPath, main, opt)
     doMakefile(policy, dirPath, main, opt, "")
     doReSc(policy, dirPath, simulator)
+    doValidatorCfg(policy, dirPath)
     doSim(dirPath, simulator)
 #    testOK = checkPolicy(dirPath, policy, rpt)
     testOK = checkResult(dirPath, policy, rpt)
@@ -708,6 +710,23 @@ target remote :3333
 break main
 continue
 """.format(path = os.path.join(os.getcwd(), dir))
+
+def doValidatorCfg(policy, dirPath):
+    if "hifive" in policy:
+        soc_cfg = "hifive_e_cfg.yml"
+    else:
+        soc_cfg = "dover_cfg.yml"
+
+    validatorCfg =  """\
+policy_dir: {policyDir}
+tags_file: {tagfile}
+soc_cfg_path: {soc_cfg}
+""".format(policyDir=os.path.join(os.getcwd(), dirPath, policy),
+           tagfile=os.path.join(os.getcwd(), dirPath, "main.taginfo"),
+           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, soc_cfg))
+
+    with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
+        f.write(validatorCfg)
 
 # Special formatting for the pytest-html plugin
 
