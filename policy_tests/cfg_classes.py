@@ -60,7 +60,7 @@ class CFIRWXTests(AllTests):
 
 class WorkingTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
-    policies = ["none", "rwx", "stack"]
+    policies = ["heap", "rwx"]
     positive_tests = [test for test in AllTests.positive_tests
                       if not any(test in s for s in
                                  ["timer_works_1.c"

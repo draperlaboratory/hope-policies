@@ -108,7 +108,7 @@ policy:
               -> mem = val, env = env )
 
 // non-memory operations
-   ^ notMemPass
+   ^ notMemGrp(code == _, env == _ -> env = env)
 
 
 require:
