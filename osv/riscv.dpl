@@ -215,19 +215,13 @@ group:
         uret
         sret
         mret
-// TODO: finish up defining these groups and update to 1.10
-/*
-        sbreak
-        sfence.vm
+        sfence.vma
         wfi
-        mrth
-        mrts
-        hrts
-    systemGrp()
+
+    systemGrp( -> )
         fence
         fence.i
 
-*/
 
     floatGrp( -> )
         flw
@@ -424,15 +418,11 @@ group:
         uret
         sret
         mret
-        sret
-        // sfence.vm
+        sfence.vma
         wfi
-        // mrth
-        // mrts
-        // hrts
     // systemGrp()
         fence
-        // fence.i
+        fence.i
 
 
     notMemGrp( -> )
@@ -506,15 +496,11 @@ group:
         uret
         sret
         mret
-        sret
-        // sfence.vm
+        sfence.vma
         wfi
-        // mrth
-        // mrts
-        // hrts
     // systemGrp()
         fence
-        // fence.i
+        fence.i
 //floatGrp( -> )
         flw
 	fld
