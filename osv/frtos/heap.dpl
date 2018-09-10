@@ -112,6 +112,15 @@ policy:
 
 
 require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {RawHeap}
+    init Tools.Link.MemoryMap.UserStack      {}
 
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
