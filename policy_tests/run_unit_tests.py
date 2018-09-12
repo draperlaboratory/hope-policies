@@ -718,12 +718,13 @@ def doValidatorCfg(policy, dirPath):
         soc_cfg = "dover_cfg.yml"
 
     validatorCfg =  """\
-policy_dir: {policyDir}
-tags_file: {tagfile}
-soc_cfg_path: {soc_cfg}
+---
+   policy_dir: {policyDir}
+   tags_file: {tagfile}
+   soc_cfg_path: {soc_cfg}
 """.format(policyDir=os.path.join(os.getcwd(), dirPath, policy),
-           tagfile=os.path.join(os.getcwd(), dirPath, "main.taginfo"),
-           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, soc_cfg))
+           tagfile=os.path.join(os.getcwd(), dirPath, "build/main.taginfo"),
+           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg))
 
     with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
         f.write(validatorCfg)
