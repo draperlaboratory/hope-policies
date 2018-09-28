@@ -40,12 +40,17 @@ metadata:
 	Rd
 	Wr
 	Ex
+	NoW
+	NoR
 
 
 policy:
   rwxPol =
       loadGrp(mem == [-Rd] -> fail "read violation")
     ^ storeGrp(mem == [-Wr] -> fail "write violation")
+
+    ^storeGrp (mem == [+NoW] -> fail "WRITE NON-WRITEABLE MEM")
+
     ^ allGrp(code == [-Ex] -> fail "execute violation")
     ^ loadGrp  (code == [+Ex], env == _, mem == [+Rd] -> res = {}, env = env)
     ^ storeGrp (code == [+Ex], env == _, mem == [+Wr] -> mem = mem, env = env)
@@ -75,4 +80,4 @@ require:
     init Tools.Elf.Section.SHF_EXECINSTR     {Ex}
     init Tools.Elf.Section.SHF_WRITE         {Rd, Wr}
 
-
+    init subword.NoW {NoW}

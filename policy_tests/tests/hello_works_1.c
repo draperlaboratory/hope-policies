@@ -34,15 +34,15 @@
 // include malloc wrappers
 #include "mem.h"
 
-/*
- * Hello world sanity test to check we can execute code i.e. main and 
- *     call printf
- */
+char writeme;
+char nowrite;
+
 int test_main(void)
   {
     test_positive(); // identify test as positive (will complete)
 
-    t_printf("Hello Test\n");
+    char x = nowrite;
+    writeme = x;
     
     test_pass();
     return test_done();
