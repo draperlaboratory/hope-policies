@@ -1,0 +1,6 @@
+-
+    name: subword.NoW
+    elf_name: nowrite
+    kind: symbol
+    tag_all: false
+    optional: true
