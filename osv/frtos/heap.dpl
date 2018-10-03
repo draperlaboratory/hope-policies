@@ -43,14 +43,11 @@ metadata:
   ModColor          // Special value used to modify heap cells
   AntiPointer       // Special Value that eliminates color from pointers
   SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
-//  SpecialCaseMEMCPY  // Mark memcpy code to enable special case hack
   
 policy:
   heapPol =
 // Special case to avoid hacking printf %x
     andiGrp(code == [SpecialCaseVFPRINTF], env == _, op1 == _ -> env = env, res = {})
-// Special case to avoid hacking memcpy
-//   ^ xorGrp (code == [SpecialCaseMEMCPY], env == _, op1 == [(Pointer _)], op2 == [(Pointer _)] -> env = env, res = {AntiPointer})
 
 // Handle generic pointer arithmetic
    ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
@@ -140,11 +137,6 @@ require:
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
 
-    //Todo: probably can remove these
-    init Tools.Elf.Section.SHF_ALLOC         {}
-    init Tools.Elf.Section.SHF_EXECINSTR     {}
-    init Tools.Elf.Section.SHF_WRITE         {}
-
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
 
@@ -155,5 +147,4 @@ require:
     init dover.Kernel.Code.ApplyTag.dover_ptr_tag       {NewColor}
     init dover.Kernel.Code.ApplyTag.dover_ptr_untag     {DelColor}
     init dover.Tools.RTL._vfprintf_r                    {SpecialCaseVFPRINTF}
-//    init dover.Tools.RTL.memcpy                         {SpecialCaseMEMCPY}
     
