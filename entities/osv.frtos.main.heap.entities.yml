@@ -40,11 +40,6 @@
     kind: symbol
     tag_all: true
 -
-    name: dover.Tools.RTL.memcpy
-    elf_name: memcpy
-    kind: symbol
-    tag_all: true
--
     name: dover.Tools.RTL._vfprintf_r
     elf_name: _svfprintf_r
     kind: symbol
