@@ -47,8 +47,9 @@ invokes `doTest(simpleF)`.
     `install_kernels.py`. It invokes `doInstallPolicy()`, which is
     defined in `setup_test.py`.
     
-    I set breakpoints on `doInstallPolicy()` in order to find out
-    what its inputs look like. Here are some examples.
+    I set breakpoints on `doInstallPolicy(osPol, installPath)` in
+    order to find out what its inputs look like. Here are some
+    examples.
     
         # --- Invocation 1 ---
         osPol = ('osv.frtos.main.{pol}', ['none'], 'osv.frtos.main.none')
@@ -61,10 +62,55 @@ invokes `doTest(simpleF)`.
         # --- Invocation 3 ---
         osPol = ('osv.frtos.main.{pol}', ['stack'], 'osv.frtos.main.stack')
         installPath = 'kernel_dir/kernels/osv.frtos.main.stack'
+    
+    Here's what the function actually does.
+    
+    -   First, it replaces the `$installPath` directory with a new,
+        empty directory.
+    -   Next, it copies
+        `../../policy-engine/build/librv32-renode-validator.so` into
+        the `$installPath` directory.
+    -   Next, it copies `../../policy-engine/soc_cfg/` to
+        `$installPath/soc_cfg`.
+    -   Next, for every `$filename` in `../../policy-engine/policy/`
+               that contains "yml", it copies `$filename` into `$installPath`.
+    -   Finally, if `../entities/$policyNum.entities.yml` exists, copy
+        it into `$installPath`. Otherwise, copy
+        `../entities/empty.entities.yml` into `$installPath`.
 
 ### Makefile's `debug-$TEST` target
 
     debug-%:
-            $(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_debug[$*] run_unit_tests.py
+            $(PYTHON) -m pytest $(PYTEST_ARGS) \
+              --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_debug[$*] \
+              run_unit_tests.py
+
+Running `make debug-osv.frtos.main.rwx-stack-string_works_1.c-O2`
+causes the following command to be executed.
+
+    python3 -m pytest --timeout=180 --tb=no --sim=renode -v \
+      --test_config=working --junitxml=report.xml -k \
+      test_debug[osv.frtos.main.rwx-stack-string_works_1.c-O2] \
+      run_unit_tests.py
+
+As a result, `run_unit_tests.test_debug()` is invoked with the
+following parameters.
+
+    fullF      = 'osv.frtos.main.rwx-stack'
+    fullFiles  = 'string_works_1.c'
+    opt        = 'O2'
+    profileRpt = <run_unit_tests.Profiler object at ___>
+    sim        = 'renode'
+
+Control flows to `doTest()`, which has the following parameters.
+
+    policy       = fullF
+    main         = fullFiles
+    opt          = opt
+    rpt          = profileRpt
+    policyParams = []
+    removeDir    = False
+    outDir       = "debug"
+    simulator    = sim
 
 ## High level tasks performed by build system

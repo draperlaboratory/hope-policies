@@ -15,7 +15,7 @@ works.
       TEST=osv.frtos.main.rwx-stack-string_works_1.c-O2
       make debug-$TEST
       #+END_SRC
-   
+
       This will produce a number of outputs in the
       ~debug/$TEST/build/~ directory, one of which is ~main~.
 
@@ -24,20 +24,20 @@ works.
 * How the build system works
 ** Deep dive into build system
 *** Makefile's ~install-kernels~ target
-   
+
    #+BEGIN_SRC makefile
 install-kernels:
         $(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
    #+END_SRC
-   
+
    When this recipe is executed, the following command is sent to the
    shell.
-   
+
    #+BEGIN_SRC sh
    python3 -m pytest --timeout=180 --tb=no --sim=renode -v \
        --test_config=working -k test_simple install_kernels.py
    #+END_SRC
-   
+
    Let's break this target down.  First, it invokes Python on the
    ~install_kernels.py~ file with some options.
 
@@ -47,16 +47,17 @@ install-kernels:
      ~WorkingTests~ class.
    + The ~-k test_simple~ option causes pytest to select the test
      named ~test_simple~.
-     
+
    Digging into ~install_kernels.py~, we see ~test_simple(simpleF)~
    invokes ~doTest(simpleF)~.
-   
+
    + The ~doTest(osPolicyF)~ function is defined in
      ~install_kernels.py~. It invokes ~doInstallPolicy()~, which is
      defined in ~setup_test.py~.
-     
-     I set breakpoints on ~doInstallPolicy()~ in order to find out
-     what its inputs look like. Here are some examples.
+
+     I set breakpoints on ~doInstallPolicy(osPol, installPath)~ in
+     order to find out what its inputs look like. Here are some
+     examples.
 
      #+BEGIN_SRC python
      # --- Invocation 1 ---
@@ -71,11 +72,62 @@ install-kernels:
      osPol = ('osv.frtos.main.{pol}', ['stack'], 'osv.frtos.main.stack')
      installPath = 'kernel_dir/kernels/osv.frtos.main.stack'
      #+END_SRC
-     
+
+     Here's what the function actually does.
+
+     - First, it replaces the ~$installPath~ directory with a new,
+       empty directory.
+     - Next, it copies
+       ~../../policy-engine/build/librv32-renode-validator.so~ into
+       the ~$installPath~ directory.
+     - Next, it copies ~../../policy-engine/soc_cfg/~ to
+       ~$installPath/soc_cfg~.
+     - Next, for every ~$filename~ in ~../../policy-engine/policy/~
+       that contains "yml", it copies ~$filename~ into ~$installPath~.
+     - Finally, if ~../entities/$policyNum.entities.yml~ exists, copy
+       it into ~$installPath~. Otherwise, copy
+       ~../entities/empty.entities.yml~ into ~$installPath~.
+
 *** Makefile's ~debug-$TEST~ target
    #+BEGIN_SRC makefile
 debug-%:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_debug[$*] run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) \
+	  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_debug[$*] \
+	  run_unit_tests.py
    #+END_SRC
+
+    Running ~make debug-osv.frtos.main.rwx-stack-string_works_1.c-O2~
+    causes the following command to be executed.
+
+    #+BEGIN_SRC sh
+    python3 -m pytest --timeout=180 --tb=no --sim=renode -v \
+      --test_config=working --junitxml=report.xml -k \
+      test_debug[osv.frtos.main.rwx-stack-string_works_1.c-O2] \
+      run_unit_tests.py
+    #+END_SRC
+
+    As a result, ~run_unit_tests.test_debug()~ is invoked with the
+    following parameters.
+
+    #+BEGIN_SRC
+    fullF      = 'osv.frtos.main.rwx-stack'
+    fullFiles  = 'string_works_1.c'
+    opt        = 'O2'
+    profileRpt = <run_unit_tests.Profiler object at ___>
+    sim        = 'renode'
+    #+END_SRC
+
+    Control flows to ~doTest()~, which has the following parameters.
+
+    #+BEGIN_SRC
+    policy       = fullF
+    main         = fullFiles
+    opt          = opt
+    rpt          = profileRpt
+    policyParams = []
+    removeDir    = False
+    outDir       = "debug"
+    simulator    = sim
+    #+END_SRC
 
 ** High level tasks performed by build system
