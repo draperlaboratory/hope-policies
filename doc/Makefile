@@ -2,9 +2,9 @@
 # This Makefile compiles documents from Emacs Org files to Markdown.
 #
 
-SRC_ORG_FILES=$(wildcard *.org)
-TARGET_MD_FILES=$(patsubst %.org,%.md,$(SRC_ORG_FILES))
 OUT_DIR=out-markdown
+SRC_ORG_FILES=$(wildcard *.org)
+TARGET_MD_FILES=$(patsubst %.org,$(OUT_DIR)/%.md,$(SRC_ORG_FILES))
 
 vpath $(OUT_DIR)
 
@@ -15,6 +15,7 @@ all: $(TARGET_MD_FILES)
 clean:
 	-rm -rf -- $(OUT_DIR)
 
-%.md: %.org
+$(OUT_DIR)/%.md: %.org
 	mkdir -p -- $(OUT_DIR)
-	emacs $< --batch --eval '(progn (org-md-export-to-markdown) (rename-file "$@" "$(OUT_DIR)/$@"))' --kill
+	emacs $< --batch --eval '(org-md-export-to-markdown)' --kill
+	mv -- $(notdir $@) $@
