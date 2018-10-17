@@ -1,3 +1,7 @@
+#
+# This Makefile compiles documents from Emacs Org files to Markdown.
+#
+
 SRC_ORG_FILES=$(wildcard *.org)
 TARGET_MD_FILES=$(patsubst %.org,%.md,$(SRC_ORG_FILES))
 OUT_DIR=out-markdown
