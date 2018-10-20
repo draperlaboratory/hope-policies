@@ -10,6 +10,8 @@ def pytest_addoption(parser):
                      help='Which test config to run from cfg_classes')
     parser.addoption('--remove_passing', default=False, action='store_true',
                      help='Delete passing test output directores')
+    parser.addoption('--rule_cache', default='',
+                     help='Which rule cache to use (ideal, finite, dmhc). Empty for none.')
 
 @pytest.fixture
 def sim(request):
@@ -22,6 +24,10 @@ def test_config(request):
 @pytest.fixture
 def remove_passing(request):
     return request.config.getoption('--remove_passing')
+
+@pytest.fixture
+def rule_cache(request):
+    return request.config.getoption('--rule_cache')
 
 
 def parameterize_test_file(varName, testFiles, metafunc):

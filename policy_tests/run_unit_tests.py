@@ -118,41 +118,41 @@ def profileRpt():
 
 # test targets that can be run with py.test - k <target prefix>
 @pytest.mark.parametrize("opt", quick_opt + more_opts)
-def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing):
+def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache)
 
 @pytest.mark.parametrize("opt", quick_opt)
-def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing):
+def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache)
 
 @pytest.mark.parametrize("opt", quick_opt)
-def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing):
+def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing, rule_cache):
     policyParams = []
-    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
+    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache)
 
 #debug target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_debug(fullF, fullFiles, opt, profileRpt, sim):
+def test_debug(fullF, fullFiles, opt, profileRpt, sim, rule_cache):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug", sim)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug", sim, rule_cache)
 
 #broken target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_broken(simpleF, brokenFiles, opt, profileRpt, sim):
+def test_broken(simpleF, brokenFiles, opt, profileRpt, sim, rule_cache):
     policyParams = []
-    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken", sim)
+    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken", sim, rule_cache)
 
 #profile target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_profile(profileF, profileFiles, opt, profileRpt, sim):
+def test_profile(profileF, profileFiles, opt, profileRpt, sim, rule_cache):
     policyParams = []
-    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof", sim)
+    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof", sim, rule_cache)
 
 
 # Test execution function
-def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
+def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, rule_cache):
     name = tName((policy, main,opt))
     rpt.test(policy, main,opt)
     doMkDir(outDir)
@@ -161,7 +161,7 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
     doMkApp(policy, dirPath, main, opt)
     doMakefile(policy, dirPath, main, opt, "")
     doReSc(policy, dirPath, simulator)
-    doValidatorCfg(policy, dirPath)
+    doValidatorCfg(policy, dirPath, rule_cache)
     doSim(dirPath, simulator)
 #    testOK = checkPolicy(dirPath, policy, rpt)
     testOK = checkResult(dirPath, policy, rpt)
@@ -451,7 +451,7 @@ connector Connect sysbus.uart1 uart-socket
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
 sysbus LoadELF @{path}/build/main
-sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/{policies}/validator_cfg.yml
+sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
 sysbus.ap_core StartStatusServer 3344
@@ -474,7 +474,7 @@ sysbus Tag <0x10008000 4> "PRCI_HFROSCCFG" 0xFFFFFFFF
 sysbus Tag <0x10008008 4> "PRCI_PLLCFG" 0xFFFFFFFF
 cpu PC `sysbus GetSymbolAddress "vinit"`
 cpu PerformanceInMips 320
-sysbus.cpu SetExternalValidator @{path}/librv32-renode-validator.so @{path} @{path}/build/main.taginfo @{path}/{policies}/soc_cfg/hifive_e_cfg.yml
+sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
 sysbus.cpu StartGdbServer 3333
 logLevel 1 sysbus.cpu
 sysbus.cpu StartStatusServer 3344
@@ -711,7 +711,7 @@ break main
 continue
 """.format(path = os.path.join(os.getcwd(), dir))
 
-def doValidatorCfg(policy, dirPath):
+def doValidatorCfg(policy, dirPath, rule_cache):
     if "hifive" in policy:
         soc_cfg = "hifive_e_cfg.yml"
     else:
@@ -722,9 +722,14 @@ def doValidatorCfg(policy, dirPath):
    policy_dir: {policyDir}
    tags_file: {tagfile}
    soc_cfg_path: {soc_cfg}
+   rule_cache:
+      name: {rule_cache_name}
+      params:
+         capacity: 64
 """.format(policyDir=os.path.join(os.getcwd(), dirPath, policy),
            tagfile=os.path.join(os.getcwd(), dirPath, "build/main.taginfo"),
-           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg))
+           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg),
+           rule_cache_name=rule_cache)
 
     with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
         f.write(validatorCfg)
