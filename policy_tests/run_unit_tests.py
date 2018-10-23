@@ -722,14 +722,16 @@ def doValidatorCfg(policy, dirPath, rule_cache):
    policy_dir: {policyDir}
    tags_file: {tagfile}
    soc_cfg_path: {soc_cfg}
-   rule_cache:
-      name: {rule_cache_name}
-      params:
-         capacity: 64
 """.format(policyDir=os.path.join(os.getcwd(), dirPath, policy),
            tagfile=os.path.join(os.getcwd(), dirPath, "build/main.taginfo"),
-           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg),
-           rule_cache_name=rule_cache)
+           soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg))
+
+    if (rule_cache):
+        validatorCfg += """\
+   rule_cache:
+      name: {rule_cache_name}
+      capacity: 64
+        """.format(rule_cache_name=rule_cache)
 
     with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
         f.write(validatorCfg)
