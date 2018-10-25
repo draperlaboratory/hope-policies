@@ -2,13 +2,13 @@
 # ERROR_MSGS to an empty string to print error trace backs
 PYTHON ?= python3
 ERROR_MSGS ?= --tb=long
-#XDIST ?= -n auto
+XDIST ?= -n auto
 
 KERNEL_DIR = kernel_dir
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
-SIM ?= renode
-CONFIG ?= working
+SIM ?= qemu
+CONFIG ?= hifive
 REMOVE_PASSING ?= #--remove_passing
 PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) $(REMOVE_PASSING)
 

@@ -26,7 +26,8 @@ class AllTests:
         "code_read_works_1.c",
         "timer_works_1.c",
         "function_pointer_works_1.c",
-        "function_pointer_works_2.c"
+        "function_pointer_works_2.c",
+        "coremark"
     ]
 
     # negative tests need to be in a dir that matches the policy 
