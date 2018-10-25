@@ -2,7 +2,7 @@
 # ERROR_MSGS to an empty string to print error trace backs
 PYTHON ?= python3
 ERROR_MSGS ?= --tb=long
-#XDIST ?= -n 10
+#XDIST ?= -n auto
 
 KERNEL_DIR = kernel_dir
 TEST_FORMAT ?= junitxml
