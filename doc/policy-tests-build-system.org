@@ -130,6 +130,51 @@ debug-%:
     simulator    = sim
     #+END_SRC
 
+    ~doTest()~ calls
+    #+BEGIN_SRC python
+    def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
+        name = tName((policy, main,opt))
+        rpt.test(policy, main,opt)
+        doMkDir(outDir)
+        dirPath = os.path.join(outDir, name)
+        doBinDir(dirPath)
+        doMkApp(policy, dirPath, main, opt)
+        doMakefile(policy, dirPath, main, opt, "")
+        doReSc(policy, dirPath, simulator)
+        doSim(dirPath, simulator)
+    #    testOK = checkPolicy(dirPath, policy, rpt)
+        testOK = checkResult(dirPath, policy, rpt)
+        doCleanup(policy, testOK, dirPath, main, opt, removeDir)
+    #+END_SRC
+
+    + ~doMkDir(outDir)~
+      + ~mkdir -p $outDir~
+    + ~doBinDir(dirPath)~
+      + ~rm -rf $dirPath~
+    + ~doMkApp(policy, dirPath, main, opt)~
+      + If "dos" is in ~policy~, copy ~template/dos-mem.h~ to
+        ~$dirPath/mem.h~. Otherwise, do the same thing for "frtos" and
+        "hifive".
+      + Copy ~template/dover-os.c~ to ~$dirPath/dos.c~
+      + Copy the following into ~$dirPath~
+        + ~template/doverlib.h~
+        + ~template/frtos.c~
+        + ~template/hifive.c~
+        + ~template/test.h~
+        + ~template/test_status.c~
+        + ~template/test_status.h~
+        + ~template/runFPGA.py~
+        + ~template/runRenode.py~
+        + ~template/runQEMU.py~
+      + Copy ~tests/$main~ to ~$dirPath/test.c~
+      + If it exists, copy ~../entities/$main.entities.yml~
+
+    + ~doMakefile(policy, dirPath, main, opt, "")~
+    + ~doReSc(policy, dirPath, simulator)~
+    + ~doSim(dirPath, simulator)~
+    + ~testOK = checkResult(dirPath, policy, rpt)~
+    + ~doCleanup(policy, testOK, dirPath, main, opt, removeDir)~
+
 ** High level overview of build system
 
    #+BEGIN_SRC sh
