@@ -130,4 +130,42 @@ debug-%:
     simulator    = sim
     #+END_SRC
 
-** High level tasks performed by build system
+** High level overview of build system
+
+   #+BEGIN_SRC sh
+   cd policy_tests
+
+   testName="osv.frtos.main.none"
+   installPath="kernel_dir/kernels/$testName"
+
+
+   #
+   # ----- equivalent of install-kernels Makefile target -----
+   #
+
+   rm -rf $installPath
+   mkdir $installPath
+
+   cp    ../../policy-engine/build/librv32-renode-validator.so $installPath
+   cp -r ../../policy-engine/soc_cfg $installPath
+   cp -r ../../policy-engine/policy/*.yml $installPath
+
+   if [ -e ../entities/$policyNum.entities.yml ] ; then
+     cp ../entities/$policyNum.entities.yml $installPath
+   else
+     cp ../entities/empty.entities.yml $installpath
+   fi
+
+
+   #
+   # ----- equivalent of debug-% Makefile target -----
+   #
+
+   # TODO check this!
+
+   python3 -m pytest --timeout=180 --tb=no --sim=renode -v \
+      --test_config=working --junitxml=report.xml \
+      -k test_debug[$testName-stack-string_works_1.c-O2] \
+      run_unit_tests.py
+
+   #+END_SRC
