@@ -67,6 +67,7 @@ require:
     init SOC.Memory.Ram_0                    {Rd, Wr}
 
     init SOC.IO.Debug                        {Rd, Wr, Ex}
+    init SOC.IO.TEST                         {Rd, Wr}
     init SOC.IO.CLINT                        {Rd, Wr}
     init SOC.IO.ITIM                         {Rd, Wr, Ex}
     init SOC.IO.PLIC                         {Rd, Wr}
