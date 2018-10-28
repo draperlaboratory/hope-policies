@@ -730,7 +730,7 @@ def doValidatorCfg(policy, dirPath, rule_cache):
         validatorCfg += """\
    rule_cache:
       name: {rule_cache_name}
-      capacity: 64
+      capacity: 128
         """.format(rule_cache_name=rule_cache)
 
     with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
