@@ -34,7 +34,7 @@ import:
     osv.cfi
     osv.rwx
     osv.stack
-    osv.frtos.heap
+    osv.heap
     osv.nop
     osv.none
     osv.threeClass

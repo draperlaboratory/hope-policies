@@ -36,6 +36,7 @@ import:
     osv.stack
     osv.nop
     osv.none
+    osv.heap
     osv.threeClass
     osv.cpi
 
@@ -47,6 +48,7 @@ policy:
     stack = stackPol
     threeClass = threeClassPol
     cpi = cpiPol
+    heap = heapPol
 
     nop-threeClass =  threeClassPol & nopPol
     rwx-threeClass =  (threeClassPol & rwxPol)
