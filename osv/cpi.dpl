@@ -87,6 +87,7 @@ require:
     init SOC.Memory.Ram_0                    {}
 
     init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}

@@ -69,6 +69,8 @@ require:
     init SOC.Memory.Flash_0                  {Nothing}
     init SOC.Memory.Ram_0                    {Nothing}
 
+    init SOC.IO.TEST                         {Nothing}
+
     init Tools.Elf.Section.SHF_ALLOC         {Nothing}
     init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
     init Tools.Elf.Section.SHF_WRITE         {Nothing}
