@@ -24,7 +24,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-module osv.frtos.heap:
+module osv.heap:
 
 import:
   osv.riscv
@@ -43,14 +43,11 @@ metadata:
   ModColor          // Special value used to modify heap cells
   AntiPointer       // Special Value that eliminates color from pointers
   SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
-  SpecialCaseMEMCPY  // Mark memcpy code to enable special case hack
   
 policy:
   heapPol =
 // Special case to avoid hacking printf %x
-     andiGrp(code == [SpecialCaseVFPRINTF], env == _, op1 == _ -> env = env, res = {})
-// Special case to avoid hacking memcpy
-   ^ xorGrp (code == [SpecialCaseMEMCPY], env == _, op1 == [(Pointer _)], op2 == [(Pointer _)] -> env = env, res = {AntiPointer})
+    andiGrp(code == [SpecialCaseVFPRINTF], env == _, op1 == _ -> env = env, res = {})
 
 // Handle generic pointer arithmetic
    ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
@@ -108,10 +105,37 @@ policy:
               -> mem = val, env = env )
 
 // non-memory operations
-   ^ notMemPass
+   ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+   ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+   ^ jumpGrp(code == _, env == _ -> return = {})
+   ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+   ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+   ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ privGrp(code == _, env == _ -> env = env)
 
 
 require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {RawHeap}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
 
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
@@ -123,5 +147,4 @@ require:
     init dover.Kernel.Code.ApplyTag.dover_ptr_tag       {NewColor}
     init dover.Kernel.Code.ApplyTag.dover_ptr_untag     {DelColor}
     init dover.Tools.RTL._vfprintf_r                    {SpecialCaseVFPRINTF}
-    init dover.Tools.RTL.memcpy                         {SpecialCaseMEMCPY}
     
