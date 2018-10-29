@@ -1,7 +1,5 @@
 # test script for running unit test
 
-import pdb
-
 import functools
 import itertools
 import operator
