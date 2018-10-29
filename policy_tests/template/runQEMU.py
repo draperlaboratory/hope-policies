@@ -22,6 +22,8 @@ uartLogFile = "uart.log"
 
 statusLogFile = "pex.log"
 
+qemuLogFile = "qemu.log"
+
 testDone = False
 runcmd = "qemu-system-riscv32"
 cwd = os.getcwd()
@@ -50,9 +52,11 @@ def launchQEMU(policies):
     global testDone
     try:
         print("Running qemu cmd:{}\n", str([runcmd] + opts))
-        rc = subprocess.Popen([runcmd] + opts,
-                              env={"LD_LIBRARY_PATH": cwd + '/' + policies,
-                                   "PATH": os.environ["PATH"]})
+        with open(qemuLogFile, 'w+') as f:
+            rc = subprocess.Popen([runcmd] + opts,
+                                  env={"LD_LIBRARY_PATH": cwd + '/' + policies,
+                                       "PATH": os.environ["PATH"]},
+                                  stdout=f, stderr=f)
         while rc.poll() is None:
             time.sleep(0.5)
             try:

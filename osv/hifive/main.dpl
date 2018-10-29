@@ -67,9 +67,18 @@ policy:
 
     rwx-stack =  rwxPol & stackPol
 
+    heap-rwx = heapPol & rwxPol
+    heap-stack = heapPol & stackPol
+    heap-threeClass = threeClassPol & heapPol
+    heap-rwx-stack = heapPol & rwxPol & stackPol
+    heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
+    heap-stack-threeClass = heapPol & stackPol & threeClassPol
+
     nop-rwx-threeClass =  threeClassPol & nopPol & rwxPol
     nop-stack-threeClass =  threeClassPol & nopPol & stackPol
     rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
+
+    heap-rwx-stack-threeClass = threeClassPol & rwxPol & stackPol & heapPol
 
     cfi-nop-rwx =  cfiPol & nopPol & rwxPol
     cfi-nop-stack =  cfiPol & nopPol & stackPol

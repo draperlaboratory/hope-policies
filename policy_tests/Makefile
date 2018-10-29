@@ -1,7 +1,7 @@
 # This silences python error trace backs, better for running tests set
 # ERROR_MSGS to an empty string to print error trace backs
 PYTHON ?= python3
-ERROR_MSGS ?= --tb=long
+ERROR_MSGS ?= --tb=no
 #XDIST ?= -n auto
 
 KERNEL_DIR = kernel_dir
@@ -12,11 +12,11 @@ CONFIG ?= working
 REMOVE_PASSING ?= #--remove_passing
 PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) $(REMOVE_PASSING)
 
-simple:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py
-
 full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_full run_unit_tests.py
+
+simple:
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py
 
 allOs:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_all run_unit_tests.py
@@ -33,9 +33,10 @@ profile:
 list:
 	$(PYTHON) -m pytest $(ERROR_MSGS) --collect-only run_unit_tests.py
 
-install-kernels:
+install-kernels-simple:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
 
+install-kernels:
 install-kernels-full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_full install_kernels.py
 
