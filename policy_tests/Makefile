@@ -13,11 +13,11 @@ REMOVE_PASSING ?= #--remove_passing
 RULE_CACHE ?=
 PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) --rule_cache=$(RULE_CACHE) $(REMOVE_PASSING)
 
-simple:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py
-
 full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_full run_unit_tests.py
+
+simple:
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py
 
 allOs:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_all run_unit_tests.py
@@ -34,9 +34,10 @@ profile:
 list:
 	$(PYTHON) -m pytest $(ERROR_MSGS) --collect-only run_unit_tests.py
 
-install-kernels:
+install-kernels-simple:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
 
+install-kernels:
 install-kernels-full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_full install_kernels.py
 
