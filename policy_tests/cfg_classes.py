@@ -13,6 +13,7 @@ class AllTests:
 
     #positive tests go in the tests dir
     positive_tests = [
+        "coremark",
         "printf_works_1.c",
         "hello_works_1.c",
         "stanford_int_treesort_fixed.c",
@@ -26,8 +27,7 @@ class AllTests:
         "code_read_works_1.c",
         "timer_works_1.c",
         "function_pointer_works_1.c",
-        "function_pointer_works_2.c",
-        "coremark"
+        "function_pointer_works_2.c"
     ]
 
     # negative tests need to be in a dir that matches the policy 
@@ -66,6 +66,7 @@ class WorkingTests(AllTests):
                       if not any(test in s for s in
                                  ["timer_works_1.c"
                                   "longjump_works_1.c"
+                                  "coremark"
                                  ]
                                  )]
     negative_tests = [
