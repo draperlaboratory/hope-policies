@@ -119,17 +119,17 @@ def profileRpt():
 @pytest.mark.parametrize("opt", quick_opt + more_opts)
 def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "output", sim)
 
 @pytest.mark.parametrize("opt", quick_opt)
 def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "output", sim)
 
 @pytest.mark.parametrize("opt", quick_opt)
 def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing):
     policyParams = []
-    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim)
+    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "output", sim)
 
 #debug target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
@@ -156,14 +156,25 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
     rpt.test(policy, main,opt)
     doMkDir(outDir)
     dirPath = os.path.join(outDir, name)
+    if not "debug" in outDir:
+        doMkDir(os.path.join(outDir,"pass"))
+        doMkDir(os.path.join(outDir,"fail"))
     doBinDir(dirPath)
     doMkApp(policy, dirPath, main, opt)
     doMakefile(policy, dirPath, main, opt, "")
     doReSc(policy, dirPath, simulator)
     doSim(dirPath, simulator)
-#    testOK = checkPolicy(dirPath, policy, rpt)
+
     testOK = checkResult(dirPath, policy, rpt)
-    doCleanup(policy, testOK, dirPath, main, opt, removeDir)
+
+    if testOK:
+        if removeDir:
+            runit(None, "", "rm", ["-rf", dp])
+        else:
+            runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
+    else:
+        runit(None, "", "mv", [dirPath, os.path.join(outDir, "fail")])
+        pytest.fail("User code did not produce correct result")
 
 def doMkDir(dir):
     try:
@@ -308,13 +319,6 @@ def checkResult(dp, policy, rpt):
                                 return True
     fh.close()
     return False #   User code did not produce correct result
-
-def doCleanup(policy, testOK, dp, main, opt, removeDir):
-    if testOK:
-        if removeDir:
-            runit(None, "", "rm", ["-rf", dp])
-    else:
-        pytest.fail("User code did not produce correct result")
 
 # this way seems to have process sync issues
 def runitCall(dp, path, cmd, args):
