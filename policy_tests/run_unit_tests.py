@@ -309,15 +309,11 @@ def checkResult(dp, policy, rpt):
     fh.close()
     return False #   User code did not produce correct result
 
-# FIXME: The -d has become obsolete (I think)
 def doCleanup(policy, testOK, dp, main, opt, removeDir):
     if testOK:
         if removeDir:
             runit(None, "", "rm", ["-rf", dp])
-        else:
-            doMakefile(policy, dp, main, opt, "-d")
     else:
-        doMakefile(policy, dp, main, opt, "-d")
         pytest.fail("User code did not produce correct result")
 
 # this way seems to have process sync issues
