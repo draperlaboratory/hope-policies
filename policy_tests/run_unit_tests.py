@@ -157,7 +157,8 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
     doMkDir(outDir)
     dirPath = os.path.join(outDir, name)
     if not "debug" in outDir:
-        doMkDir(os.path.join(outDir,"pass"))
+        if not removeDir:
+            doMkDir(os.path.join(outDir,"pass"))
         doMkDir(os.path.join(outDir,"fail"))
     doBinDir(dirPath)
     doMkApp(policy, dirPath, main, opt)
@@ -167,9 +168,10 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
 
     testOK = checkResult(dirPath, policy, rpt)
 
+    # cleanup / move test to appropriate directory
     if testOK:
         if removeDir:
-            runit(None, "", "rm", ["-rf", dp])
+            runit(None, "", "rm", ["-rf", dirPath])
         else:
             runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
     else:
