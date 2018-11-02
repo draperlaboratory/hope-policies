@@ -169,15 +169,15 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator):
     testOK = checkResult(dirPath, policy, rpt)
 
     # cleanup / move test to appropriate directory
-    if not "debug" in outDir:
-        if testOK:
-            if removeDir:
-                runit(None, "", "rm", ["-rf", dirPath])
-            else:
-                runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
-        else:
+    if testOK:
+        if removeDir:
+            runit(None, "", "rm", ["-rf", dirPath])
+        elif not "debug" in outDir:
+            runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
+    else:
+        if not "debug" in outDir:
             runit(None, "", "mv", [dirPath, os.path.join(outDir, "fail")])
-            pytest.fail("User code did not produce correct result")
+        pytest.fail("User code did not produce correct result")
 
 def doMkDir(dir):
     try:
