@@ -7,8 +7,8 @@ ERROR_MSGS ?= --tb=no
 KERNEL_DIR = kernel_dir
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
-SIM ?= renode
-CONFIG ?= working
+SIM ?= qemu
+CONFIG ?= hifive
 REMOVE_PASSING ?= #--remove_passing
 PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) $(REMOVE_PASSING)
 
@@ -31,13 +31,12 @@ profile:
 	$(PYTHON) -m pytest $(ERROR_MSGS) $(XDIST) -v -k test_profile run_unit_tests.py
 
 list:
-	$(PYTHON) -m pytest $(ERROR_MSGS) --collect-only run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only run_unit_tests.py
 
 install-kernels-simple:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
 
-install-kernels:
-install-kernels-full:
+install-kernels install-kernels-full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_full install_kernels.py
 
 install-kernel-%:
@@ -45,10 +44,10 @@ install-kernel-%:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_kernel[$*] install_kernels.py
 
 list-kernels:
-	$(PYTHON) -m pytest --collect-only install_kernels.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
 
 clean: clean-kernels
-	rm -rf fail debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
+	rm -rf output debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
 
 clean-kernels:
 	rm -rf $(KERNEL_DIR)/kernels/*

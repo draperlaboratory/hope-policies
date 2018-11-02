@@ -1,5 +1,5 @@
 .cache/
-fail/
+output/
 debug/
 __pycache__/
 assets/
