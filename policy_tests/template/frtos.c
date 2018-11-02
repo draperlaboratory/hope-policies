@@ -6,6 +6,9 @@
 #include "utils.h"
 #include "test.h"
 
+void main_task(void *argument);
+unsigned long sys_GetWallTimestampUs(void);
+void printk(const char* s, ...);
 /*
  * Test wrapper for dover-os that calls the test case in test.c
  */
@@ -36,8 +39,8 @@ int t_printf(const char *s, ...){
   va_start(vl, s);
   printf_uart(s, vl);
   va_end(vl);
-
-}  
+  return 0;
+}
 
 
 /* ---------------------------- stuff to make FreeRTOS work ---------------------- */
@@ -46,7 +49,7 @@ int t_printf(const char *s, ...){
  * This function must return uS timestamp with an order of magnitude
  * more resolution than FreeRTOS tick
  */
-extern uint32_t uiPortGetWallTimestampUs();
+extern uint32_t uiPortGetWallTimestampUs(void);
 unsigned long sys_GetWallTimestampUs(void)
 {
     /* TBD on real FPGA hw */

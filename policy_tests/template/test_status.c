@@ -18,7 +18,7 @@ static bool test_status_passing = false;
 static bool test_status_positive = false;
 static bool test_status_negative = false;
 
-extern uint32_t uiPortGetWallTimestampUs();
+extern uint32_t uiPortGetWallTimestampUs(void);
 
 // Identify positive case (test will end)
 void test_positive(){
