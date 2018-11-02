@@ -36,8 +36,7 @@ list:
 install-kernels-simple:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
 
-install-kernels:
-install-kernels-full:
+install-kernels install-kernels-full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_full install_kernels.py
 
 install-kernel-%:
