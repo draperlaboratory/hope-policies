@@ -47,7 +47,7 @@ list-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
 
 clean: clean-kernels
-	rm -rf fail debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
+	rm -rf output debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
 
 clean-kernels:
 	rm -rf $(KERNEL_DIR)/kernels/*
