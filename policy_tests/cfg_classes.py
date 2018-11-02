@@ -13,6 +13,7 @@ class AllTests:
 
     #positive tests go in the tests dir
     positive_tests = [
+        "coremark",
         "printf_works_1.c",
         "hello_works_1.c",
         "stanford_int_treesort_fixed.c",
@@ -65,6 +66,7 @@ class WorkingTests(AllTests):
                       if not any(test in s for s in
                                  ["timer_works_1.c"
                                   "longjump_works_1.c"
+                                  "coremark"
                                  ]
                                  )]
     negative_tests = [

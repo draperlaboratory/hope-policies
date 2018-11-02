@@ -202,6 +202,8 @@ def is32os(targ):
     return switch.get(targ, "")
 
 def doMkApp(policy, dp, main, opt):
+
+    # runtime specific code 
     if "dos" in policy:
         runit(dp, "", "cp", [os.path.join("template", "dos-mem.h"), os.path.join(dp, "mem.h")])
         runit(dp, "", "cp", [os.path.join("template", "dos.cmake"), os.path.join(dp, "CMakeLists.txt")])
@@ -215,18 +217,34 @@ def doMkApp(policy, dp, main, opt):
         shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
     else:
         pytest.fail("Unknown OS, can't copy app files")
+
+    # pytest code run wrappers
+    runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
+    runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
+    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
+
+    # generic test code 
     runit(dp, "", "cp", [os.path.join("template", "doverlib.h"), dp])
-#    runit(dp, "", "cp", [os.path.join("template", "print.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c")])
     runit(dp, "", "cp", [os.path.join("template", "frtos.c"), os.path.join(dp, "frtos.c")])
     runit(dp, "", "cp", [os.path.join("template", "hifive.c"), os.path.join(dp, "hifive.c")])
     runit(dp, "", "cp", [os.path.join("template", "test.h"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
-    runit(dp, "", "cp", [os.path.join("tests", main), os.path.join(dp, "test.c")])
+
+    # test specific code
+
+    # destination sources dir contains c sources & headers 
+    srcdir = os.path.join(dp, "srcs")
+    runit(dp, "", "mkdir", [srcdir])
+
+    if os.path.isfile(os.path.join("tests", main)):
+        runit(dp, "", "cp", [os.path.join("tests", main), srcdir])
+    else:
+        for f in os.listdir(os.path.join("tests", main)):
+            runit(dp, "", "cp", [os.path.join("tests", main, f), srcdir])
+
+        
     # create entity for file elements
     entDir = os.path.abspath("../entities")
     entFile = main + ".entities.yml"
@@ -360,7 +378,7 @@ def hifiveMakefile(policy, main, opt, debug):
     return """
 PYTHON ?= python3
 
-build/main: hifive.c test.c
+build/main: hifive.c
 	cd build && make
 
 inits:
