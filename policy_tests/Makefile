@@ -7,8 +7,8 @@ ERROR_MSGS ?= --tb=no
 KERNEL_DIR = kernel_dir
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
-SIM ?= qemu
-CONFIG ?= hifive
+SIM ?= renode
+CONFIG ?= working
 REMOVE_PASSING ?= #--remove_passing
 PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) $(REMOVE_PASSING)
 
