@@ -37,7 +37,13 @@ def fullK(modules, policies):
     return [x for x in r if len(x[1]) == 1 or not "none" in x[2]]
 
 def simpleK(modules, policies):
-    return [x for x in fullK(modules, policies) if len(x[1]) == 1 or len(x[1]) == len(policies)]
+
+    # length of policy that has every member policy except none
+    composite_len = len(policies)
+    if "none" in policies:
+        composite_len -= 1
+
+    return [x for x in fullK(modules, policies) if len(x[1]) == 1 or len(x[1]) == composite_len]
 
 # generate the permutations of policies to compose
 def permutePols(polStrs):

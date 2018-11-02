@@ -23,7 +23,7 @@ class AllTests:
         "malloc_works_2.c",
         "string_works_1.c",
         "longjump_works_1.c",
-        "code_read_works_1.c",
+#        "code_read_works_1.c",
         "timer_works_1.c",
         "function_pointer_works_1.c",
         "function_pointer_works_2.c"
