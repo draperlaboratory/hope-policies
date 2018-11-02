@@ -11,7 +11,8 @@ SIM ?= renode
 CONFIG ?= working
 REMOVE_PASSING ?= #--remove_passing
 RULE_CACHE ?=
-PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) --rule_cache=$(RULE_CACHE) $(REMOVE_PASSING)
+RULE_CACHE_SIZE ?= 16
+PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) $(REMOVE_PASSING)
 
 simple:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py

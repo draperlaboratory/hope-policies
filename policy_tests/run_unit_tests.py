@@ -10,7 +10,6 @@ import shutil
 import time
 import glob
 import errno
-import pdb
 
 from setup_test import *
 #TODO make these cmd-line options?
@@ -118,41 +117,41 @@ def profileRpt():
 
 # test targets that can be run with py.test - k <target prefix>
 @pytest.mark.parametrize("opt", quick_opt + more_opts)
-def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache):
+def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache, rule_cache_size)
 
 @pytest.mark.parametrize("opt", quick_opt)
-def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache):
+def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache, rule_cache_size)
 
 @pytest.mark.parametrize("opt", quick_opt)
-def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing, rule_cache):
+def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache)
+    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache, rule_cache_size)
 
 #debug target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_debug(fullF, fullFiles, opt, profileRpt, sim, rule_cache):
+def test_debug(fullF, fullFiles, opt, profileRpt, sim, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug", sim, rule_cache)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug", sim, rule_cache, rule_cache_size)
 
 #broken target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_broken(simpleF, brokenFiles, opt, profileRpt, sim, rule_cache):
+def test_broken(simpleF, brokenFiles, opt, profileRpt, sim, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken", sim, rule_cache)
+    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken", sim, rule_cache, rule_cache_size)
 
 #profile target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
-def test_profile(profileF, profileFiles, opt, profileRpt, sim, rule_cache):
+def test_profile(profileF, profileFiles, opt, profileRpt, sim, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof", sim, rule_cache)
+    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof", sim, rule_cache, rule_cache_size)
 
 
 # Test execution function
-def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, rule_cache):
+def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, rule_cache, rule_cache_size):
     name = tName((policy, main,opt))
     rpt.test(policy, main,opt)
     doMkDir(outDir)
@@ -161,7 +160,7 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
     doMkApp(policy, dirPath, main, opt)
     doMakefile(policy, dirPath, main, opt, "")
     doReSc(policy, dirPath, simulator)
-    doValidatorCfg(policy, dirPath, rule_cache)
+    doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size)
     doSim(dirPath, simulator)
 #    testOK = checkPolicy(dirPath, policy, rpt)
     testOK = checkResult(dirPath, policy, rpt)
@@ -711,7 +710,7 @@ break main
 continue
 """.format(path = os.path.join(os.getcwd(), dir))
 
-def doValidatorCfg(policy, dirPath, rule_cache):
+def doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size):
     if "hifive" in policy:
         soc_cfg = "hifive_e_cfg.yml"
     else:
@@ -730,8 +729,8 @@ def doValidatorCfg(policy, dirPath, rule_cache):
         validatorCfg += """\
    rule_cache:
       name: {rule_cache_name}
-      capacity: 64
-        """.format(rule_cache_name=rule_cache)
+      capacity: {rule_cache_size}
+        """.format(rule_cache_name=rule_cache, rule_cache_size=rule_cache_size)
 
     with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
         f.write(validatorCfg)

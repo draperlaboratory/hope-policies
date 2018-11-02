@@ -12,6 +12,8 @@ def pytest_addoption(parser):
                      help='Delete passing test output directores')
     parser.addoption('--rule_cache', default='',
                      help='Which rule cache to use (ideal, finite, dmhc). Empty for none.')
+    parser.addoption('--rule_cache_size', default=16, type=int,
+                     help='Which rule cache to use (ideal, finite, dmhc). Empty for none.')
 
 @pytest.fixture
 def sim(request):
@@ -29,6 +31,9 @@ def remove_passing(request):
 def rule_cache(request):
     return request.config.getoption('--rule_cache')
 
+@pytest.fixture
+def rule_cache_size(request):
+    return request.config.getoption('--rule_cache_size')
 
 def parameterize_test_file(varName, testFiles, metafunc):
     if varName in metafunc.fixturenames:
