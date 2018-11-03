@@ -33,9 +33,9 @@ profile:
 	$(PYTHON) -m pytest $(ERROR_MSGS) $(XDIST) -v -k test_profile run_unit_tests.py
 
 list:
-	$(PYTHON) -m pytest $(ERROR_MSGS) --collect-only run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only run_unit_tests.py
 
-install-kernels:
+install-kernels install-kernels-simple:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
 
 install-kernels-full:
@@ -46,10 +46,10 @@ install-kernel-%:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_kernel[$*] install_kernels.py
 
 list-kernels:
-	$(PYTHON) -m pytest --collect-only install_kernels.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
 
 clean: clean-kernels
-	rm -rf fail debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
+	rm -rf output debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
 
 clean-kernels:
 	rm -rf $(KERNEL_DIR)/kernels/*

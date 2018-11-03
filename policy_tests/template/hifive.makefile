@@ -1,6 +1,15 @@
 TARGET = main
-C_SRCS += ../test.c ../hifive.c ../test_status.c
-CFLAGS += -O2 -fno-builtin-printf -I$(ISP_PREFIX)/riscv32-unknown-elf/include
+
+C_SRCS += ../hifive.c ../test_status.c
+C_SRCS += $(wildcard ../srcs/*.c)
+
+HEADERS += ../mem.h ../test.h ../test_status.h
+HEADERS += $(wildcard ../srcs/*.h)
+
+include $(wildcard ../srcs/Makefile)
+
+CFLAGS += -O2 -fno-builtin-printf -I$(ISP_PREFIX)/riscv32-unknown-elf/include -I..
+
 RISCV_PATH ?= $(ISP_PREFIX)
 RISCV_GCC     ?= $(abspath $(RISCV_PATH)/bin/clang)
 RISCV_GXX     ?= $(abspath $(RISCV_PATH)/bin/clang)

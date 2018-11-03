@@ -37,7 +37,13 @@ def fullK(modules, policies):
     return [x for x in r if len(x[1]) == 1 or not "none" in x[2]]
 
 def simpleK(modules, policies):
-    return [x for x in fullK(modules, policies) if len(x[1]) == 1 or len(x[1]) == len(policies)]
+
+    # length of policy that has every member policy except none
+    composite_len = len(policies)
+    if "none" in policies:
+        composite_len -= 1
+
+    return [x for x in fullK(modules, policies) if len(x[1]) == 1 or len(x[1]) == composite_len]
 
 # generate the permutations of policies to compose
 def permutePols(polStrs):
@@ -102,9 +108,23 @@ def doInstallPolicy(osPol, installPath):
     entDir = os.path.abspath("../entities")
     entFile = os.path.join(entDir, polNm + ".entities.yml")
     destEnt = os.path.join(installPath, polNm + ".entities.yml")
+
     if os.path.isfile(entFile):
         shutil.copyfile(entFile, destEnt)
-    else:
+    elif (len(osPol[1]) != 1):
+        # build composite entities for composite policy w.o existing entities
+
+        # make new empty file 
+        shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
+
+        # concatenate all other files
+        with open(destEnt, 'wb') as comp_ents:
+            for p in osPol[1]:
+                polEntFile = osPol[0].split("{")[0] + p + ".entities.yml"
+                if os.path.isfile(os.path.join(entDir, polEntFile)):
+                    with open(os.path.join(entDir, polEntFile), 'rb') as fd:
+                        shutil.copyfileobj(fd, comp_ents);
+    else: 
         shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
 
 def installTarget(osPol):

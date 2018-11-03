@@ -13,6 +13,7 @@ class AllTests:
 
     #positive tests go in the tests dir
     positive_tests = [
+        "coremark",
         "printf_works_1.c",
         "hello_works_1.c",
         "stanford_int_treesort_fixed.c",
@@ -60,16 +61,22 @@ class CFIRWXTests(AllTests):
 
 class WorkingTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
-    policies = ["none", "rwx", "stack"]
+    policies = ["none", "heap", "rwx", "stack"]
     positive_tests = [test for test in AllTests.positive_tests
                       if not any(test in s for s in
                                  ["timer_works_1.c"
                                   "longjump_works_1.c"
+                                  "coremark"
                                  ]
                                  )]
     negative_tests = [
         "rwx/code_write_fails_1.c",
         "rwx/data_exe_fails_1.c",
+        "heap/ptr_arith_fails_1.c",
+        "heap/ptr_arith_fails_2.c",
+        "heap/malloc_fails_1.c",
+        "heap/malloc_fails_2.c",
+        "heap/malloc_fails_3.c",
         "threeClass/jump_data_fails_1.c",
         "threeClass/call_fails_1.c",
         "stack/stack_fails_1.c",
@@ -88,7 +95,7 @@ class FRTOSTests(AllTests):
 
 class HifiveTests(AllTests):
     os_modules = ["osv.hifive.main.{pol}"]
-    policies = ["none", "rwx", "stack", "threeClass"]
+    policies = ["none", "rwx", "stack", "threeClass", "heap"]
     positive_tests = [test for test in AllTests.positive_tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1.c",
@@ -101,6 +108,11 @@ class HifiveTests(AllTests):
         "rwx/data_exe_fails_1.c",
         "threeClass/jump_data_fails_1.c",
         "threeClass/call_fails_1.c",
+        "heap/ptr_arith_fails_1.c",
+        "heap/ptr_arith_fails_2.c",
+        "heap/malloc_fails_1.c",
+        "heap/malloc_fails_2.c",
+        "heap/malloc_fails_3.c",
         "stack/stack_fails_1.c",
     ]
 

@@ -119,17 +119,17 @@ def profileRpt():
 @pytest.mark.parametrize("opt", quick_opt + more_opts)
 def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache, rule_cache_size)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "output", sim, rule_cache, rule_cache_size)
 
 @pytest.mark.parametrize("opt", quick_opt)
 def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache, rule_cache_size)
+    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "output", sim, rule_cache, rule_cache_size)
 
 @pytest.mark.parametrize("opt", quick_opt)
 def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
     policyParams = []
-    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "fail", sim, rule_cache, rule_cache_size)
+    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "output", sim, rule_cache, rule_cache_size)
 
 #debug target always leaves test dir under debug dir
 @pytest.mark.parametrize("opt", quick_opt)
@@ -156,15 +156,29 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
     rpt.test(policy, main,opt)
     doMkDir(outDir)
     dirPath = os.path.join(outDir, name)
+    if not "debug" in outDir:
+        if not removeDir:
+            doMkDir(os.path.join(outDir,"pass"))
+        doMkDir(os.path.join(outDir,"fail"))
     doBinDir(dirPath)
     doMkApp(policy, dirPath, main, opt)
     doMakefile(policy, dirPath, main, opt, "")
     doReSc(policy, dirPath, simulator)
     doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size)
     doSim(dirPath, simulator)
-#    testOK = checkPolicy(dirPath, policy, rpt)
+
     testOK = checkResult(dirPath, policy, rpt)
-    doCleanup(policy, testOK, dirPath, main, opt, removeDir)
+
+    # cleanup / move test to appropriate directory
+    if testOK:
+        if removeDir:
+            runit(None, "", "rm", ["-rf", dirPath])
+        elif not "debug" in outDir:
+            runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
+    else:
+        if not "debug" in outDir:
+            runit(None, "", "mv", [dirPath, os.path.join(outDir, "fail")])
+        pytest.fail("User code did not produce correct result")
 
 def doMkDir(dir):
     try:
@@ -189,6 +203,8 @@ def is32os(targ):
     return switch.get(targ, "")
 
 def doMkApp(policy, dp, main, opt):
+
+    # runtime specific code 
     if "dos" in policy:
         runit(dp, "", "cp", [os.path.join("template", "dos-mem.h"), os.path.join(dp, "mem.h")])
         runit(dp, "", "cp", [os.path.join("template", "dos.cmake"), os.path.join(dp, "CMakeLists.txt")])
@@ -202,18 +218,34 @@ def doMkApp(policy, dp, main, opt):
         shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
     else:
         pytest.fail("Unknown OS, can't copy app files")
+
+    # pytest code run wrappers
+    runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
+    runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
+    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
+
+    # generic test code 
     runit(dp, "", "cp", [os.path.join("template", "doverlib.h"), dp])
-#    runit(dp, "", "cp", [os.path.join("template", "print.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c")])
     runit(dp, "", "cp", [os.path.join("template", "frtos.c"), os.path.join(dp, "frtos.c")])
     runit(dp, "", "cp", [os.path.join("template", "hifive.c"), os.path.join(dp, "hifive.c")])
     runit(dp, "", "cp", [os.path.join("template", "test.h"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
-    runit(dp, "", "cp", [os.path.join("tests", main), os.path.join(dp, "test.c")])
+
+    # test specific code
+
+    # destination sources dir contains c sources & headers 
+    srcdir = os.path.join(dp, "srcs")
+    runit(dp, "", "mkdir", [srcdir])
+
+    if os.path.isfile(os.path.join("tests", main)):
+        runit(dp, "", "cp", [os.path.join("tests", main), srcdir])
+    else:
+        for f in os.listdir(os.path.join("tests", main)):
+            runit(dp, "", "cp", [os.path.join("tests", main, f), srcdir])
+
+        
     # create entity for file elements
     entDir = os.path.abspath("../entities")
     entFile = main + ".entities.yml"
@@ -310,17 +342,6 @@ def checkResult(dp, policy, rpt):
     fh.close()
     return False #   User code did not produce correct result
 
-# FIXME: The -d has become obsolete (I think)
-def doCleanup(policy, testOK, dp, main, opt, removeDir):
-    if testOK:
-        if removeDir:
-            runit(None, "", "rm", ["-rf", dp])
-        else:
-            doMakefile(policy, dp, main, opt, "-d")
-    else:
-        doMakefile(policy, dp, main, opt, "-d")
-        pytest.fail("User code did not produce correct result")
-
 # this way seems to have process sync issues
 def runitCall(dp, path, cmd, args):
     runcmd = [os.path.join(path,cmd)] + args
@@ -358,7 +379,7 @@ def hifiveMakefile(policy, main, opt, debug):
     return """
 PYTHON ?= python3
 
-build/main: hifive.c test.c
+build/main: hifive.c
 	cd build && make
 
 inits:

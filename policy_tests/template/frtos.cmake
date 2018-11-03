@@ -45,7 +45,7 @@ add_library(free-rtos ${FREE_RTOS_DIR}/Source/tasks.c
 		      ${FREE_RTOS_DIR}/Source/timers.c
 		      ${FREE_RTOS_DIR}/Source/event_groups.c
 		      ${FREE_RTOS_DIR}/Source/list.c
-		      ${FREE_RTOS_DIR}/Source/portable/MemMang/heap_2.c
+		      ${FREE_RTOS_DIR}/Source/portable/MemMang/dover_heap_2.c
 		      ${FREE_RTOS_DIR}/Source/portable/GCC/RISCV/port.c
 		      ${FREE_RTOS_DIR}/Source/portable/GCC/RISCV/portasm.S
 		      ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/arch/syscall.c
@@ -56,7 +56,10 @@ add_library(free-rtos-dover
   ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/soc/src/ns16550.c
   ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/arch/utils.c)
 
-add_executable(main frtos.c test_status.c test.c)
+AUX_SOURCE_DIRECTORY(srcs TEST_SOURCES)
+include_directories(.)
+
+add_executable(main frtos.c test_status.c ${TEST_SOURCES})
 
 
 target_link_libraries(main free-rtos free-rtos-dover)
