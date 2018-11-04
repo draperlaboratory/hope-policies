@@ -16,7 +16,7 @@ printIO = True
 
 # set timeout seconds
 
-timeoutSec = 30
+timeoutSec = 3600
 
 uartLogFile = "uart.log"
 
@@ -35,7 +35,7 @@ opts = [ "-nographic",
          "-singlestep", #need to instrument every target instruction
          "-d", "nochain",
          "--policy-validator-cfg",
-         "policy-path={policyDir},tag-info-file={tagFile},soc-cfg-path={soc_cfg_path}"]
+         "yaml-cfg={validatorCfg}"]
 
 
 def watchdog():
@@ -90,15 +90,13 @@ def runOnQEMU():
         print("Begin QEMU test... (timeout: ", timeoutSec, ")")
         if len(sys.argv) == 3 and sys.argv[2] == "-d":
             policies = sys.argv[1]
-            opts[-1] = opts[-1].format(policyDir=cwd + '/' + policies, tagFile=cwd+"/build/main.taginfo",
-                                       soc_cfg_path=cwd + "/" + policies + "/soc_cfg/hifive_e_cfg.yml")
+            opts[-1] = opts[-1].format(validatorCfg=os.path.join(cwd, "validator_cfg.yml"))
             launchQEMUDebug(policies)
         else:
             if len(sys.argv) != 2:
                 print("Please pass policy directory name.")
             policies = sys.argv[1]
-            opts[-1] = opts[-1].format(policyDir=cwd + '/' + policies, tagFile=cwd+"/build/main.taginfo",
-                                       soc_cfg_path=cwd + "/" + policies + "/soc_cfg/hifive_e_cfg.yml")
+            opts[-1] = opts[-1].format(validatorCfg=os.path.join(cwd, "validator_cfg.yml"))
             wd = threading.Thread(target=watchdog)
             wd.start()
             print("Launch QEMU...")
