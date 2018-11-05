@@ -66,6 +66,12 @@ def launchQEMU(policies):
                             rc.terminate()
                             testDone = True
                             return
+                with open(statusLogFile, 'r') as f:
+                    for line in f.readlines():
+                        if terminateMSG in line or testDone:
+                            rc.terminate()
+                            testDone = True
+                            return
             except IOError:
                 #keep trying if fail to open uart log
                 pass
