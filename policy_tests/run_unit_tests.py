@@ -232,6 +232,7 @@ def doMkApp(policy, dp, main, opt):
     runit(dp, "", "cp", [os.path.join("template", "test.h"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.c"), dp])
     runit(dp, "", "cp", [os.path.join("template", "test_status.h"), dp])
+    runit(dp, "", "cp", [os.path.join("template", "sifive_test.h"), dp])
 
     # test specific code
 

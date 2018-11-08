@@ -6,6 +6,7 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #include "test.h"
+#include "sifive_test.h"
 
 #define log printf
 
@@ -41,6 +42,7 @@ void test_negative(){
 void test_begin(){
   t_printf("MSG: Begin test.\n");
   test_status_passing = true;
+  test_device = (uint32_t *)SIFIVE_TEST_ADDR;
 }
 
 // Set passing status
@@ -64,16 +66,19 @@ int test_done(){
   t_printf("End time: %u\n", uiPortGetWallTimestampUs());
   //  t_printf("Clock time: %d.%06d\n", sec, usec);
   t_printf("MSG: End test.\n");
+  *test_device = SIFIVE_TEST_PASS;
   return 0;
   }
   else if(test_status_positive && test_status_negative) {
     t_printf("FAIL: error in test, can't be both positive and negative test.\n");
     t_printf("MSG: End test.\n");
+    *test_device = SIFIVE_TEST_FAIL;
     return 1;
   }
   else {
     t_printf("FAIL: test failed.\n");
     t_printf("MSG: End test.\n");
+    *test_device = SIFIVE_TEST_FAIL;
     return 1;
   }
 }
