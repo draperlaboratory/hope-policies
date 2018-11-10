@@ -152,32 +152,62 @@ def test_profile(profileF, profileFiles, opt, profileRpt, sim, rule_cache, rule_
 
 # Test execution function
 def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, rule_cache, rule_cache_size):
-    name = tName((policy, main,opt))
-    rpt.test(policy, main,opt)
-    doMkDir(outDir)
-    dirPath = os.path.join(outDir, name)
-    if not "debug" in outDir:
-        if not removeDir:
-            doMkDir(os.path.join(outDir,"pass"))
-        doMkDir(os.path.join(outDir,"fail"))
-    doBinDir(dirPath)
-    doMkApp(policy, dirPath, main, opt)
-    doMakefile(policy, dirPath, main, opt, "")
-    doReSc(policy, dirPath, simulator)
-    doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size)
-    doSim(dirPath, simulator)
 
-    testOK = checkResult(dirPath, policy, rpt)
+    # give params to object
+    rpt.test(policy, main,opt)
+
+    # output directory (for all tests)
+    doMkDir(outDir)
+
+    # make output directory for _this_ test
+    name = main + "." + simulator
+    dirPath = os.path.join(outDir, name)
+    if not os.path.isdir(dirPath):
+        doMkDir(dirPath)
+        
+        # make policy-common test sources & tools
+        doMkApp(policy, dirPath, main, opt)
+
+        # make build dir for test
+        doMkBuildDir(dirPath, policy);
+
+        # do the build
+        subprocess.Popen(["make"], stdout=open(os.path.join(dirPath, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=dirPath).wait()
+        # check that build succeeded
+        assert os.path.isfile(os.path.join(dirPath, "build", "main"))
+        
+    # policy-specific stuff
+    polnm = policy.split('.')[-1]
+    pol_test_path = os.path.join(dirPath, polnm)
+    doMkDir(pol_test_path)
+
+    # retrieve policy
+    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernel_dir/kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
+
+    doMakefile(policy, pol_test_path, main, opt, "")
+    doReSc(policy, pol_test_path, simulator)
+    doValidatorCfg(policy, pol_test_path, rule_cache, rule_cache_size)
+
+    # run tagging tools
+    doMkDir(os.path.join(pol_test_path, "bininfo"))
+    subprocess.Popen(["make", "inits"], stdout=open(os.path.join(pol_test_path, "inits.log"), "w"), stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
+
+    # Check for tag information
+    assert os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.taginfo"))
+    assert os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text"))
+    assert os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text.tagged"))
+    
+    # run test
+    doSim(pol_test_path, simulator)
+
+    # evaluate results
+    testOK = checkResult(pol_test_path, policy, rpt)
 
     # cleanup / move test to appropriate directory
     if testOK:
         if removeDir:
             runit(None, "", "rm", ["-rf", dirPath])
-        elif not "debug" in outDir:
-            runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
     else:
-        if not "debug" in outDir:
-            runit(None, "", "mv", [dirPath, os.path.join(outDir, "fail")])
         pytest.fail("User code did not produce correct result")
 
 def doMkDir(dir):
@@ -185,16 +215,28 @@ def doMkDir(dir):
         if not os.path.isdir(dir):
             os.makedirs(dir)
     except OSError as e:
-        if e.errno == errno.EEXIST:
-            print("{} already exists\n".format(dir))
-        else:
+        if e.errno != errno.EEXIST:
             raise
 
 
-def doBinDir(dp):
-    shutil.rmtree(dp, ignore_errors=True)
-    os.makedirs(os.path.join(dp, "build"))
+def doMkBuildDir(dp, policy):
 
+    # build directory is 1 per test
+    build_dir = os.path.join(dp, "build")
+    if os.path.isdir(build_dir):
+        return
+
+    # make test/build
+    doMkDir(build_dir)
+
+    # provide test/build makefile
+    if "frtos" in policy:
+        shutil.cpoy(os.path.join("template", "frtos.cmake"), os.path.join(build_dir, "CMakeLists.txt"))
+    elif "hifive" in policy:
+        shutil.copy(os.path.join("template", "hifive.makefile"), os.path.join(build_dir, "Makefile"))
+        shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(build_dir, "bsp"))
+    
+    
 def is32os(targ):
     switch = {
         "RV32" : "--disable-64bit",
@@ -204,48 +246,46 @@ def is32os(targ):
 
 def doMkApp(policy, dp, main, opt):
 
-    # runtime specific code 
-    if "dos" in policy:
-        runit(dp, "", "cp", [os.path.join("template", "dos-mem.h"), os.path.join(dp, "mem.h")])
-        runit(dp, "", "cp", [os.path.join("template", "dos.cmake"), os.path.join(dp, "CMakeLists.txt")])
+    # pytest code run wrappers
+    if "hifive" in policy:
+        shutil.copy(os.path.join("template", "runQEMU.py"), dp)
     elif "frtos" in policy:
-        runit(dp, "", "cp", [os.path.join("template", "frtos-mem.h"), os.path.join(dp, "mem.h")])
-        runit(dp, "", "cp", [os.path.join("template", "frtos.cmake"), os.path.join(dp, "CMakeLists.txt")])
+        shutil.copy(os.path.join("template", "runRenode.py"), dp)
+    else:
+        shutil.copy(os.path.join("template", "runFPGA.py"), dp)
+
+    # destination sources dir contains c sources & headers 
+    src_dir = os.path.join(dp, "srcs")
+    doMkDir(src_dir)
+
+    if os.path.isfile(os.path.join("tests", main)):
+        shutil.copy(os.path.join("tests", main), src_dir)
+    else:
+        for f in os.listdir(os.path.join("tests", main)):
+            shutil.copy(os.path.join("tests", main, f), src_dir)
+
+    # runtime specific code 
+#    if "dos" in policy:
+#        shutil.copy(os.path.join("template", "dos-mem.h"), os.path.join(dp, "mem.h"))
+#        shutil.copy(os.path.join("template", "dos.cmake"), os.path.join(dp, "CMakeLists.txt"))
+#        shutil.copy(os.path.join("template", "doverlib.h"), dp)
+#        shutil.copy(os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c"))
+    if "frtos" in policy:
+        shutil.copy(os.path.join("template", "frtos-mem.h"), os.path.join(src_dir, "mem.h"))
+        shutil.copy(os.path.join("template", "frtos.c"), os.path.join(src_dir, "frtos.c"))
+        # TODO makefile for top level
     elif "hifive" in policy:
-        runit(dp, "", "cp", [os.path.join("template", "hifive-mem.h"), os.path.join(dp, "mem.h")])
-        shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(dp, "build/bsp"))
-        makefile = os.path.join(dp, "build/Makefile")
-        shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
+        shutil.copy(os.path.join("template", "hifive-mem.h"), os.path.join(src_dir, "mem.h"))
+        shutil.copy(os.path.join("template", "hifive.c"), os.path.join(src_dir, "hifive.c"))
+        shutil.copyfile(os.path.join("template", "test.makefile"), os.path.join(dp, "Makefile"))
     else:
         pytest.fail("Unknown OS, can't copy app files")
 
-    # pytest code run wrappers
-    runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
-
     # generic test code 
-    runit(dp, "", "cp", [os.path.join("template", "doverlib.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c")])
-    runit(dp, "", "cp", [os.path.join("template", "frtos.c"), os.path.join(dp, "frtos.c")])
-    runit(dp, "", "cp", [os.path.join("template", "hifive.c"), os.path.join(dp, "hifive.c")])
-    runit(dp, "", "cp", [os.path.join("template", "test.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "test_status.c"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "test_status.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "sifive_test.h"), dp])
-
-    # test specific code
-
-    # destination sources dir contains c sources & headers 
-    srcdir = os.path.join(dp, "srcs")
-    runit(dp, "", "mkdir", [srcdir])
-
-    if os.path.isfile(os.path.join("tests", main)):
-        runit(dp, "", "cp", [os.path.join("tests", main), srcdir])
-    else:
-        for f in os.listdir(os.path.join("tests", main)):
-            runit(dp, "", "cp", [os.path.join("tests", main, f), srcdir])
-
+    shutil.copy(os.path.join("template", "test.h"), src_dir)
+    shutil.copy(os.path.join("template", "test_status.c"), src_dir)
+    shutil.copy(os.path.join("template", "test_status.h"), src_dir)
+    shutil.copy(os.path.join("template", "sifive_test.h"), src_dir)
         
     # create entity for file elements
     entDir = os.path.abspath("../entities")
@@ -256,7 +296,6 @@ def doMkApp(policy, dp, main, opt):
         shutil.copyfile(srcEnt, destEnt)
     else:
         shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
-    
 
 # Generate the makefile
 def doMakefile(policy, dp, main, opt, debug):
@@ -270,17 +309,6 @@ def doMakefile(policy, dp, main, opt, debug):
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
-
-    # compile the test
-    runit(dp, "", "make", ["-C", dp])
-    # check that build succeeded
-    assert os.path.isfile(os.path.join(dp, "build", "main"))
-    # copy over support files
-    runit(dp, "", "make", ["-C", dp, "inits"])
-    # Check for tag information
-    assert os.path.isfile(os.path.join(dp, "build", "main.taginfo"))
-    assert os.path.isfile(os.path.join(dp, "build", "main.text"))
-    assert os.path.isfile(os.path.join(dp, "build", "main.text.tagged"))
 
 # Generate the makefile
 def doReSc(policy, dp, simulator):
@@ -380,23 +408,8 @@ def hifiveMakefile(policy, main, opt, debug):
     return """
 PYTHON ?= python3
 
-build/main: hifive.c
-	cd build && make
-
 inits:
-	cp -r {kernel_dir}/kernels/{policies} .
-	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -e ./{policies}/{policies}.entities.yml {main}.entities.yml
-
-verilator:
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
-	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	cp all.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif TEST=unit_test TIMEOUT=50000000 FPGA=1 TRACE_START=50000000
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart0.log .
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
-
-fpga:
-	$(PYTHON) runFPGA.py
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
 
 renode:
 	$(PYTHON) runRenode.py
@@ -405,20 +418,17 @@ renode-console:
 	renode main.resc
 
 qemu:
-	$(PYTHON) runQEMU.py {policies}
+	$(PYTHON) ../runQEMU.py {p}
 
 qemu-console:
-	$(PYTHON) runQEMU.py {policies} -d
+	$(PYTHON) ../runQEMU.py {p} -d
 
 gdb:
-	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
+	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" ../build/main
 
 clean:
-	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-""".format(opt=opt, debug=debug,
-           main_src=main, main_bin=main.replace(".c", ""),
-           main=main.replace('/', '-'),
-           policies=policy, kernel_dir=kernel_dir)
+	rm -rf *.o *.log bininfo/*
+""".format(main=main.replace('/', '-'), p=policy)
 
 # The makefile that is generated in the test dir for frtos tests
 def frtosMakefile(policy, main, opt, debug):
@@ -744,7 +754,7 @@ def doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size):
    tags_file: {tagfile}
    soc_cfg_path: {soc_cfg}
 """.format(policyDir=os.path.join(os.getcwd(), dirPath, policy),
-           tagfile=os.path.join(os.getcwd(), dirPath, "build/main.taginfo"),
+           tagfile=os.path.join(os.getcwd(), dirPath, "bininfo/main.taginfo"),
            soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg))
 
     if (rule_cache):
