@@ -234,7 +234,7 @@ def doMkBuildDir(dp, policy):
 
     # provide test/build makefile
     if "frtos" in policy:
-        shutil.cpoy(os.path.join("template", "frtos.cmake"), os.path.join(build_dir, "CMakeLists.txt"))
+        shutil.copy(os.path.join("template", "frtos.cmake"), os.path.join(build_dir, "CMakeLists.txt"))
     elif "hifive" in policy:
         shutil.copy(os.path.join("template", "hifive.makefile"), os.path.join(build_dir, "Makefile"))
         shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(build_dir, "bsp"))
@@ -276,7 +276,7 @@ def doMkApp(policy, dp, main, opt):
     if "frtos" in policy:
         shutil.copy(os.path.join("template", "frtos-mem.h"), os.path.join(src_dir, "mem.h"))
         shutil.copy(os.path.join("template", "frtos.c"), os.path.join(src_dir, "frtos.c"))
-        # TODO makefile for top level
+        shutil.copyfile(os.path.join("template", "test.cmakefile"), os.path.join(dp, "Makefile"))
     elif "hifive" in policy:
         shutil.copy(os.path.join("template", "hifive-mem.h"), os.path.join(src_dir, "mem.h"))
         shutil.copy(os.path.join("template", "hifive.c"), os.path.join(src_dir, "hifive.c"))
@@ -439,26 +439,11 @@ def frtosMakefile(policy, main, opt, debug):
     return """
 PYTHON ?= python3
 
-rtos: frtos.c
-	cd build && cmake .. && make
-
 inits:
-	cp -r {kernel_dir}/kernels/{policies} .
-	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -e ./{policies}/{policies}.entities.yml {main}.entities.yml
-
-verilator:
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
-	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	cp all.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif TEST=unit_test TIMEOUT=50000000 FPGA=1 TRACE_START=50000000
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart0.log .
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
-
-fpga:
-	$(PYTHON) runFPGA.py
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
 
 renode:
-	$(PYTHON) runRenode.py
+	$(PYTHON) ../runRenode.py
 
 renode-console:
 	renode main.resc
@@ -470,9 +455,8 @@ socat:
 	socat - tcp:localhost:4444
 
 clean:
-	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-""".format(opt=opt, debug=debug, main = main.replace('/', '-'),
-           policies=policy, kernel_dir=kernel_dir)
+	rm -f *.o *.log bininfo/*
+""".format(main = main.replace('/', '-'), p=policy)
 
 def rescScript(dir, policy):
     return """
@@ -484,7 +468,7 @@ connector Connect sysbus.uart1 uart-socket
 #showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
-sysbus LoadELF @{path}/build/main
+sysbus LoadELF @{path}/../build/main
 sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
