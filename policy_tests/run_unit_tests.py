@@ -160,7 +160,10 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
     doMkDir(outDir)
 
     # make output directory for _this_ test
-    name = main + "." + simulator
+    if "/" in main:
+        name = main.split("/")[-1] + "." + simulator
+    else:
+        name = main + "." + simulator
     dirPath = os.path.join(outDir, name)
     if not os.path.isdir(dirPath):
         doMkDir(dirPath)
