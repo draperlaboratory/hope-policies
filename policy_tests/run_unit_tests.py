@@ -178,7 +178,11 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
         subprocess.Popen(["make"], stdout=open(os.path.join(dirPath, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=dirPath).wait()
         # check that build succeeded
         assert os.path.isfile(os.path.join(dirPath, "build", "main"))
-        
+
+    # poor man's synchronization for parallel tests... 
+    while not os.path.isfile(os.path.join(dirPath, "build", "main")):
+        continue
+
     # policy-specific stuff
     polnm = policy.split('.')[-1]
     pol_test_path = os.path.join(dirPath, polnm)
