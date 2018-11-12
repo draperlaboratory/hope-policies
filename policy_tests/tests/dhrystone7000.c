@@ -91,8 +91,19 @@ typedef int		boolean;
 #define	REG
 #endif
 
-extern Enumeration	Func1();
-extern boolean		Func2();
+void dhry_proc0(void);
+void Proc1(REG RecordPtr PtrParIn);
+void Proc2(OneToFifty *IntParIO);
+void Proc3(RecordPtr *PtrParOut);
+void Proc4(void);
+void Proc5(void);
+void Proc6(REG Enumeration EnumParIn, REG Enumeration *EnumParOut);
+void Proc7(OneToFifty IntParI1, OneToFifty IntParI2, OneToFifty *IntParOut);
+void Proc8(Array1Dim Array1Par, Array2Dim Array2Par, OneToFifty IntParI1, OneToFifty IntParI2);
+boolean Func3(REG Enumeration EnumParIn);
+boolean Func2(String30 StrParI1, String30 StrParI2);
+Enumeration Func1(CapitalLetter CharPar1, CapitalLetter  CharPar2);
+
 
 /*
  * Package 1
@@ -117,9 +128,7 @@ static void* malloc(uint64_t size)
 
 
 
-Enumeration Func1(CharPar1, CharPar2)
-CapitalLetter	CharPar1;
-CapitalLetter	CharPar2;
+Enumeration Func1(CapitalLetter CharPar1, CapitalLetter CharPar2)
 {
 	REG CapitalLetter	CharLoc1;
 	REG CapitalLetter	CharLoc2;
@@ -132,9 +141,7 @@ CapitalLetter	CharPar2;
 		return (Ident2);
 }
 
-boolean Func2(StrParI1, StrParI2)
-String30	StrParI1;
-String30	StrParI2;
+boolean Func2(String30 StrParI1, String30 StrParI2)
 {
 	REG OneToThirty		IntLoc;
 	REG CapitalLetter	CharLoc;
@@ -162,8 +169,7 @@ String30	StrParI2;
 	}
 }
 
-boolean Func3(EnumParIn)
-REG Enumeration	EnumParIn;
+boolean Func3(REG Enumeration EnumParIn)
 {
 	REG Enumeration	EnumLoc;
 
@@ -173,11 +179,7 @@ REG Enumeration	EnumParIn;
 }
 
 
-void Proc8(Array1Par, Array2Par, IntParI1, IntParI2)
-Array1Dim	Array1Par;
-Array2Dim	Array2Par;
-OneToFifty	IntParI1;
-OneToFifty	IntParI2;
+void Proc8(Array1Dim Array1Par, Array2Dim Array2Par, OneToFifty IntParI1, OneToFifty IntParI2)
 {
 	REG OneToFifty	IntLoc;
 	REG OneToFifty	IntIndex;
@@ -193,10 +195,7 @@ OneToFifty	IntParI2;
 	IntGlob = 5;
 }
 
-void Proc7(IntParI1, IntParI2, IntParOut)
-OneToFifty	IntParI1;
-OneToFifty	IntParI2;
-OneToFifty	*IntParOut;
+void Proc7(OneToFifty IntParI1, OneToFifty IntParI2, OneToFifty *IntParOut)
 {
 	REG OneToFifty	IntLoc;
 
@@ -205,9 +204,7 @@ OneToFifty	*IntParOut;
 }
 
 
-void Proc6(EnumParIn, EnumParOut)
-REG Enumeration	EnumParIn;
-REG Enumeration	*EnumParOut;
+void Proc6(REG Enumeration EnumParIn, REG Enumeration *EnumParOut)
 {
 	*EnumParOut = EnumParIn;
 	if (! Func3(EnumParIn) )
@@ -241,8 +238,7 @@ void Proc4(void)
 }
 
 
-void Proc3(PtrParOut)
-RecordPtr	*PtrParOut;
+void Proc3(RecordPtr *PtrParOut)
 {
 	if (PtrGlb != NULL)
 		*PtrParOut = PtrGlb->PtrComp;
@@ -251,8 +247,7 @@ RecordPtr	*PtrParOut;
 	Proc7(10, IntGlob, &PtrGlb->IntComp);
 }
 
-void Proc2(IntParIO)
-OneToFifty	*IntParIO;
+void Proc2(OneToFifty *IntParIO)
 {
 	REG OneToFifty		IntLoc;
 	REG Enumeration		EnumLoc;
@@ -271,8 +266,7 @@ OneToFifty	*IntParIO;
 	}
 }
 
-void Proc1(PtrParIn)
-REG RecordPtr	PtrParIn;
+void Proc1(REG RecordPtr PtrParIn)
 {
 #define	NextRecord	(*(PtrParIn->PtrComp))
 
