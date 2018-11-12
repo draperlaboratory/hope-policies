@@ -58,36 +58,8 @@
 #define LOOPS	50000		/* Use this for slow or 16 bit machines */
 
 #define US_IN_SEC 1000000
-/* Compiler dependent options */
-#undef	NOENUM			/* Define if compiler has no enum's */
-#undef	NOSTRUCTASSIGN		/* Define if compiler can't assign structures */
-
-
-/* for compatibility with goofed up version */
-//#define GOOF			/* Define if you want the goofed up version */
-
-#ifdef GOOF
-char	Version[] = "1.0";
-#else
-char	Version[] = "1.1";
-#endif
-
-#ifdef	NOSTRUCTASSIGN
-#define	structassign(d, s)	memcpy(&(d), &(s), sizeof(d))
-#else
 #define	structassign(d, s)	d = s
-#endif
-
-#ifdef	NOENUM
-#define	Ident1	1
-#define	Ident2	2
-#define	Ident3	3
-#define	Ident4	4
-#define	Ident5	5
-typedef int	Enumeration;
-#else
 typedef enum	{Ident1, Ident2, Ident3, Ident4, Ident5} Enumeration;
-#endif
 
 typedef int	OneToThirty;
 typedef int	OneToFifty;
@@ -200,15 +172,6 @@ REG Enumeration	EnumParIn;
 	return (FALSE);
 }
 
-#ifdef	NOSTRUCTASSIGN
-memcpy(d, s, l)
-register char	*d;
-register char	*s;
-register int	l;
-{
-	while (l--) *d++ = *s++;
-}
-#endif
 
 void Proc8(Array1Par, Array2Par, IntParI1, IntParI2)
 Array1Dim	Array1Par;
@@ -363,9 +326,6 @@ void dhry_proc0(void)
 	PtrGlb->EnumComp = Ident3;
 	PtrGlb->IntComp = 40;
 	strcpy(PtrGlb->StringComp, "DHRYSTONE PROGRAM, SOME STRING");
-#ifndef	GOOF
-	strcpy(String1Loc, "DHRYSTONE PROGRAM, 1'ST STRING");	/*GOOF*/
-#endif
 
 	/* Was missing in published program */
 	Array2Glob[8][7] = 10;
