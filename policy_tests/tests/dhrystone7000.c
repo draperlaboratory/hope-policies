@@ -280,7 +280,7 @@ void Proc1(REG RecordPtr PtrParIn)
 	PtrParIn->IntComp = 5;
 	NextRecord.IntComp = PtrParIn->IntComp;
 	NextRecord.PtrComp = PtrParIn->PtrComp;
-	Proc3(NextRecord.PtrComp);
+	Proc3(&NextRecord.PtrComp);
 	if (NextRecord.Discr == Ident1)
 	{
 		NextRecord.IntComp = 6;
