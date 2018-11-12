@@ -53,6 +53,12 @@
 #include "test.h"
 #include "mem.h"
 
+#define MYPRINT(...) \
+	do { \
+		char sbuf[2048] = {0}; \
+		snprintf(sbuf, 2048, __VA_ARGS__); \
+		t_printf(sbuf); \
+	} while(0)
 
 /* Accuracy of timings and human fatigue controlled by next two lines */
 #define LOOPS	50000		/* Use this for slow or 16 bit machines */
@@ -355,11 +361,10 @@ void dhry_proc0(void)
 		Proc2(&IntLoc1);
 	}
 	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
-	printf("Dhrystone(%s) time for %ld passes = %ld\n",
+	MYPRINT("Dhrystone(%s) time for %ld passes = %ld\n",
 		Version,
 		(long) LOOPS, benchtime_us/US_IN_SEC);
-	printf("This machine benchmarks at %ld dhrystones/second\n",
+	MYPRINT("This machine benchmarks at %ld dhrystones/second\n",
 		((long) LOOPS)) / (benchtime/US_IN_SEC);
-
 }
 /* ---------- */
