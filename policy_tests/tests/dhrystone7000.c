@@ -38,6 +38,22 @@
  *			time it takes to do nothing.
  */
 
+#include <sys/param.h>
+#include <sys/types.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+
+// Headers for test framework
+#include <time.h>
+#include <sys/time.h>
+#include <sys/times.h>
+#include "test_status.h"
+#include "test.h"
+#include "mem.h"
+
+
 /* Accuracy of timings and human fatigue controlled by next two lines */
 //#define LOOPS	5000		/* Use this for slow or 16 bit machines */
 //#define LOOPS	50000		/* Use this for slow or 16 bit machines */
@@ -103,7 +119,9 @@ typedef struct Record 	RecordType;
 typedef RecordType *	RecordPtr;
 typedef int		boolean;
 
+#ifndef NULL
 #define	NULL		0
+#endif
 #define	TRUE		1
 #define	FALSE		0
 
@@ -142,9 +160,9 @@ Array2Dim	Array2Glob;
 RecordPtr	PtrGlb;
 RecordPtr	PtrGlbNext;
 
-static u8 malloc_pool[4096];
-static u64 malloc_offset = 0;
-static void* malloc(u64 size)
+static uint8_t malloc_pool[4096];
+static uint64_t malloc_offset = 0;
+static void* malloc(uint64_t size)
 {
 	void* ptr = malloc_pool + malloc_offset;
 	malloc_offset += size;
