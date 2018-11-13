@@ -14,8 +14,11 @@ RULE_CACHE ?=
 RULE_CACHE_SIZE ?= 16
 PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) $(REMOVE_PASSING)
 
-simple:
+simple: build-simple install-kernels-simple
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py
+
+build-simple: 
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k build_simple build_unit_tests.py
 
 full:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_full run_unit_tests.py

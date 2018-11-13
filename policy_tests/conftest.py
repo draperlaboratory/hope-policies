@@ -41,7 +41,6 @@ def parameterize_test_file(varName, testFiles, metafunc):
                              ids=list(map(fName, testFiles)),
                              scope='session')
 
-
 def pytest_generate_tests(metafunc):
     test_config = metafunc.config.option.test_config
     modules = configs[test_config].os_modules

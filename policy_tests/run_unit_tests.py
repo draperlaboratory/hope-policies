@@ -156,32 +156,15 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
     # give params to object
     rpt.test(policy, main,opt)
 
-    # output directory (for all tests)
-    doMkDir(outDir)
-
     # make output directory for _this_ test
     if "/" in main:
         name = main.split("/")[-1] + "." + simulator
     else:
         name = main + "." + simulator
     dirPath = os.path.join(outDir, name)
-    if not os.path.isdir(dirPath):
-        doMkDir(dirPath)
-        
-        # make policy-common test sources & tools
-        doMkApp(policy, dirPath, main, opt)
 
-        # make build dir for test
-        doMkBuildDir(dirPath, policy);
-
-        # do the build
-        subprocess.Popen(["make"], stdout=open(os.path.join(dirPath, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=dirPath).wait()
-        # check that build succeeded
-        assert os.path.isfile(os.path.join(dirPath, "build", "main"))
-
-    # poor man's synchronization for parallel tests... 
-    while not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        continue
+    # check that build has already run
+    assert os.path.isfile(os.path.join(dirPath, "build", "main"))
 
     # policy-specific stuff
     polnm = policy.split('.')[-1]
@@ -191,7 +174,7 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
     # retrieve policy
     subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernel_dir/kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
 
-    doMakefile(policy, pol_test_path, main, opt, "")
+    doMakefile(policy, pol_test_path, main, "")
     doReSc(policy, pol_test_path, simulator)
     doValidatorCfg(policy, pol_test_path, rule_cache, rule_cache_size)
 
@@ -217,32 +200,80 @@ def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, ru
     else:
         pytest.fail("User code did not produce correct result")
 
+# Generate the makefile
+def doMakefile(policy, dp, main, debug):
+    if "frtos" in policy:
+        mf = frtosMakefile(policy, main, debug)
+    elif "hifive" in policy:
+        mf = hifiveMakefile(policy, main, debug)
+    else:
+        pytest.fail("Unknown OS, can't generate Makefile")
+
+    print("Makefile: {}".format(dp))
+    with open(os.path.join(dp,'Makefile'), 'w') as f:
+        f.write(mf)
+
+# The makefile that is generated in the test dir for hifive bare-metal tests
+def hifiveMakefile(policy, main,  debug):
+    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
+    return """
+PYTHON ?= python3
+
+inits:
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
+
+renode:
+	$(PYTHON) runRenode.py
+
+renode-console:
+	renode main.resc
+
+qemu:
+	$(PYTHON) ../runQEMU.py {p}
+
+qemu-console:
+	$(PYTHON) ../runQEMU.py {p} -d
+
+gdb:
+	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" ../build/main
+
+clean:
+	rm -rf *.o *.log bininfo/*
+""".format(main=main.replace('/', '-'), p=policy)
+
+# The makefile that is generated in the test dir for frtos tests
+def frtosMakefile(policy, main, debug):
+    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
+    return """
+PYTHON ?= python3
+
+inits:
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
+
+renode:
+	$(PYTHON) ../runRenode.py
+
+renode-console:
+	renode main.resc
+
+gdb:
+	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
+
+socat:
+	socat - tcp:localhost:4444
+
+clean:
+	rm -f *.o *.log bininfo/*
+""".format(main = main.replace('/', '-'), p=policy)
+
+        
 def doMkDir(dir):
     try:
         if not os.path.isdir(dir):
             os.makedirs(dir)
     except OSError as e:
         if e.errno != errno.EEXIST:
-            raise
-
-
-def doMkBuildDir(dp, policy):
-
-    # build directory is 1 per test
-    build_dir = os.path.join(dp, "build")
-    if os.path.isdir(build_dir):
-        return
-
-    # make test/build
-    doMkDir(build_dir)
-
-    # provide test/build makefile
-    if "frtos" in policy:
-        shutil.copy(os.path.join("template", "frtos.cmake"), os.path.join(build_dir, "CMakeLists.txt"))
-    elif "hifive" in policy:
-        shutil.copy(os.path.join("template", "hifive.makefile"), os.path.join(build_dir, "Makefile"))
-        shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(build_dir, "bsp"))
-    
+            raise    
     
 def is32os(targ):
     switch = {
@@ -250,72 +281,6 @@ def is32os(targ):
         "RV32pex" : "--disable-64bit"
     }
     return switch.get(targ, "")
-
-def doMkApp(policy, dp, main, opt):
-
-    # pytest code run wrappers
-    if "hifive" in policy:
-        shutil.copy(os.path.join("template", "runQEMU.py"), dp)
-    elif "frtos" in policy:
-        shutil.copy(os.path.join("template", "runRenode.py"), dp)
-    else:
-        shutil.copy(os.path.join("template", "runFPGA.py"), dp)
-
-    # destination sources dir contains c sources & headers 
-    src_dir = os.path.join(dp, "srcs")
-    doMkDir(src_dir)
-
-    if os.path.isfile(os.path.join("tests", main)):
-        shutil.copy(os.path.join("tests", main), src_dir)
-    else:
-        for f in os.listdir(os.path.join("tests", main)):
-            shutil.copy(os.path.join("tests", main, f), src_dir)
-
-    # runtime specific code 
-#    if "dos" in policy:
-#        shutil.copy(os.path.join("template", "dos-mem.h"), os.path.join(dp, "mem.h"))
-#        shutil.copy(os.path.join("template", "dos.cmake"), os.path.join(dp, "CMakeLists.txt"))
-#        shutil.copy(os.path.join("template", "doverlib.h"), dp)
-#        shutil.copy(os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c"))
-    if "frtos" in policy:
-        shutil.copy(os.path.join("template", "frtos-mem.h"), os.path.join(src_dir, "mem.h"))
-        shutil.copy(os.path.join("template", "frtos.c"), os.path.join(src_dir, "frtos.c"))
-        shutil.copyfile(os.path.join("template", "test.cmakefile"), os.path.join(dp, "Makefile"))
-    elif "hifive" in policy:
-        shutil.copy(os.path.join("template", "hifive-mem.h"), os.path.join(src_dir, "mem.h"))
-        shutil.copy(os.path.join("template", "hifive.c"), os.path.join(src_dir, "hifive.c"))
-        shutil.copyfile(os.path.join("template", "test.makefile"), os.path.join(dp, "Makefile"))
-    else:
-        pytest.fail("Unknown OS, can't copy app files")
-
-    # generic test code 
-    shutil.copy(os.path.join("template", "test.h"), src_dir)
-    shutil.copy(os.path.join("template", "test_status.c"), src_dir)
-    shutil.copy(os.path.join("template", "test_status.h"), src_dir)
-    shutil.copy(os.path.join("template", "sifive_test.h"), src_dir)
-        
-    # create entity for file elements
-    entDir = os.path.abspath("../entities")
-    entFile = main + ".entities.yml"
-    srcEnt = os.path.join(entDir, entFile)
-    destEnt = os.path.join(dp, entFile.replace('/', '-'))
-    if os.path.isfile(srcEnt):
-        shutil.copyfile(srcEnt, destEnt)
-    else:
-        shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
-
-# Generate the makefile
-def doMakefile(policy, dp, main, opt, debug):
-    if "frtos" in policy:
-        mf = frtosMakefile(policy, main, opt, debug)
-    elif "hifive" in policy:
-        mf = hifiveMakefile(policy, main, opt, debug)
-    else:
-        pytest.fail("Unknown OS, can't generate Makefile")
-
-    print("Makefile: {}".format(dp))
-    with open(os.path.join(dp,'Makefile'), 'w') as f:
-        f.write(mf)
 
 # Generate the makefile
 def doReSc(policy, dp, simulator):
@@ -408,59 +373,6 @@ def runit(dp, path, cmd, args):
         rc = subprocess.Popen(runcmd)
         while rc.poll() is None:
             time.sleep(0.01)
-
-# The makefile that is generated in the test dir for hifive bare-metal tests
-def hifiveMakefile(policy, main, opt, debug):
-    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
-    return """
-PYTHON ?= python3
-
-inits:
-	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
-
-renode:
-	$(PYTHON) runRenode.py
-
-renode-console:
-	renode main.resc
-
-qemu:
-	$(PYTHON) ../runQEMU.py {p}
-
-qemu-console:
-	$(PYTHON) ../runQEMU.py {p} -d
-
-gdb:
-	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" ../build/main
-
-clean:
-	rm -rf *.o *.log bininfo/*
-""".format(main=main.replace('/', '-'), p=policy)
-
-# The makefile that is generated in the test dir for frtos tests
-def frtosMakefile(policy, main, opt, debug):
-    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
-    return """
-PYTHON ?= python3
-
-inits:
-	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
-
-renode:
-	$(PYTHON) ../runRenode.py
-
-renode-console:
-	renode main.resc
-
-gdb:
-	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
-
-socat:
-	socat - tcp:localhost:4444
-
-clean:
-	rm -f *.o *.log bininfo/*
-""".format(main = main.replace('/', '-'), p=policy)
 
 def rescScript(dir, policy):
     return """
