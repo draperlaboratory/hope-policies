@@ -46,19 +46,6 @@ class AllTests:
         "threeClass/call_fails_1.c",
     ]
 
-class CFIRWXTests(AllTests):
-    # Modify the following lists to add policies and test cases:
-    # policies to test
-    policies = ["cfi-rwx"]
-
-    # negative tests need to be in a dir that matches the policy
-    #    that is expected to fail
-    negative_tests = [
-        "rwx/code_write_fails_1.c",
-        "rwx/data_exe_fails_1.c",
-        "cfi/jump_data_fails_1.c",
-    ]
-
 class WorkingTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
     policies = ["none", "heap", "rwx", "stack"]
@@ -92,7 +79,6 @@ class DebugTests(AllTests):
 class FRTOSTests(AllTests):
     os_modules = ["osv.frtos.main.{pol}"]
 
-
 class HifiveTests(AllTests):
     os_modules = ["osv.hifive.main.{pol}"]
     policies = ["none", "rwx", "stack", "threeClass", "heap"]
@@ -120,7 +106,6 @@ configs = {'all' : AllTests,
            'working' : WorkingTests,
            'debug' : DebugTests,
            'frtos' : FRTOSTests,
-           'cfirwx' : CFIRWXTests,
            'hifive' : HifiveTests
 }
 

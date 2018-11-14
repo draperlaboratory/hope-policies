@@ -2,51 +2,53 @@
 # ERROR_MSGS to an empty string to print error trace backs
 PYTHON ?= python3
 ERROR_MSGS ?= --tb=long
-XDIST ?= -n auto
+XDIST ?= 
 
 KERNEL_DIR = kernel_dir
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
-SIM ?= qemu
-CONFIG ?= hifive
-REMOVE_PASSING ?= #--remove_passing
+SIM ?= 
+RUNTIME ?= 
+POLICIES ?= 
+COMPOSITE ?= simple
+TESTS ?= all
+MODULES ?= 
 RULE_CACHE ?=
 RULE_CACHE_SIZE ?= 16
-PYTEST_ARGS ?= --timeout=180 $(ERROR_MSGS) --sim=$(SIM) -v --test_config=$(CONFIG) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) $(REMOVE_PASSING)
+PYTEST_ARGS ?= -v --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --modules=$(MODULES)
 
-simple: build-simple install-kernels-simple
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_simple run_unit_tests.py
+qemu: SIM=qemu
+qemu: RUNTIME=hifive
+qemu: MODULES=osv.hifive.main
+qemu: POLICIES=heap,none,rwx,stack,threeClass
+qemu: XDIST=-n 25
+qemu: run
 
-build-simple: 
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k build_simple build_unit_tests.py
+renode: SIM=renode
+renode: RUNTIME=frtos
+renode: MODULES=osv.frtos.main
+renode: POLICIES=heap,none,rwx,stack
+renode: run
 
-full:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_full run_unit_tests.py
+build: 
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -n 25 -k test_build build_unit_tests.py
 
-allOs:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_all run_unit_tests.py
+install-kernels:
+	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_install_kernel install_kernels.py
 
-broken:
-	$(PYTHON) -m pytest $(ERROR_MSGS) -v -k test_broken run_unit_tests.py
+run: build install-kernels
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_new run_unit_tests.py
+
+# TODO: remove debug targets?
+install-kernel-%:
+	rm -rf $(KERNEL_DIR)/kernels/$*
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_kernel[$*] install_kernels.py
 
 debug-%:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_debug[$*] run_unit_tests.py
 
-profile:
-	$(PYTHON) -m pytest $(ERROR_MSGS) $(XDIST) -v -k test_profile run_unit_tests.py
-
 list:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only run_unit_tests.py
-
-install-kernels install-kernels-simple:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_simple install_kernels.py
-
-install-kernels-full:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_full install_kernels.py
-
-install-kernel-%:
-	rm -rf $(KERNEL_DIR)/kernels/$*
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_kernel[$*] install_kernels.py
 
 list-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
