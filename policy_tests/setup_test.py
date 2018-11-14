@@ -77,7 +77,7 @@ def doMkPolicy(osPol, params):
     gen_dir = os.path.join(repo_root, "policy-engine", "policy")
     ptcmd = "policy-tool"
 
-    ptarg = params + ["-t", ent_dir, "-m", mod_dir, "-o", gen_dir] + polParam
+    ptarg = params + ["-d", "-t", ent_dir, "-m", mod_dir, "-o", gen_dir] + polParam
 
     shutil.rmtree(gen_dir, ignore_errors=True)
     os.makedirs(gen_dir)
