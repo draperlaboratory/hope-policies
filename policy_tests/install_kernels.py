@@ -16,11 +16,15 @@ from setup_test import *
 
 def test_install_kernel(policy):
 
+    installPath = os.path.join('kernel_dir', "kernels", policy)
+
+    # do not remake kernel unneccesarily
+    if os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
+        pytest.skip("using previously compiled kernel")
+    
     # make the policy
     doMkPolicy(policy)
     
-    installPath = os.path.join('kernel_dir', "kernels", policy)
-
     doInstallPolicy(policy, installPath)
 
     if not os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):

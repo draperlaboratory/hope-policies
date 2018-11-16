@@ -37,17 +37,20 @@ def incompatible_reason(policy, test, sim):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(policy, test, sim):
-    doTest(policy, test, sim)
+def test_new(policy, test, sim, rc):
 
-# Test execution function
-def doTest(policy, test, sim):
-
+    # policy = string of policy to be run, i.e. osv.hifive.main.rwx
+    # test   = string of test to be run, i.e. hello_world_1.c
+    # sim    = string of simulator to be used
+    # rc     = tuple, rc[0] = rule cache type string, rc[1] = rule cache size
+    
     # check for test validity
     incompatible = incompatible_reason(policy, test, sim)
     if incompatible != None:
         pytest.skip(incompatible)
-    
+
+    # TODO: sync folder names ie specify the rule cache config in folder name
+        
     # TODO: there is a similar test naming routine in the build_unit_tests.py
     #   -> should be a fn that both modules call?
     #   -> should this module be passed the paths to the build output dirs
@@ -62,7 +65,7 @@ def doTest(policy, test, sim):
     # check that this test build 
     dirPath = os.path.join("output", name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.fail("no complete build found")
+        pytest.skip("no complete build found")
 
     # simulator-specific run options
     if "qemu" in sim:
@@ -71,9 +74,16 @@ def doTest(policy, test, sim):
         shutil.copy(os.path.join("template", "runRenode.py"), dirPath)
     else:
         shutil.copy(os.path.join("template", "runFPGA.py"), dirPath)
-    
+
     # policy-specific stuff
-    pol_test_path = os.path.join(dirPath, policy)
+
+    # TODO: is this the best way to do this?
+    # name directory with cache info if cache is being used
+    if rc[0] == '' or rc[1] == '':
+        pol_dir_name = policy;
+    else:
+        pol_dir_name = policy + '-' + rc[0] + rc[1]
+    pol_test_path = os.path.join(dirPath, pol_dir_name)
     doMkDir(pol_test_path)
 
     # retrieve policy
@@ -88,8 +98,8 @@ def doTest(policy, test, sim):
     # script for 
     doReSc(policy, pol_test_path, sim)
 
-    # TODO: add rule cache knobs
-    doValidatorCfg(policy, pol_test_path, '', 16)#rule_cache, rule_cache_size)
+    # config validator including rule cache
+    doValidatorCfg(policy, pol_test_path, rc[0], rc[1])
 
     # run tagging tools
     doMkDir(os.path.join(pol_test_path, "bininfo"))

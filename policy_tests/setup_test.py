@@ -16,36 +16,6 @@ from functools import reduce
 
 # Nothing to configure below this point
 
-# Generate a file name string
-def fName(file):
-    return file.replace('/', '_')
-
-def fullK(modules, policies):
-    r = []
-    for o in modules:
-        for p in permutePols(policies):
-            r.append((o, p, pName(o,p)))
-    return [x[2] for x in r if len(x[1]) == 1 or not "none" in x[2]]
-
-def simpleK(modules, policies):
-
-    # length of policy that has every member policy except none
-    composite_len = len(policies)
-    if "none" in policies:
-        composite_len -= 1
-
-    return [x for x in fullK(modules, policies) if len(x.split(".")[-1].split("-")) == 1 or len(x.split(".")[-1].split("-")) == composite_len]
-
-# generate the permutations of policies to compose
-def permutePols(polStrs):
-    p = sorted(polStrs)
-    # list of number of policies
-    ns = list(range(1,len(p)+1))
-    # list of combinations for each n
-    combs = [list(map(sorted,itertools.combinations(p, n))) for n in ns]
-    # flatten list
-    return (reduce(operator.concat, combs, []))
-
 # Generate a policy name string
 def pName(os, pol):
     return os + "." + "-".join(pol)
