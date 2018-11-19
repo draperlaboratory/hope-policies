@@ -55,23 +55,13 @@
 
 
 /* Accuracy of timings and human fatigue controlled by next two lines */
-//#define LOOPS	5000		/* Use this for slow or 16 bit machines */
-//#define LOOPS	50000		/* Use this for slow or 16 bit machines */
-#define LOOPS	100000000		/* Use this for faster machines */
+#define LOOPS	50000		/* Use this for slow or 16 bit machines */
 
+#define US_IN_SEC 1000000
 /* Compiler dependent options */
 #undef	NOENUM			/* Define if compiler has no enum's */
 #undef	NOSTRUCTASSIGN		/* Define if compiler can't assign structures */
 
-/* define only one of the next three defines */
-//#define GETRUSAGE		/* Use getrusage(2) time function */
-//#define TIMES			/* Use times(2) time function */
-//#define TIME			/* Use time(2) time function */
-#define MY_TIME
-
-/* define the granularity of your times(2) function (when used) */
-//#define HZ	60		/* times(2) returns 1/60 second (most) */
-//#define HZ	100		/* times(2) returns 1/100 second (WECo) */
 
 /* for compatibility with goofed up version */
 //#define GOOF			/* Define if you want the goofed up version */
@@ -131,22 +121,6 @@ typedef int		boolean;
 
 extern Enumeration	Func1();
 extern boolean		Func2();
-
-#ifdef TIMES
-#include <sys/param.h>
-#include <sys/types.h>
-#include <sys/times.h>
-#endif
-#ifdef GETRUSAGE
-#include <sys/time.h>
-#include <sys/resource.h>
-#endif
-#ifdef MY_TIME
-#include "xil_printf.h"
-#include "xtime_l.h"
-#endif
-#include <string.h>
-
 
 /*
  * Package 1
@@ -367,50 +341,20 @@ void dhry_proc0(void)
 	String30		String1Loc;
 	String30		String2Loc;
 
-	register unsigned int	i;
-#ifdef TIME
-	long			time();
-	long			starttime;
-	long			benchtime;
-	long			nulltime;
+	uint32_t		i;
 
-	starttime = time( (long *) 0);
-	for (i = 0; i < LOOPS; ++i);
-	nulltime = time( (long *) 0) - starttime; /* Computes o'head of loop */
-#endif
-#ifdef TIMES
-	time_t			starttime;
-	time_t			benchtime;
-	time_t			nulltime;
-	struct tms		tms;
+	volatile uint32_t	starttime;
+	volatile uint32_t	benchtime_us;
+	uint32_t		nulltime;
+	uint32_t		endtime;
 
-	times(&tms); starttime = tms.tms_utime;
-	for (i = 0; i < LOOPS; ++i);
-	times(&tms);
-	nulltime = tms.tms_utime - starttime; /* Computes overhead of looping */
-#endif
-#ifdef GETRUSAGE
-	struct rusage starttime;
-	struct rusage endtime;
-	struct timeval nulltime;
-
-	getrusage(RUSAGE_SELF, &starttime);
-	for (i = 0; i < LOOPS; ++i);
-	getrusage(RUSAGE_SELF, &endtime);
-	nulltime.tv_sec  = endtime.ru_utime.tv_sec  - starttime.ru_utime.tv_sec;
-	nulltime.tv_usec = endtime.ru_utime.tv_usec - starttime.ru_utime.tv_usec;
-#endif
-#ifdef MY_TIME
-	XTime	starttime;
-	XTime	benchtime;
-	XTime	nulltime;
-	XTime_GetTime(&starttime);
-	for (i = 0; i < LOOPS; ++i);
-
-	XTime_GetTime(&nulltime);
-   nulltime -= starttime;
-#endif
-
+	starttime = sys_GetWallTimestampUs();
+	for (i = 0; i < LOOPS; ++i)
+	{
+		volatile asm("nop");
+	}
+	endtime = sys_GetWallTimestampUs();
+	nulltime = endtime - starttime; /* Computes overhead of looping */
 
 	PtrGlbNext = (RecordPtr)malloc(sizeof(RecordType));
 	PtrGlb = (RecordPtr) malloc(sizeof(RecordType));
@@ -422,23 +366,14 @@ void dhry_proc0(void)
 #ifndef	GOOF
 	strcpy(String1Loc, "DHRYSTONE PROGRAM, 1'ST STRING");	/*GOOF*/
 #endif
-	Array2Glob[8][7] = 10;	/* Was missing in published program */
 
-/*****************
--- Start Timer --
-*****************/
-#ifdef TIME
-	starttime = time( (long *) 0);
-#endif
-#ifdef TIMES
-	times(&tms); starttime = tms.tms_utime;
-#endif
-#ifdef GETRUSAGE
-	getrusage (RUSAGE_SELF, &starttime);
-#endif
-#ifdef MY_TIME
-	XTime_GetTime(&starttime);
-#endif
+	/* Was missing in published program */
+	Array2Glob[8][7] = 10;
+
+	/*****************
+	-- Start Timer --
+	*****************/
+	starttime = sys_GetWallTimestampUs();
 	for (i = 0; i < LOOPS; ++i)
 	{
 
@@ -465,59 +400,12 @@ void dhry_proc0(void)
 		IntLoc2 = 7 * (IntLoc3 - IntLoc2) - IntLoc1;
 		Proc2(&IntLoc1);
 	}
-
-/*****************
--- Stop Timer --
-*****************/
-
-#ifdef TIME
-	benchtime = time( (long *) 0) - starttime - nulltime;
+	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
 	printf("Dhrystone(%s) time for %ld passes = %ld\n",
 		Version,
-		(long) LOOPS, benchtime);
+		(long) LOOPS, benchtime_us/US_IN_SEC);
 	printf("This machine benchmarks at %ld dhrystones/second\n",
-		((long) LOOPS) / benchtime);
-#endif
-#ifdef TIMES
-	times(&tms);
-	benchtime = tms.tms_utime - starttime - nulltime;
-	printf("Dhrystone(%s) time for %ld passes = %ld\n",
-		Version,
-		(long) LOOPS, benchtime/HZ);
-	printf("This machine benchmarks at %ld dhrystones/second\n",
-		((long) LOOPS) * HZ / benchtime);
-#endif
-#ifdef GETRUSAGE
-	getrusage(RUSAGE_SELF, &endtime);
-	{
-	    double t = (double)(endtime.ru_utime.tv_sec
-				- starttime.ru_utime.tv_sec
-				- nulltime.tv_sec)
-		     + (double)(endtime.ru_utime.tv_usec
-				- starttime.ru_utime.tv_usec
-				- nulltime.tv_usec) * 1e-6;
-	    printf("Dhrystone(%s) time for %ld passes = %.1f\n",
-		   Version,
-		   (long)LOOPS,
-		   t);
-	    printf("This machine benchmarks at %.0f dhrystones/second\n",
-		   (double)LOOPS / t);
-	}
-#endif
-#ifdef MY_TIME
-   XTime_GetTime(&benchtime);
-   benchtime -= (starttime - nulltime);
+		((long) LOOPS)) / (benchtime/US_IN_SEC);
 
-   float dscore = LOOPS / ((float)benchtime / COUNTS_PER_SECOND);
-   float dmips = dscore / 1757.0;
-   float freq = (float)(COUNTS_PER_SECOND*2 / 1000000);
-   float dmips_mhz = dmips / freq;
-   float dmips_mhz_frac = (dmips - dmips_mhz) / (freq / 1000);
-
-   xil_printf("DSCORE         : %d\n\r", (int)dscore);
-   xil_printf("Proc Frequency : %d MHz\n\r", (int)freq);
-   xil_printf("DMIPS          : %d\n\r", (int)dmips);
-   xil_printf("DMIPS/MHz      : %d.%d\n\r", (int)dmips_mhz, (int)dmips_mhz_frac);
-#endif
 }
 /* ---------- */
