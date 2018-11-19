@@ -47,7 +47,6 @@ def doMkPolicy(policy):
     pe_build_dir = os.path.join(repo_root, "policy-engine/build")
     subprocess.Popen(["make", "clean"], stdout=fnull, stderr=subprocess.STDOUT, cwd=pe_build_dir).wait()
 
-    # TODO remove runits and put logs in better place
     with open(os.path.join(gen_dir, "policy_tool.log"), "w+") as ptlog:
         subprocess.Popen([ptcmd]+ptarg, stdout=ptlog, stderr=subprocess.STDOUT, cwd=gen_dir).wait()
 
