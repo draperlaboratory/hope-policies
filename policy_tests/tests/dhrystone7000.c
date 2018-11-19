@@ -97,6 +97,7 @@ typedef int		boolean;
 #define	REG
 #endif
 
+int test_main(void);
 void dhry_proc0(void);
 void Proc1(REG RecordPtr PtrParIn);
 void Proc2(OneToFifty *IntParIO);
@@ -366,5 +367,16 @@ void dhry_proc0(void)
 		(long) LOOPS, benchtime_us/US_IN_SEC);
 	MYPRINT("This machine benchmarks at %ld dhrystones/second\n",
 		((long) LOOPS)) / (benchtime/US_IN_SEC);
+}
+
+int test_main (void)
+{
+	test_positive();
+	test_begin();
+
+	dhry_proc0();
+
+	test_pass();
+	return test_done();
 }
 /* ---------- */
