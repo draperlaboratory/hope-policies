@@ -10,8 +10,6 @@ import time
 import glob
 import errno
 
-from setup_test import *
-
 def test_build(test, runtime):
     doBuild(test, "output", runtime)
 

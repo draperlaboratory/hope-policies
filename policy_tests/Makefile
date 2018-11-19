@@ -41,7 +41,7 @@ run: build install-kernels
 
 # TODO: remove debug targets?
 install-kernel-%:
-	rm -rf $(KERNEL_DIR)/kernels/$*
+	rm -rf kernels/$*
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -k test_kernel[$*] install_kernels.py
 
 debug-%:
@@ -57,4 +57,4 @@ clean: clean-kernels
 	rm -rf output debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
 
 clean-kernels:
-	rm -rf $(KERNEL_DIR)/kernels/*
+	rm -rf kernels/

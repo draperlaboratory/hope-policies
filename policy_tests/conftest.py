@@ -1,5 +1,10 @@
+import functools
+import itertools
+import operator
 import pytest
-from setup_test import *
+
+from functools import reduce
+
 from cfg_classes import *
 
 def pytest_addoption(parser):
@@ -109,7 +114,7 @@ def composites(modules, policies, simple):
     r = []
     for o in modules:
         for p in permutePols(policies):
-            r.append((p, pName(o,p)))
+            r.append((p, o+"."+"-".join(p)))
 
     # length of policy that has every member policy except none
     full_composite_len = len(policies)

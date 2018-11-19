@@ -8,16 +8,17 @@ import subprocess
 import os.path
 import time
 import glob
-
-# Modify the test_cfg module to add policies and test cases:
-from setup_test import *
+import shutil
+import multiprocessing
 
 # Nothing to configure below this point
 
 def test_install_kernel(policy):
 
-    installPath = os.path.join('kernel_dir', "kernels", policy)
-
+    installPath = os.path.join("kernels", policy)
+    if not os.path.isdir(installPath):
+        os.makedirs(installPath)
+    
     # do not remake kernel unneccesarily
     if os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
         pytest.skip("using previously compiled kernel")
@@ -47,10 +48,12 @@ def doMkPolicy(policy):
     subprocess.Popen(["make", "clean"], stdout=fnull, stderr=subprocess.STDOUT, cwd=pe_build_dir).wait()
 
     # TODO remove runits and put logs in better place
-    runit(None, "", ptcmd, ptarg)
-    num_cores = str(multiprocessing.cpu_count())
-    runit(None, "", "make", ["-C", os.path.join(repo_root, "policy-engine/build"), "-j"+num_cores])
+    with open(os.path.join(gen_dir, "policy_tool.log"), "w+") as ptlog:
+        subprocess.Popen([ptcmd]+ptarg, stdout=ptlog, stderr=subprocess.STDOUT, cwd=gen_dir).wait()
 
+    num_cores = str(multiprocessing.cpu_count())
+    with open(os.path.join(gen_dir, "build.log"), "w+") as buildlog:
+        subprocess.Popen(["make", "-j"+num_cores], stdout=buildlog, stderr=subprocess.STDOUT, cwd=pe_build_dir).wait()
         
 def doInstallPolicy(policy, installPath):
     repo_root = os.path.join('..', '..')
@@ -67,7 +70,7 @@ def doInstallPolicy(policy, installPath):
     shutil.copytree(soc_src, soc_dst)
     f_names = os.listdir(pol_dir)
     for fn in f_names:
-        if "yml" in fn:
+        if "yml" in fn or "log" in fn:
             shutil.copyfile(os.path.join(pol_dir, fn), os.path.join(installPath, fn))
     entDir = os.path.abspath("../entities")
     entFile = os.path.join(entDir, policy + ".entities.yml")

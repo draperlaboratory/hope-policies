@@ -11,8 +11,6 @@ import time
 import glob
 import errno
 
-from setup_test import *
-
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
@@ -87,8 +85,7 @@ def test_new(policy, test, sim, rc):
     doMkDir(pol_test_path)
 
     # retrieve policy
-    # TODO: kernel_dir/kernels/ -> kernels/ ?
-    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernel_dir/kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
+    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
     if not os.path.isdir(os.path.join(pol_test_path, policy)):
         pytest.fail("policy not found")
     
@@ -138,7 +135,6 @@ def doMakefile(policy, dp, main):
 
 # The makefile that is generated in the test dir for hifive bare-metal tests
 def hifiveMakefile(policy, main):
-    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
 PYTHON ?= python3
 
@@ -166,7 +162,6 @@ clean:
 
 # The makefile that is generated in the test dir for frtos tests
 def frtosMakefile(policy, main):
-    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
     return """
 PYTHON ?= python3
 
