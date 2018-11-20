@@ -13,9 +13,26 @@ import errno
 def test_build(test, runtime):
     doBuild(test, "output", runtime)
 
+# in this function, a set of policy test parameters is checked
+#   to make sure that the test makes sense. If it doesnt, the
+#   function returns the reason why
+def incompatible_reason(prog, runtime):
+
+    # TODO: is this a runtime/simulator mixup?
+    if "frtos" in runtime:
+        if "coremark" in prog or "timer_works" in prog:
+            return "test not supported on frtos/renode"
+    
+    return None
+    
 # Test execution function
 def doBuild(main, outDir, runtime):
 
+    # check for test validity
+    incompatible = incompatible_reason(main, runtime)
+    if incompatible != None:
+        pytest.skip(incompatible)    
+    
     # output directory (for all tests)
     doMkDir(outDir)
 
