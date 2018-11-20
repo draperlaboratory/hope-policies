@@ -320,6 +320,10 @@ void dhry_proc0(void)
 	endtime = sys_GetWallTimestampUs();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
 
+	MYPRINT("Start Time: %u (us)\n", starttime);
+	MYPRINT("End Time  : %u (us)\n", endtime);
+	MYPRINT("Null Time : %u (us)\n", nulltime);
+
 	PtrGlbNext = (RecordPtr)malloc(sizeof(RecordType));
 	PtrGlb = (RecordPtr) malloc(sizeof(RecordType));
 	PtrGlb->PtrComp = PtrGlbNext;
@@ -334,6 +338,7 @@ void dhry_proc0(void)
 	/*****************
 	-- Start Timer --
 	*****************/
+	MYPRINT("Starting Timer for %lu Loops\n", (long)LOOPS);
 	starttime = sys_GetWallTimestampUs();
 	for (i = 0; i < LOOPS; ++i)
 	{
@@ -362,18 +367,20 @@ void dhry_proc0(void)
 		Proc2(&IntLoc1);
 	}
 	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
-	MYPRINT("Dhrystone(%s) time for %ld passes = %ld\n",
-		Version,
-		(long) LOOPS, benchtime_us/US_IN_SEC);
-	MYPRINT("This machine benchmarks at %ld dhrystones/second\n",
-		((long) LOOPS)) / (benchtime/US_IN_SEC);
+
+	MYPRINT("===================================================\n");
+	MYPRINT("Passes: %u\n", LOOPS);
+	MYPRINT("Benchtime (us): %u\n", benchtime_us);
+	MYPRINT("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
+	MYPRINT("Dhrystones:     %u dhrystones/second\n", LOOPS/(benchtime_us/US_IN_SEC));
+
 }
 
 int test_main (void)
 {
 	test_positive();
 	test_begin();
-
+	MYPRINT("Starting dhry_proc0\n");
 	dhry_proc0();
 
 	test_pass();
