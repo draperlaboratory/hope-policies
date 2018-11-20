@@ -60,7 +60,7 @@ def test_new(policy, test, sim, rc):
     else:
         name = test
 
-    # check that this test build 
+    # check that this test has been built
     dirPath = os.path.join("output", name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("no complete build found")
@@ -75,12 +75,11 @@ def test_new(policy, test, sim, rc):
 
     # policy-specific stuff
 
-    # TODO: is this the best way to do this?
-    # name directory with cache info if cache is being used
-    if rc[0] == '' or rc[1] == '':
-        pol_dir_name = policy;
-    else:
-        pol_dir_name = policy + '-' + rc[0] + rc[1]
+    # generate directory name
+    pol_dir_name = policy;
+    if rc[0] != '' and rc[1] != '':
+        pol_dir_name = pol_dir_name + '-' + rc[0] + rc[1]
+        
     pol_test_path = os.path.join(dirPath, pol_dir_name)
     doMkDir(pol_test_path)
 
@@ -88,20 +87,23 @@ def test_new(policy, test, sim, rc):
     subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
     if not os.path.isdir(os.path.join(pol_test_path, policy)):
         pytest.fail("policy not found")
-    
+
     # test-run-level makefile. ie make inits & make qemu
     doMakefile(policy, pol_test_path, test)
 
-    # script for 
-    doReSc(policy, pol_test_path, sim)
+    # script for renode config
+    if sim == "renode":
+        doReSc(policy, pol_test_path)
 
+    doDebugScript(pol_test_path, sim)
+    
     # config validator including rule cache
     doValidatorCfg(policy, pol_test_path, rc[0], rc[1])
 
     # run tagging tools
     doMkDir(os.path.join(pol_test_path, "bininfo"))
-    initlog = open(os.path.join(pol_test_path, "inits.log"), "w+")
-    subprocess.Popen(["make", "inits"], stdout=initlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
+    with open(os.path.join(pol_test_path, "inits.log"), "w+") as initlog:
+        subprocess.Popen(["make", "inits"], stdout=initlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
 
     # Check for tag information
     if not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.taginfo")) or \
@@ -121,20 +123,13 @@ def test_new(policy, test, sim, rc):
 # Generate the makefile
 def doMakefile(policy, dp, main):
 
-    # TODO: merge hifive & qemu makefiles?
-    if "frtos" in policy:
-        mf = frtosMakefile(policy, main)
-    elif "hifive" in policy:
-        mf = hifiveMakefile(policy, main)
-    else:
-        pytest.fail("Unknown OS, can't generate Makefile")
+    mf = sim_makefile(policy, main)
 
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
 
-# The makefile that is generated in the test dir for hifive bare-metal tests
-def hifiveMakefile(policy, main):
+def sim_makefile(policy, main):
     return """
 PYTHON ?= python3
 
@@ -142,7 +137,7 @@ inits:
 	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
 
 renode:
-	$(PYTHON) runRenode.py
+	$(PYTHON) ../runRenode.py
 
 renode-console:
 	renode main.resc
@@ -159,31 +154,6 @@ gdb:
 clean:
 	rm -rf *.o *.log bininfo/*
 """.format(main=main.replace('/', '-'), p=policy)
-
-# The makefile that is generated in the test dir for frtos tests
-def frtosMakefile(policy, main):
-    return """
-PYTHON ?= python3
-
-inits:
-	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
-
-renode:
-	$(PYTHON) ../runRenode.py
-
-renode-console:
-	renode main.resc
-
-gdb:
-	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
-
-socat:
-	socat - tcp:localhost:4444
-
-clean:
-	rm -f *.o *.log bininfo/*
-""".format(main = main.replace('/', '-'), p=policy)
-
         
 def doMkDir(dir):
     try:
@@ -193,24 +163,23 @@ def doMkDir(dir):
         if e.errno != errno.EEXIST:
             raise    
 
-# Generate the makefile
-def doReSc(policy, dp, simulator):
-    if "renode" in simulator:
-        rs = rescScript(dp, policy)
-    elif "qemu" in simulator:
-        rs = rescScriptHifive(dp, policy)
-    else:
-        pytest.fail("Unknown OS, can't generate Scripts")
+# Generate the resc script
+def doReSc(policy, dp):
 
-    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
+    rs = rescScript(dp, policy)
 
     print("Renode Script: {}".format(dp))
     with open(os.path.join(dp,'main.resc'), 'w') as f:
         f.write(rs)
+
+# generate a debug script
+def doDebugScript(dp, simulator):
+    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
+
     print("GDB Script: {}".format(dp))
     with open(os.path.join(dp,'.gdbinit'), 'w') as f:
         f.write(gs)
-
+        
 def fail_reason(dp):
     print("Checking result...")
     with open(os.path.join(dp,"uart.log"), "r") as fh:
@@ -254,29 +223,6 @@ sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
 sysbus.ap_core StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir), policies=policy)
-
-
-def rescScriptHifive(dir, policy):
-    return """
-using sysbus
-mach create
-machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
-sysbus.cpu MaximumBlockSize 1
-emulation CreateServerSocketTerminal 4444 "uart-socket"
-connector Connect uart0 uart-socket
-#showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
-#emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
-#connector Connect sysbus.uart uart-pty
-sysbus LoadELF @{path}/build/main
-sysbus Tag <0x10008000 4> "PRCI_HFROSCCFG" 0xFFFFFFFF
-sysbus Tag <0x10008008 4> "PRCI_PLLCFG" 0xFFFFFFFF
-cpu PC `sysbus GetSymbolAddress "vinit"`
-cpu PerformanceInMips 320
-sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
-sysbus.cpu StartGdbServer 3333
-logLevel 1 sysbus.cpu
-sysbus.cpu StartStatusServer 3344
 """.format(path = os.path.join(os.getcwd(), dir), policies=policy)
 
 def gdbScript(dir):
@@ -510,8 +456,8 @@ break main
 continue
 """.format(path = os.path.join(os.getcwd(), dir))
 
-# TODO: fix pulling hifive from policy
 def doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size):
+
     if "hifive" in policy:
         soc_cfg = "hifive_e_cfg.yml"
     else:
