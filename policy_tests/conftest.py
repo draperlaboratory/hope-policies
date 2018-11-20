@@ -5,7 +5,7 @@ import pytest
 
 from functools import reduce
 
-from cfg_classes import *
+from test_groups import *
 
 def pytest_addoption(parser):
     parser.addoption('--sim', default='renode',
@@ -48,10 +48,6 @@ def composite(request):
 
 def pytest_generate_tests(metafunc):
 
-    test_config = 'hifive' # TODO: remove
-    positive_tests = configs[test_config].positive_tests
-    negative_tests = configs[test_config].negative_tests
-
     modules = metafunc.config.option.modules.split(",")
 
     if 'policy' in metafunc.fixturenames:
@@ -69,15 +65,26 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("policy", policies, scope='session')
 
     if 'test' in metafunc.fixturenames:
-        if 'all' in metafunc.config.option.test:
-            all_tests = positive_tests + negative_tests
-            metafunc.parametrize("test", all_tests,
-                                 ids=list(map(lambda n: n.replace('/','_'), all_tests)),
-                                 scope='session')
-        else:
-            tests = metafunc.config.option.test.split(",")
-            metafunc.parametrize("test", tests,
-                                 scope='session')
+
+        # "TESTS" as passed on the command line may be the names
+        #   of individual tests, or the name of a group of tests
+        #   defined in test_groups.py. The latter is the default
+        #   in a case in which a group is given the same name as
+        #   a test        
+        test_arg = metafunc.config.option.test.split(",")
+
+        # look up any test groups
+        tests = []
+        for t in test_arg:
+            if t not in test_groups:
+                tests.append(t)
+            else:
+                tests.extend(test_groups[t].tests)
+
+        # unique (avoid duplicate work) & alphabetical (for XDIST)
+        tests = sorted(list(set(tests))) 
+
+        metafunc.parametrize("test", tests, scope='session')
 
     if 'rc' in metafunc.fixturenames:
         caches = metafunc.config.option.rule_cache.split(",")
