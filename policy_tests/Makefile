@@ -11,14 +11,14 @@ COMPOSITE ?= simple
 TESTS ?= all
 RULE_CACHE_SIZE ?= 16
 
-PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --modules=$(MODULES)
+PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --modules=$(MODULE)
 
 # TODO: find a way to report bad configs... maybe in pytest? ie no SIM set
 
 # default QEMU build
 qemu: SIM=qemu
 qemu: RUNTIME=hifive
-qemu: MODULES=osv.hifive.main
+qemu: MODULE=osv.hifive.main
 qemu: POLICIES=heap,none,rwx,stack,threeClass
 qemu: XDIST=-n 25 # run in parallel
 qemu: run
@@ -26,17 +26,17 @@ qemu: run
 # default renode build
 renode: SIM=renode
 renode: RUNTIME=frtos
-renode: MODULES=osv.frtos.main
+renode: MODULE=osv.frtos.main
 renode: POLICIES=heap,none,rwx,stack
 renode: run
 
 build: 
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -n 25 -k test_build build_unit_tests.py
 
-install-kernels:
+kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_install_kernel install_kernels.py
 
-run: build install-kernels
+run: build kernels
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_new run_unit_tests.py
 
 list:

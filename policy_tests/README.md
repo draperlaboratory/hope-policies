@@ -1,5 +1,3 @@
-
-
 Policy Testing
 ===================
 
@@ -10,97 +8,130 @@ Install Instructions
 
    * Install py.test: `sudo apt-get install python-pytest`
    * Install py.test plugins:
-       * `pip2 install pytest-html`
-       * `pip2 install pytest-timeout`
-
-   * Create env var `DOVER` points to: `/home/user_name/dover-install`
-   * Create env var `DOVER_SOURCES` that points to: `/home/user_name/dover-repos`
-   * Create env var `FREE_RTOS_DIR` that points to: `/home/user_name/dover-repos/FreeRTOS`
+       * `pip3 install pytest-html`
+       * `pip3 install pytest-timeout`
 
    * Build policytool:
        * See README.md in policy-tool
 
-Simulator
-=========
+Usage
+=====
 
-Currently the test script supports three simulators.
+Run 'make' to kick off a test run using a default configuration. 
 
-   * Renode
-   * Verilator (Broken currently)
-   * FPGA (Broken currently)
-   
-To select between simulation targets you need to edit the simulator variable
-at the top of the `cfg_test.py` script in `policy_tests`.
+Internally, 'make' runs 3 different targets:
 
-Note: For the FPGA target you need to modify dover-os to use the
-MM_1M_auto memory configuration.
+    'make build'  - compiles the test program(s) to be run
+    'make kernel' - runs the policy tool to build the policy(s) to be run
+    'make run'    - actually runs the test program(s) with the policy(s) in
+    	            the simulator
 
-Usage ======
+There are several options that can be chosen to customize what policies and
+programs are built and run during the test. These can be specified on the
+command line:
 
-First, select a set of tests to run via the test configuration var `cfg` in
-cfg_test.py. Test configurations are defined in testClasses.py
+    make TESTS=foo.c,bar.c // runs only foo.c and bar.c
 
-Second, the kernels for the test need to be build and installed to dover-install
+or common configurations can be defined in the Makefile, i.e.
 
-`make list-kernels` -- lists all kernel combinations that will be built
-`make clean-kernels` -- remove all kernels from dover-install
-`make install-kernels` -- build all kernel combinations and install them
+    # default QEMU build
+    qemu: SIM=qemu
+    qemu: RUNTIME=hifive
+    qemu: MODULE=osv.hifive.main
+    qemu: POLICIES=heap,none,rwx,stack,threeClass
+    qemu: XDIST=-n 25 # run in parallel
+    qemu: run
 
-The test script isn't designed to be run by pytest directly, it is
-intended to be called from the Makefile.
+Each of the "knobs" available to configure a test run is described below:
 
-`make list` -- lists all availible tests
-`make full` -- run all tests with only -O2 gcc flag (Default make target)
-`make simple` -- run all tests with each individual policy by itself, no composite policies
-`make allOs` -- run all tests with -O1 -O2 -O3 gcc flags
-`make debug-xxxx` -- Where xxxx is a test name as printed in make list inside []
-                     runs the specified test in the debug dir not fail dir
+Pytest config knobs -- 
 
-Tests can be either positive (expected to pass) or negative (expected
-to get a policy violation, after the call to `begin_test`). The test
-name string used in the debug target is constructed from: policies-dir_filename-optlevel, where
-dir is used for negative tests only.
+  XDIST - How many workers to use when running tests in parallel.
+    note: Variable must be '-n x' where x is the number you want, or 'auto'
+    note: some things cannot be run in parallel. For example, running the
+    	renode simulator and building the kernels are not currently supported
+	in parallel
 
-    * `Stack-hello_works_1.c-O2` -- Positive test, Stack policy, hello_works_1.c, compiled with gcc -O2
-    * `RWX.Stack-ptr_arith_works_1.c-O2` -- Positive test, RWX and Stack policies...
-    * `Stack-Stack_ptr_arith_fails_1.c-O2` -- Negative test, Stack policy, Stack dir, ptr_arith_fails_1.c...
-    * `none-hello_works_1.c-O2` -- Positive test, no policy...
+  ERROR_MSGS - how much info should print on failure? Options from pytest
+    --tb=auto    # (default) 'long' tracebacks for the first and last
+    		 # entry, but 'short' style for the other entries
+    --tb=long    # exhaustive, informative traceback formatting
+    --tb=short   # shorter traceback format
+    --tb=line    # only one line per failure
+    --tb=native  # Python standard library formatting
+    --tb=no      # no traceback at all
 
-Policies must be listed in alphabetic order to use the debug
-target. After the test runs a complete test dir will be found in the
-debug dir.
+Test program build knobs --
+
+  RUNTIME - what runtime environment to compile against? Supported examples:
+    hifive - bare-metal runtime for hifive board
+    frtos  - FreeRTOS
+
+  TESTS - what test programs to run
+    note: Positive tests should be listed in the 'tests' directory. The name of
+    	  the test is the file or directory in which the test lives.
+
+    note: Negative tests must be listed in a subdirectory of the 'tests'
+    	  directory. In particular, if a test "x" should fail when run against
+	  policy "a", it should be located in tests/a/x and the name of the
+	  test is "a/x"
+
+    note: Tests can be grouped in order to use a keyword such as "all" to
+    	  run some subset of the available tests. These groups are defined in
+	  test_groups.py. The name of the group should be a class name, while
+	  the tests should be string entries in an array called "tests" within
+	  the class. See the file for examples.
+
+Policy kernel build knobs --
+
+  MODULE -- an optional prefix to be applied to the POLICIES knob.
+
+  POLICIES -- what policies to build
+
+Test running knobs - 
+
+  SIM - What simulator to run
+    Currently supported simulators are 'qemu' and 'renode'
+
+  COMPOSITE - What strategy for including composite policies?
+    given policies a, b, and c: the following configs will produce policies:
+      simple        - a, b, c, abc
+      full          - a, b, c, ab, ac, bc, abc
+      ANYTHING_ELSE - a, b, c
+
+  RULE_CACHE - What model rule cache to simulate.
+    options are ''(none), 'finite', 'infinite', and 'dmhc'
+    
+  RULE_CACHE_SIZE - size of rule cache
+
+Output
+======
+
+The 'build' target creates an 'output/' directory that has subdirectories for
+each test. Each test's subdirectory contains some build files including at
+least a Makefile to compile the test, a 'src/' dir and a 'build/' dir for the
+finished binary and build logs.
+
+The 'kernels' target stores outputs from the policy-tool in subdirectories of
+the 'kernels/' directory.
+
+The 'run' target creates subdirectories in each test's directory. Each of
+these subdirectories corresponds to a simulation run with a particular policy
+for the test. It contains Makefiles, the policy kernel, run logs, and more.
 
 Adding Tests
 ============
 
-Open `testClasses.py` and create a new configuration class with the
-tests and add the class to the `config` dict.
-
-Tests need to use the test_status functions to indicate test start and
+Tests should use the test_status functions to indicate test start and
 pass fail status. The test status api can be found in the
 `template/test_status.h` file.
 
-Notes
-=====
-
-Each test is run in its own dir inside of policy_tests/fail. If variable
-removePassing is set to True the test directories for passing tests
-will be removed.  Failing tests are left in the `policy_tests/fail` dir
-with a log file and a Makefile that can be used to rerun the test.
-
-All permutations of policies are tested with the positive test
-cases. Negative test cases need to be run with a specific policy,
-therefore note the following convention:
-
-    * All positive test cases go into `policy_tests/tests/` dir
-    * Negative tests go into policy specific sub-folders, e.g. `policy_tests/tests/RWX/`. 
-      The test script matches the dir name with the policy prefix to exclude tests that 
-      don't have the necessary policy for the test.
+The new test should be added to the 'all' group in test_groups.py 
 
 Debugging
 =========
 
-Policy Metadata aware debugging is supported on Renode
+Policy Metadata aware debugging is supported on Renode and QEMU
 
 This is acomplished with a variety of scripts and config files:
    * main.resc -- renode script file that configures the simulator and starts a GDB server
