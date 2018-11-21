@@ -66,19 +66,19 @@ int test_done(){
   t_printf("End time: %u\n", uiPortGetWallTimestampUs());
   //  t_printf("Clock time: %d.%06d\n", sec, usec);
   t_printf("MSG: End test.\n");
-  *test_device = SIFIVE_TEST_PASS;
+  //  *test_device = SIFIVE_TEST_PASS;
   return 0;
   }
   else if(test_status_positive && test_status_negative) {
     t_printf("FAIL: error in test, can't be both positive and negative test.\n");
     t_printf("MSG: End test.\n");
-    *test_device = SIFIVE_TEST_FAIL;
+    //    *test_device = SIFIVE_TEST_FAIL;
     return 1;
   }
   else {
     t_printf("FAIL: test failed.\n");
     t_printf("MSG: End test.\n");
-    *test_device = SIFIVE_TEST_FAIL;
+    //    *test_device = SIFIVE_TEST_FAIL;
     return 1;
   }
 }

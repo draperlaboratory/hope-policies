@@ -17,6 +17,7 @@ PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --test=$(TESTS) -
 
 # default QEMU build
 qemu: SIM=qemu
+qemu: TESTS=hifive
 qemu: RUNTIME=hifive
 qemu: MODULE=osv.hifive.main
 qemu: POLICIES=heap,none,rwx,stack,threeClass
@@ -25,6 +26,7 @@ qemu: run
 
 # default renode build
 renode: SIM=renode
+renode: TESTS=frtos
 renode: RUNTIME=frtos
 renode: MODULE=osv.frtos.main
 renode: POLICIES=heap,none,rwx,stack
