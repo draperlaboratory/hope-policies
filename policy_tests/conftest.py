@@ -21,8 +21,8 @@ def pytest_addoption(parser):
                      help='Which rule cache to use (ideal, finite, dmhc). Empty for none.')
     parser.addoption('--rule_cache_size', default=16,
                      help='size of rule cache, if one is used.')
-    parser.addoption('--modules', default='osv.hifive.main',
-                     help='which module(s) policies should be referenced from')
+    parser.addoption('--module', default='osv.hifive.main',
+                     help='which module policies should be referenced from')
     parser.addoption('--composite', default='simple',
                      help='What composite policies (simple, full, else none)')
     
@@ -48,7 +48,7 @@ def composite(request):
 
 def pytest_generate_tests(metafunc):
 
-    modules = metafunc.config.option.modules.split(",")
+    module = metafunc.config.option.module
 
     if 'policy' in metafunc.fixturenames:
 
@@ -57,10 +57,12 @@ def pytest_generate_tests(metafunc):
 
         # build composites
         if 'simple' in metafunc.config.option.composite:
-            policies = composites(modules, policies, True)
+            policies = composites(module, policies, True)
         elif 'full' in metafunc.config.option.composite:
-            policies = composites(modules, policies, False)
-
+            policies = composites(module, policies, False)
+        else:
+            policies = [module + "." + p for p in policies]
+            
         # give all policies to test
         metafunc.parametrize("policy", policies, scope='session')
 
@@ -115,13 +117,12 @@ def permutePols(polStrs):
     return (reduce(operator.concat, combs, []))
 
 # given modules and policies, generate composite policies
-def composites(modules, policies, simple):
+def composites(module, policies, simple):
 
     # generate all permutations
     r = []
-    for o in modules:
-        for p in permutePols(policies):
-            r.append((p, o+"."+"-".join(p)))
+    for p in permutePols(policies):
+        r.append((p, module+"."+"-".join(p)))
 
     # length of policy that has every member policy except none
     full_composite_len = len(policies)
