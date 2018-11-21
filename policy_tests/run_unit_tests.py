@@ -19,14 +19,6 @@ def incompatible_reason(policy, test, sim):
     # skip negative tests that are not matched to the correct policy
     if "/" in test and (not test.split("/")[0] in policy):
         return "incorrect policy to detect violation in negative test"
-
-    # TODO: is this a runtime/simulator mixup? How to do this check without
-    #   trusting the name of the policy?
-    # for now, hifive runtime only runs on qemu sim & frtos on renode
-    if sim == "qemu" and "hifive" not in policy:
-        return "hifive bare-metal is the only runtime currently supported by qemu"
-    if sim == "renode" and "frtos" not in policy:
-        return "frtos is the only runtime currently supported by renode"
     
     return None
 
@@ -44,7 +36,7 @@ def test_new(policy, test, sim, rc):
     
     # check for test validity
     incompatible = incompatible_reason(policy, test, sim)
-    if incompatible != None:
+    if incompatible:
         pytest.skip(incompatible)
 
     # TODO: sync folder names ie specify the rule cache config in folder name
