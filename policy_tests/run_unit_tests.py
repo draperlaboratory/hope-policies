@@ -39,15 +39,8 @@ def test_new(policy, test, sim, rc):
     if incompatible:
         pytest.skip(incompatible)
 
-    # TODO: sync folder names ie specify the rule cache config in folder name
-        
-    # TODO: there is a similar test naming routine in the build_unit_tests.py
-    #   -> should be a fn that both modules call?
-    #   -> should this module be passed the paths to the build output dirs
-    #      instead of the test names alone?
-
     # make output directory for test run
-    if "/" in test:
+    if "/" in test: # deal with negative tests
         name = test.split("/")[-1]
     else:
         name = test

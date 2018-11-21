@@ -13,8 +13,10 @@ import multiprocessing
 
 # Nothing to configure below this point
 
+# function found automatically by pytest
 def test_install_kernel(policy):
 
+    # TODO: don't hardcode path?
     installPath = os.path.join("kernels", policy)
     if not os.path.isdir(installPath):
         os.makedirs(installPath)
@@ -28,6 +30,7 @@ def test_install_kernel(policy):
     
     doInstallPolicy(policy, installPath)
 
+    # check for success
     if not os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
         pytest.fail("failed to generate validator shared object")
 

@@ -10,10 +10,11 @@ import time
 import glob
 import errno
 
+# function automatically found by pytest
 def test_build(test, runtime):
     doBuild(test, "output", runtime)
-    
-# Test execution function
+
+
 def doBuild(main, outDir, runtime):
 
     # output directory (for all tests)
@@ -21,13 +22,12 @@ def doBuild(main, outDir, runtime):
 
     # make output directory for _this_ test
     name = main
-    if "/" in main:
+    if "/" in main: # deal with negative tests
         name = main.split("/")[-1]
+
     dirPath = os.path.join(outDir, name)
-
-    if os.path.isdir(dirPath):
+    if os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("test directory already exists")
-
     doMkDir(dirPath)
         
     # make policy-common test sources & tools
@@ -38,7 +38,7 @@ def doBuild(main, outDir, runtime):
         
     # do the build
     subprocess.Popen(["make"], stdout=open(os.path.join(dirPath, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=dirPath).wait()
-    
+
     # check that build succeeded
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.fail("no binary produced")
