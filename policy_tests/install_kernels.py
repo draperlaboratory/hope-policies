@@ -14,7 +14,7 @@ import multiprocessing
 # Nothing to configure below this point
 
 # function found automatically by pytest
-def test_install_kernel(policy):
+def test_install_kernel(policy, debug):
 
     # TODO: don't hardcode path?
     installPath = os.path.join("kernels", policy)
@@ -26,7 +26,7 @@ def test_install_kernel(policy):
         pytest.skip("using previously compiled kernel")
     
     # make the policy
-    doMkPolicy(policy)
+    doMkPolicy(policy, debug)
     
     doInstallPolicy(policy, installPath)
 
@@ -34,7 +34,7 @@ def test_install_kernel(policy):
     if not os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
         pytest.fail("failed to generate validator shared object")
 
-def doMkPolicy(policy):
+def doMkPolicy(policy, debug):
     repo_root = os.path.join('..', '..')
     mod_dir = os.path.join(repo_root, "policies")
     ent_dir = os.path.join(mod_dir, "entities")
@@ -42,7 +42,9 @@ def doMkPolicy(policy):
     ptcmd = "policy-tool"
 
     ptarg = ["-t", ent_dir, "-m", mod_dir, "-o", gen_dir] + [policy]
-
+    if debug: # prepend debug flag/argument for policy tool
+        ptarg.insert(0, "-d")
+    
     shutil.rmtree(gen_dir, ignore_errors=True)
     os.makedirs(gen_dir)
     # faster if we trust cmake & don't clean, but that can leave you with stale .so file

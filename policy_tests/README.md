@@ -61,6 +61,11 @@ Pytest config knobs --
     --tb=native  # Python standard library formatting
     --tb=no      # no traceback at all
 
+Test program, kernel, & run common knobs -
+
+  DEBUG - tell the subtasks to produce debugging output. What this actually
+    	  does is up to the implementation of the subtask.
+
 Test program build knobs --
 
   RUNTIME - what runtime environment to compile against? Supported examples:
@@ -127,6 +132,60 @@ pass fail status. The test status api can be found in the
 `template/test_status.h` file.
 
 The new test should be added to the 'all' group in test_groups.py 
+
+Adding Knobs
+============
+
+Here we give an example of adding a new "knob" to the testing framework. This
+is a diff of the patch that implemented the DEBUG knob, specifically for the
+policy-tool (ie kernel target)
+
+First, pytest has to know to look for the knob.
+
+  diff --git a/policy_tests/conftest.py b/policy_tests/conftest.py
+  index eaae11e..8141e1c 100644
+  --- a/policy_tests/conftest.py
+  +++ b/policy_tests/conftest.py
+  @@ -27,0 +28,2 @@ def pytest_addoption(parser):
+  +    parser.addoption('--isp_debug', default='no',
+  +                     help='pass debug options to testing tasks (yes/no)')
+  @@ -48,0 +51,4 @@ def composite(request):
+  +@pytest.fixture
+  +def debug(request):
+  +    return 'yes' == request.config.getoption('--isp_debug')
+
+Next, invocations of the makefile need to pass the value of the knob to pytest
+
+  diff --git a/policy_tests/Makefile b/policy_tests/Makefile
+  index afbb0b5..f846445 100644
+  --- a/policy_tests/Makefile
+  +++ b/policy_tests/Makefile
+  @@ -12,0 +13 @@ RULE_CACHE_SIZE ?= 16
+  +DEBUG ?= no
+  @@ -14 +15 @@ RULE_CACHE_SIZE ?= 16
+  -PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+  +PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+
+Finally, subtasks can request the knob's value to be populated by pytest and
+  can then use it for whatever task-specific operations it needs.
+
+  diff --git a/policy_tests/install_kernels.py b/policy_tests/install_kernels.py
+  index ba60f5b..df03c53 100644
+  --- a/policy_tests/install_kernels.py
+  +++ b/policy_tests/install_kernels.py
+  @@ -17 +17 @@ import multiprocessing
+  -def test_install_kernel(policy):
+  +def test_install_kernel(policy, debug):
+  @@ -29 +29 @@ def test_install_kernel(policy):
+  -    doMkPolicy(policy)
+  +    doMkPolicy(policy, debug)
+  @@ -37 +37 @@ def test_install_kernel(policy):
+  -def doMkPolicy(policy):
+  +def doMkPolicy(policy, debug):
+  @@ -45 +45,3 @@ def doMkPolicy(policy):
+  +    if debug: # prepend debug flag/argument for policy tool
+  +        ptarg.insert(0, "-d")
+
 
 Debugging
 =========

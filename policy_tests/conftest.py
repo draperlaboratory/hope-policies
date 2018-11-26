@@ -25,6 +25,8 @@ def pytest_addoption(parser):
                      help='which module policies should be referenced from')
     parser.addoption('--composite', default='simple',
                      help='What composite policies (simple, full, else none)')
+    parser.addoption('--isp_debug', default='no',
+                     help='pass debug options to testing tasks (yes/no)')
     
 @pytest.fixture
 def sim(request):
@@ -45,6 +47,10 @@ def rule_cache_size(request):
 @pytest.fixture
 def composite(request):
     return request.config.getoption('--composite')
+
+@pytest.fixture
+def debug(request):
+    return 'yes' == request.config.getoption('--isp_debug')
 
 def pytest_generate_tests(metafunc):
 
@@ -105,7 +111,7 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("rc", rcs,
                              ids=list(map(lambda x: x[0]+x[1], rcs)),
                              scope='session')
-
+        
 # generate the permutations of policies to compose
 def permutePols(polStrs):
     p = sorted(polStrs)
