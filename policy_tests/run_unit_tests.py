@@ -445,7 +445,7 @@ fpga:
 	$(PYTHON) runFPGA.py
 
 renode:
-	$(PYTHON) runRenode.py
+	renode --plain --disable-xwt main.resc
 
 renode-console:
 	renode main.resc
@@ -466,16 +466,14 @@ def rescScript(dir, policy):
 mach create
 machine LoadPlatformDescription @platforms/boards/dover-riscv-board.repl
 sysbus.ap_core MaximumBlockSize 1
-emulation CreateServerSocketTerminal 4444 "uart-socket"
-connector Connect sysbus.uart1 uart-socket
-#showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
-#emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
-#connector Connect sysbus.uart uart-pty
+emulation CreateFileTerminal @{path}/uart.log "uart"
+connector Connect sysbus.uart1 uart
 sysbus LoadELF @{path}/build/main
 sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
-sysbus.ap_core StartStatusServer 3344
+sysbus.ap_core ValidatorStatusLogger @{path}/pex.log
+start
 """.format(path = os.path.join(os.getcwd(), dir), policies=policy)
 
 
