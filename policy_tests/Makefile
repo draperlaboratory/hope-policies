@@ -17,11 +17,14 @@ TESTS ?= hifive
 RUNTIME ?= hifive
 MODULE ?= osv.hifive.main
 POLICIES ?= heap,none,rwx,stack,threeClass
-XDIST ?= -n 25 # run in parallel
+XDIST ?= -n 1 # run in parallel
 
 PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
 # TODO: find a way to report bad configs... maybe in pytest? ie no SIM set
+
+# avoid short-circuiting targets based on local file/dir names
+.PHONY: qemu renode build kernels run list list-kernels list-run clean clean-kernels
 
 # default QEMU build
 qemu: SIM=qemu
@@ -29,7 +32,7 @@ qemu: TESTS=hifive
 qemu: RUNTIME=hifive
 qemu: MODULE=osv.hifive.main
 qemu: POLICIES=heap,none,rwx,stack,threeClass
-qemu: XDIST=-n 25 # run in parallel
+qemu: XDIST ?= -n 1 # run in parallel
 qemu: run
 
 # default renode build
@@ -38,10 +41,11 @@ renode: TESTS=frtos
 renode: RUNTIME=frtos
 renode: MODULE=osv.frtos.main
 renode: POLICIES=heap,none,rwx,stack
+renode: XDIST=
 renode: run
 
 build: 
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) -n 25 -k test_build build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build build_unit_tests.py
 
 kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_install_kernel install_kernels.py
@@ -54,6 +58,9 @@ list:
 
 list-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
+
+list-build:
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only build_unit_tests.py
 
 clean: clean-kernels
 	rm -rf output debug prof broken __pycache__ *.pyc assets report.html report.xml prof_results.log .cache
