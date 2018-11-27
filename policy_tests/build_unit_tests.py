@@ -12,6 +12,13 @@ import errno
 
 # function automatically found by pytest
 def test_build(test, runtime):
+
+    if not runtime:
+        pytest.fail("No target runtime provided")
+
+    if not test:
+        pytest.fail("No test provided to build")
+
     doBuild(test, "output", runtime)
 
 
@@ -27,7 +34,7 @@ def doBuild(main, outDir, runtime):
 
     dirPath = os.path.join(outDir, name)
     if os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.skip("test directory already exists")
+        pytest.skip("Test directory already exists: " + name)
     doMkDir(dirPath)
         
     # make policy-common test sources & tools
@@ -41,7 +48,7 @@ def doBuild(main, outDir, runtime):
 
     # check that build succeeded
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.fail("no binary produced")
+        pytest.fail("No binary produced. Log: " + dirPath + "/build/build.log")
 
 def doMkBuildDir(dp, runtime):
 
@@ -74,12 +81,16 @@ def doMkApp(runtime, dp, main):
     src_dir = os.path.join(dp, "srcs")
     doMkDir(src_dir)
 
+    if not os.path.isfile
+    
     if os.path.isfile(os.path.join("tests", main)):
         shutil.copy(os.path.join("tests", main), src_dir)
-    else:
+    elif os.path.isdir(os.path.join("tests", main)):
         for f in os.listdir(os.path.join("tests", main)):
             shutil.copy(os.path.join("tests", main, f), src_dir)
-
+    else:
+        pytest.fail("Test not found: " + main);
+        
     # runtime specific code 
     if "frtos" in runtime:
         shutil.copy(os.path.join("template", "frtos-mem.h"), os.path.join(src_dir, "mem.h"))
@@ -90,7 +101,7 @@ def doMkApp(runtime, dp, main):
         shutil.copy(os.path.join("template", "hifive.c"), os.path.join(src_dir, "hifive.c"))
         shutil.copyfile(os.path.join("template", "test.makefile"), os.path.join(dp, "Makefile"))
     else:
-        pytest.fail("Unknown OS, can't copy app files")
+        pytest.fail("Target runtime not found: " + runtime)
 
     # generic test code 
     shutil.copy(os.path.join("template", "test.h"), src_dir)
