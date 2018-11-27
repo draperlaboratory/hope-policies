@@ -81,8 +81,6 @@ def doMkApp(runtime, dp, main):
     src_dir = os.path.join(dp, "srcs")
     doMkDir(src_dir)
 
-    if not os.path.isfile
-    
     if os.path.isfile(os.path.join("tests", main)):
         shutil.copy(os.path.join("tests", main), src_dir)
     elif os.path.isdir(os.path.join("tests", main)):

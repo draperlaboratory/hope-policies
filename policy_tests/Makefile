@@ -6,11 +6,18 @@ ERROR_MSGS ?= --tb=long
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
 
-# default test config settings
+# default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
-TESTS ?= all
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
+
+# QEMU is the default makefile target
+SIM ?= qemu
+TESTS ?= hifive
+RUNTIME ?= hifive
+MODULE ?= osv.hifive.main
+POLICIES ?= heap,none,rwx,stack,threeClass
+XDIST ?= -n 25 # run in parallel
 
 PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
