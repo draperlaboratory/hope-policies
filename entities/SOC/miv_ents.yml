@@ -4,3 +4,6 @@
 -
   name: SOC.Memory.Flash_0
   kind: soc
+-
+  name: SOC.IO.TEST
+  kind: soc
