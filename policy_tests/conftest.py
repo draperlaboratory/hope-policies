@@ -8,26 +8,26 @@ from functools import reduce
 from test_groups import *
 
 def pytest_addoption(parser):
-    parser.addoption('--sim', default='renode',
+    parser.addoption('--sim', default='',
                      help='Which sim to use (renode, qemu)')
     # TODO: add optimizations
-    parser.addoption('--runtime', default='frtos',
+    parser.addoption('--runtime', default='',
                      help='What runtime should the test be compiled for')
-    parser.addoption('--test', default='all',
+    parser.addoption('--test', default='',
                      help='Which test(s) to run')
-    parser.addoption('--policies', default='simple',
-                     help='Which policies to use, or simple, full, etc for combined policies')
+    parser.addoption('--policies', default='',
+                     help='Which policies to use')
     parser.addoption('--rule_cache', default='',
                      help='Which rule cache to use (ideal, finite, dmhc). Empty for none.')
     parser.addoption('--rule_cache_size', default=16,
                      help='size of rule cache, if one is used.')
-    parser.addoption('--module', default='osv.hifive.main',
-                     help='which module policies should be referenced from')
+    parser.addoption('--module', default='',
+                     help='optional policy prefix')
     parser.addoption('--composite', default='simple',
                      help='What composite policies (simple, full, else none)')
     parser.addoption('--isp_debug', default='no',
                      help='pass debug options to testing tasks (yes/no)')
-    
+
 @pytest.fixture
 def sim(request):
     return request.config.getoption('--sim')

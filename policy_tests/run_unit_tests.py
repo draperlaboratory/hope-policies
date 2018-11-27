@@ -48,7 +48,7 @@ def test_new(policy, test, sim, rc):
     # check that this test has been built
     dirPath = os.path.join("output", name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.skip("no complete build found")
+        pytest.skip("No binary found: " + test)
 
     # simulator-specific run options
     if "qemu" in sim:
@@ -71,7 +71,7 @@ def test_new(policy, test, sim, rc):
     # retrieve policy
     subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
     if not os.path.isdir(os.path.join(pol_test_path, policy)):
-        pytest.fail("policy not found")
+        pytest.fail("Policy not found: " + policy)
 
     # test-run-level makefile. ie make inits & make qemu
     doMakefile(policy, pol_test_path, test)
@@ -94,7 +94,7 @@ def test_new(policy, test, sim, rc):
     if not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.taginfo")) or \
        not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text"))    or \
        not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text.tagged")):
-       pytest.fail("tagging tools did not produce expected output")
+       pytest.fail("Tagging tools did not produce expected output")
     
     # run test
     simlog = open(os.path.join(pol_test_path, "sim.log"), "w+")

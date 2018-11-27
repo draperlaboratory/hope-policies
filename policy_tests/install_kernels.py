@@ -16,6 +16,9 @@ import multiprocessing
 # function found automatically by pytest
 def test_install_kernel(policy, debug):
 
+    if not policy:
+        pytest.fail("No policy specified");
+    
     # TODO: don't hardcode path?
     installPath = os.path.join("kernels", policy)
     if not os.path.isdir(installPath):
@@ -23,7 +26,7 @@ def test_install_kernel(policy, debug):
     
     # do not remake kernel unneccesarily
     if os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
-        pytest.skip("using previously compiled kernel")
+        pytest.skip("Using previously compiled kernel")
     
     # make the policy
     doMkPolicy(policy, debug)
@@ -32,7 +35,7 @@ def test_install_kernel(policy, debug):
 
     # check for success
     if not os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
-        pytest.fail("failed to generate validator shared object")
+        pytest.fail("Failed to generate validator shared object")
 
 def doMkPolicy(policy, debug):
     repo_root = os.path.join('..', '..')
