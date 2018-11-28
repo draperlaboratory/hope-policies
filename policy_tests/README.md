@@ -64,7 +64,7 @@ Pytest config knobs --
 Test program, kernel, & run common knobs -
 
   DEBUG - tell the subtasks to produce debugging output. What this actually
-    	  does is up to the implementation of the subtask.
+    	  does is up to the implementation of the subtask. (yes/no)
 
 Test program build knobs --
 
