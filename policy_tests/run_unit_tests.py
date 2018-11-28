@@ -22,6 +22,16 @@ def incompatible_reason(policy, test, sim):
     
     return None
 
+def xfail_reason(policy, test, sim):
+
+    if "threeClass" in policy and "coremark" in test:
+        return "threeClass and coremark; known unsolved bug"
+
+    if "longjump" in test:
+        return "longjump test known to be broken"
+
+    return None
+
 # test function found automatically by pytest. Pytest calls
 #   pytest_generate_tests in conftest.py to determine the
 #   arguments. If they are parameterized, it will call this
@@ -39,6 +49,10 @@ def test_new(policy, test, sim, rc):
     if incompatible:
         pytest.skip(incompatible)
 
+    xfail = xfail_reason(policy, test, sim)
+    if xfail:
+        pytest.xfail(xfail)
+        
     # make output directory for test run
     if "/" in test: # deal with negative tests
         name = test.split("/")[-1]

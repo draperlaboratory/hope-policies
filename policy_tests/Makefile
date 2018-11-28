@@ -19,7 +19,7 @@ MODULE ?= osv.hifive.main
 POLICIES ?= heap,none,rwx,stack,threeClass
 XDIST ?= -n 1 # run in parallel
 
-PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+PYTEST_ARGS ?= -v -rsxX --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
 # TODO: find a way to report bad configs... maybe in pytest? ie no SIM set
 
