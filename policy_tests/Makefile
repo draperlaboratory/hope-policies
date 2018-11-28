@@ -24,7 +24,7 @@ PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEB
 # TODO: find a way to report bad configs... maybe in pytest? ie no SIM set
 
 # avoid short-circuiting targets based on local file/dir names
-.PHONY: qemu renode build kernels run list list-kernels list-run clean clean-kernels
+.PHONY: kernels
 
 # default QEMU build
 qemu: SIM=qemu
