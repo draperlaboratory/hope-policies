@@ -158,6 +158,7 @@ First, pytest has to know to look for the knob.
   
 Next, invocations of the makefile need to pass the value of the knob to pytest
 
+  ```
   diff --git a/policy_tests/Makefile b/policy_tests/Makefile
   index afbb0b5..f846445 100644
   --- a/policy_tests/Makefile
@@ -167,10 +168,12 @@ Next, invocations of the makefile need to pass the value of the knob to pytest
   @@ -14 +15 @@ RULE_CACHE_SIZE ?= 16
   -PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
   +PYTEST_ARGS ?= -v -rs --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+  ```
 
 Finally, subtasks can request the knob's value to be populated by pytest and
   can then use it for whatever task-specific operations it needs.
 
+  ```
   diff --git a/policy_tests/install_kernels.py b/policy_tests/install_kernels.py
   index ba60f5b..df03c53 100644
   --- a/policy_tests/install_kernels.py
@@ -187,7 +190,7 @@ Finally, subtasks can request the knob's value to be populated by pytest and
   @@ -45 +45,3 @@ def doMkPolicy(policy):
   +    if debug: # prepend debug flag/argument for policy tool
   +        ptarg.insert(0, "-d")
-
+  ```
 
 Debugging
 =========
