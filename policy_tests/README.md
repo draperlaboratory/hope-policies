@@ -142,6 +142,7 @@ policy-tool (ie kernel target)
 
 First, pytest has to know to look for the knob.
 
+  ```
   diff --git a/policy_tests/conftest.py b/policy_tests/conftest.py
   index eaae11e..8141e1c 100644
   --- a/policy_tests/conftest.py
@@ -153,7 +154,8 @@ First, pytest has to know to look for the knob.
   +@pytest.fixture
   +def debug(request):
   +    return 'yes' == request.config.getoption('--isp_debug')
-
+  ```
+  
 Next, invocations of the makefile need to pass the value of the knob to pytest
 
   diff --git a/policy_tests/Makefile b/policy_tests/Makefile
