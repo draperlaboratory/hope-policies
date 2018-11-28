@@ -11,10 +11,12 @@ import time
 import glob
 import errno
 
+from helper_fns import *
+
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
-def incompatible_reason(policy, test, sim):
+def incompatible_reason(test, policy, sim):
 
     # skip negative tests that are not matched to the correct policy
     if "/" in test and (not test.split("/")[0] in policy):
@@ -22,7 +24,7 @@ def incompatible_reason(policy, test, sim):
     
     return None
 
-def xfail_reason(policy, test, sim):
+def xfail_reason(test, policy, sim):
 
     if "threeClass" in policy and "coremark" in test:
         return "threeClass and coremark; known unsolved bug"
@@ -37,28 +39,26 @@ def xfail_reason(policy, test, sim):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(policy, test, sim, rc):
+def test_new(test, runtime, policy, sim, rc):
 
     # policy = string of policy to be run, i.e. osv.hifive.main.rwx
     # test   = string of test to be run, i.e. hello_world_1.c
     # sim    = string of simulator to be used
     # rc     = tuple, rc[0] = rule cache type string, rc[1] = rule cache size
+    # runtime= WHAT RUNTIME THE TEST WAS COMPILED FOR
+    #          --> do not confuse this with simulator
     
     # check for test validity
-    incompatible = incompatible_reason(policy, test, sim)
+    incompatible = incompatible_reason(test, policy, sim)
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfail_reason(policy, test, sim)
+    xfail = xfail_reason(test, policy, sim)
     if xfail:
         pytest.xfail(xfail)
-        
-    # make output directory for test run
-    if "/" in test: # deal with negative tests
-        name = test.split("/")[-1]
-    else:
-        name = test
 
+    name = test_name(test, runtime)
+        
     # check that this test has been built
     dirPath = os.path.join("output", name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):

@@ -10,6 +10,8 @@ import time
 import glob
 import errno
 
+from helper_fns import *
+
 # function automatically found by pytest
 def test_build(test, runtime):
 
@@ -21,17 +23,13 @@ def test_build(test, runtime):
 
     doBuild(test, "output", runtime)
 
-
 def doBuild(main, outDir, runtime):
 
     # output directory (for all tests)
     doMkDir(outDir)
 
-    # make output directory for _this_ test
-    name = main
-    if "/" in main: # deal with negative tests
-        name = main.split("/")[-1]
-
+    name = test_name(main, runtime)
+    
     dirPath = os.path.join(outDir, name)
     if os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("Test directory already exists: " + name)
