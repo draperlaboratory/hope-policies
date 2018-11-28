@@ -62,7 +62,7 @@ def test_new(test, runtime, policy, sim, rc):
     # check that this test has been built
     dirPath = os.path.join("output", name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.skip("No binary found: " + test)
+        pytest.skip("No binary found for test: " + name)
 
     # simulator-specific run options
     if "qemu" in sim:
