@@ -1,10 +1,8 @@
-Policy Testing
-===================
+# Policy Testing
 
 Test code and script for automatic testing of policies.
 
-Install Instructions
-====================
+# Install Instructions
 
    * Install py.test: `sudo apt-get install python-pytest`
    * Install py.test plugins:
@@ -14,10 +12,9 @@ Install Instructions
    * Build policytool:
        * See README.md in policy-tool
 
-Usage
-=====
+# Usage
 
-Run 'make' to kick off a test run using a default configuration. 
+Run `make` to kick off a test run using a default configuration. 
 
 Internally, 'make' runs 3 different targets:
 
@@ -47,13 +44,12 @@ Each of the "knobs" available to configure a test run is described below:
 
 Pytest config knobs -- 
 
-- XDIST
-:  How many workers to use when running tests in parallel.
+- XDIST: How many workers to use when running tests in parallel.
    - note: Variable must be '-n x' where x is the number you want, or 'auto'
    - note: some things cannot be run in parallel. For example, running the renode simulator and building the kernels are not currently supported in parallel
 
-- ERROR_MSGS - how much info should print on failure? Options from pytest
-   - --tb=auto    # (default) 'long' tracebacks for the first and last entry, but 'short' style for the other entries
+- ERROR_MSGS: how much info should print on failure? Options from pytest
+   - --tb=auto    # (default) 'long' for first & last entry, otherwise 'short'
    - --tb=long    # exhaustive, informative traceback formatting
    - --tb=short   # shorter traceback format
    - --tb=line    # only one line per failure
