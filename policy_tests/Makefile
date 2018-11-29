@@ -39,7 +39,7 @@ COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
 
-PYTEST_ARGS ?= -v -rsxX --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+PYTEST_ARGS ?= -v -rsx --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
 # avoid short-circuiting targets based on local file/dir names
 .PHONY: kernels
