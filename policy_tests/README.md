@@ -21,10 +21,9 @@ Run 'make' to kick off a test run using a default configuration.
 
 Internally, 'make' runs 3 different targets:
 
-    'make build'  - compiles the test program(s) to be run
-    'make kernel' - runs the policy tool to build the policy(s) to be run
-    'make run'    - actually runs the test program(s) with the policy(s) in
-    	            the simulator
+- build  - compiles the test program(s) to be run
+- kernel - runs the policy tool to build the policy(s) to be run
+- run    - runs the test program(s) with the policy(s) in the simulator
 
 There are several options that can be chosen to customize what policies and
 programs are built and run during the test. These can be specified on the
@@ -34,32 +33,32 @@ command line:
 
 or common configurations can be defined in the Makefile, i.e.
 
-    # default QEMU build
-    qemu: SIM=qemu
-    qemu: RUNTIME=hifive
-    qemu: MODULE=osv.hifive.main
-    qemu: POLICIES=heap,none,rwx,stack,threeClass
-    qemu: XDIST=-n 25 # run in parallel
-    qemu: run
+    # simple qemu build
+    qemu_SIM = qemu
+    qemu_TESTS = hifive
+    qemu_RUNTIME = hifive
+    qemu_MODULE = osv.hifive.main
+    qemu_POLICIES = heap,none,rwx,stack,threeClass
+    qemu_XDIST = -n 25 # run in parallel
+    qemu: CONFIG=qemu
+    qemu: all
 
 Each of the "knobs" available to configure a test run is described below:
 
 Pytest config knobs -- 
 
-  XDIST - How many workers to use when running tests in parallel.
-    note: Variable must be '-n x' where x is the number you want, or 'auto'
-    note: some things cannot be run in parallel. For example, running the
-    	renode simulator and building the kernels are not currently supported
-	in parallel
+- XDIST
+:  How many workers to use when running tests in parallel.
+   - note: Variable must be '-n x' where x is the number you want, or 'auto'
+   - note: some things cannot be run in parallel. For example, running the renode simulator and building the kernels are not currently supported in parallel
 
-  ERROR_MSGS - how much info should print on failure? Options from pytest
-    --tb=auto    # (default) 'long' tracebacks for the first and last
-    		 # entry, but 'short' style for the other entries
-    --tb=long    # exhaustive, informative traceback formatting
-    --tb=short   # shorter traceback format
-    --tb=line    # only one line per failure
-    --tb=native  # Python standard library formatting
-    --tb=no      # no traceback at all
+- ERROR_MSGS - how much info should print on failure? Options from pytest
+   - --tb=auto    # (default) 'long' tracebacks for the first and last entry, but 'short' style for the other entries
+   - --tb=long    # exhaustive, informative traceback formatting
+   - --tb=short   # shorter traceback format
+   - --tb=line    # only one line per failure
+   - --tb=native  # Python standard library formatting
+   - --tb=no      # no traceback at all
 
 Test program, kernel, & run common knobs -
 
@@ -130,32 +129,32 @@ responsible for generating them:
 |file                        | description/notes                     | target |
 |----------------------------|---------------------------------------|--------|
 |`kernels/`                  | contains compiled pex kernels         | kernels|
-|`~~compiled_kernel_1/`      | output of policy tool for policy 1    | kernels|
+|`..compiled_kernel_1/`      | output of policy tool for policy 1    | kernels|
 |`output/`                   | tests binaries & simulation run output| build  |
-|`  test_1/`                 | all files related to test_1           | build  |
-|`    Makefile`              | build test_1 binary                   | build  |
-|`    test_1.entities.yml`   | test-specific policy config           | build  |
-|`    runX.py`               | script to run simulator X with test_1 | run    |
-|`    srcs/`                 | test 1 + ISP wrappers source code     | build  |
-|`      test_1.c`            |                                       | build  |
-|`      test_status.c`       |                                       | build  |
-|`      test_status.h`       |                                       | build  |
-|`      ...`                 |                                       | build  |
-|`    build/`                |                                       | build  |
-|`      Makefile`            | used build test_1 binary              | build  |
-|`      main`                | test_1 binary                         | build  |
-|`      build.log`           | output of test_1 compilation          | build  |
-|`    policy_1/`             | test_1 & policy_1 simulation output   | run    |
-|`      Makefile`            | run tagging tools or simulation       | run    |
-|`      compiled_kernel_1/`  |policy tool output copied from kernels/| run    |
-|`      bininfo/`            | test_1 & policy_1 tagging tool output | run    |
-|`        main.text`         | asm of compiled binary                | run    |
-|`        main.test.tagged`  | tagged asm of compiled binary         | run    |
-|`        main.taginfo`      | initial tag state for binary          | run    |
-|`      inits.log`           | output of tagging tools               | run    |
-|`      sim.log`             | output of simulator for run           | run    |
-|`      pex.log`             | PEX kernel output during simulation   | run    |
-|`      uart.log`            | target UART output during simulation  | run    |
+|`..test_1/`                 | all files related to test_1           | build  |
+|`....Makefile`              | build test_1 binary                   | build  |
+|`....test_1.entities.yml`   | test-specific policy config           | build  |
+|`....runX.py`               | script to run simulator X with test_1 | run    |
+|`....srcs/`                 | test 1 + ISP wrappers source code     | build  |
+|`......test_1.c`            |                                       | build  |
+|`......test_status.c`       |                                       | build  |
+|`......test_status.h`       |                                       | build  |
+|`......    ...`             |                                       | build  |
+|`....build/`                |                                       | build  |
+|`......Makefile`            | used build test_1 binary              | build  |
+|`......main`                | test_1 binary                         | build  |
+|`......build.log`           | output of test_1 compilation          | build  |
+|`....policy_1/`             | test_1 & policy_1 simulation output   | run    |
+|`......Makefile`            | run tagging tools or simulation       | run    |
+|`......compiled_kernel_1/`  |policy tool output copied from kernels/| run    |
+|`......bininfo/`            | test_1 & policy_1 tagging tool output | run    |
+|`........main.text`         | asm of compiled binary                | run    |
+|`........main.test.tagged`  | tagged asm of compiled binary         | run    |
+|`........main.taginfo`      | initial tag state for binary          | run    |
+|`......inits.log`           | output of tagging tools               | run    |
+|`......sim.log`             | output of simulator for run           | run    |
+|`......pex.log`             | PEX kernel output during simulation   | run    |
+|`......uart.log`            | target UART output during simulation  | run    |
 
 Adding Tests
 ============
