@@ -28,7 +28,13 @@ command line:
 
     make TESTS=foo.c,bar.c // runs only foo.c and bar.c
 
-or common configurations can be defined in the Makefile, i.e.
+or common configurations can be defined in the Makefile. You will typically
+need to define at least SIM, TESTS, RUNTIME, and POLICIES to specify enough
+to create a full run of tests without errors. The common configuration should
+be given a name, variables should be named `name_VAR`. With this done, setting
+CONFIG=name will invoke the tests with the specified variables. This can be
+called quickly from the command line with a target-specific config variable.
+See the example below to clarify this process:
 
     # simple qemu build
     qemu_SIM = qemu
@@ -40,9 +46,9 @@ or common configurations can be defined in the Makefile, i.e.
     qemu: CONFIG=qemu
     qemu: all
 
-Each of the "knobs" available to configure a test run is described below:
+## Knobs to configure the test runs
 
-Pytest config knobs -- 
+### Pytest config knobs
 
 - XDIST: How many workers to use when running tests in parallel.
    - note: Variable must be '-n x' where x is the number you want, or 'auto'
@@ -56,66 +62,63 @@ Pytest config knobs --
    - --tb=native  # Python standard library formatting
    - --tb=no      # no traceback at all
 
-Test program, kernel, & run common knobs -
+### Test program, kernel, & run common knobs
 
-  DEBUG - tell the subtasks to produce debugging output. What this actually
+- DEBUG - tell the subtasks to produce debugging output. What this actually
     	  does is up to the implementation of the subtask. (yes/no)
 
-Test program build knobs --
+### Test program build knobs
 
-  RUNTIME - what runtime environment to compile against? Supported examples:
-    hifive - bare-metal runtime for hifive board
-    frtos  - FreeRTOS
+- RUNTIME: what runtime environment to compile against? Supported examples:
+   - hifive - bare-metal runtime for hifive board
+   - frtos  - FreeRTOS
 
-  TESTS - what test programs to run
-    note: Positive tests should be listed in the 'tests' directory. The name of
-    	  the test is the file or directory in which the test lives.
+- TESTS: what test programs to run
+   - note: Positive tests should be listed in the 'tests' directory. The name
+     of the test is the file or directory in which the test lives.
+   - note: Negative tests must be listed in a subdirectory of the 'tests'
+     directory. In particular, if a test "x" should fail when run against
+     policy "a", it should be located in tests/a/x and the name of the
+     test is "a/x"
+   - note: Tests can be grouped in order to use a keyword such as "all" to
+     run some subset of the available tests. These groups are defined in
+     test_groups.py. The name of the group should be a class name, while
+     the tests should be string entries in an array called "tests" within
+     the class. See the file for examples.
 
-    note: Negative tests must be listed in a subdirectory of the 'tests'
-    	  directory. In particular, if a test "x" should fail when run against
-	  policy "a", it should be located in tests/a/x and the name of the
-	  test is "a/x"
+### Policy kernel build knobs
 
-    note: Tests can be grouped in order to use a keyword such as "all" to
-    	  run some subset of the available tests. These groups are defined in
-	  test_groups.py. The name of the group should be a class name, while
-	  the tests should be string entries in an array called "tests" within
-	  the class. See the file for examples.
+- MODULE: an optional prefix to be applied to the POLICIES knob.
 
-Policy kernel build knobs --
+- POLICIES: what policies to build
 
-  MODULE -- an optional prefix to be applied to the POLICIES knob.
+### Test running knobs
 
-  POLICIES -- what policies to build
+- SIM: What simulator to run
+   - Currently supported simulators are 'qemu' and 'renode'
 
-Test running knobs - 
+- COMPOSITE: What strategy for including composite policies?
+   - given policies a, b, and c: the following configs will produce policies:
+      - simple        - a, b, c, abc
+      - full          - a, b, c, ab, ac, bc, abc
+      - ANYTHING_ELSE - a, b, c
 
-  SIM - What simulator to run
-    Currently supported simulators are 'qemu' and 'renode'
-
-  COMPOSITE - What strategy for including composite policies?
-    given policies a, b, and c: the following configs will produce policies:
-      simple        - a, b, c, abc
-      full          - a, b, c, ab, ac, bc, abc
-      ANYTHING_ELSE - a, b, c
-
-  RULE_CACHE - What model rule cache to simulate.
-    options are ''(none), 'finite', 'infinite', and 'dmhc'
+- RULE_CACHE: What model rule cache to simulate.
+   - options are ''(none), 'finite', 'infinite', and 'dmhc'
     
-  RULE_CACHE_SIZE - size of rule cache
+- RULE_CACHE_SIZE: size of rule cache
 
-Output
-======
+# Output
 
-The 'build' target creates an 'output/' directory that has subdirectories for
+The `build` target creates an `output/` directory that has subdirectories for
 each test. Each test's subdirectory contains some build files including at
-least a Makefile to compile the test, a 'src/' dir and a 'build/' dir for the
+least a Makefile to compile the test, a `src/` dir and a `build/` dir for the
 finished binary and build logs.
 
-The 'kernels' target stores outputs from the policy-tool in subdirectories of
-the 'kernels/' directory.
+The `kernels` target stores outputs from the policy-tool in subdirectories of
+the `kernels/` directory.
 
-The 'run' target creates subdirectories in each test's directory. Each of
+The `run` target creates subdirectories in each test's directory. Each of
 these subdirectories corresponds to a simulation run with a particular policy
 for the test. It contains Makefiles, the policy kernel, run logs, and more.
 
@@ -152,17 +155,15 @@ responsible for generating them:
 |`......pex.log`             | PEX kernel output during simulation   | run    |
 |`......uart.log`            | target UART output during simulation  | run    |
 
-Adding Tests
-============
+# Adding Tests
 
 Tests should use the test_status functions to indicate test start and
 pass fail status. The test status api can be found in the
 `template/test_status.h` file.
 
-The new test should be added to the 'all' group in test_groups.py 
+The new test should be added to the `all` group in `test_groups.py`
 
-Adding Knobs
-============
+# Adding Knobs
 
 Here we give an example of adding a new "knob" to the testing framework. This
 is a diff of the patch that implemented the DEBUG knob, specifically for the
@@ -183,7 +184,7 @@ First, pytest has to know to look for the knob.
   +def debug(request):
   +    return 'yes' == request.config.getoption('--isp_debug')
   ```
-  
+ 
 Next, invocations of the makefile need to pass the value of the knob to pytest
 
   ```
@@ -199,7 +200,7 @@ Next, invocations of the makefile need to pass the value of the knob to pytest
   ```
 
 Finally, subtasks can request the knob's value to be populated by pytest and
-  can then use it for whatever task-specific operations it needs.
+can then use it for whatever task-specific operations it needs.
 
   ```
   diff --git a/policy_tests/install_kernels.py b/policy_tests/install_kernels.py
@@ -220,8 +221,7 @@ Finally, subtasks can request the knob's value to be populated by pytest and
   +        ptarg.insert(0, "-d")
   ```
 
-Debugging
-=========
+# Debugging
 
 Policy Metadata aware debugging is supported on Renode and QEMU
 
@@ -285,8 +285,7 @@ Explicit Failure: write violation
 
 This example is an attempted write to modify code, which is why code tags show up on Mem.
 
-Try It
-======
+# Try It
 
 andrew@drone:~/dover-repos/policies/policy_tests$ make clean-kernels 
 rm -rf /home/andrew/dover-install/kernels/*
