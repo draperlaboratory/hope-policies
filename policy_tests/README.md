@@ -130,7 +130,7 @@ responsible for generating them:
 |file                        | description/notes                     | target |
 |----------------------------|---------------------------------------|--------|
 |`kernels/`                  | contains compiled pex kernels         | kernels|
-|`  compiled_kernel_1/`      | output of policy tool for policy 1    | kernels|
+|`~~compiled_kernel_1/`      | output of policy tool for policy 1    | kernels|
 |`output/`                   | tests binaries & simulation run output| build  |
 |`  test_1/`                 | all files related to test_1           | build  |
 |`    Makefile`              | build test_1 binary                   | build  |
