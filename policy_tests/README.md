@@ -129,33 +129,33 @@ responsible for generating them:
 
 |file                        | description/notes                     | target |
 |----------------------------|---------------------------------------|--------|
-|kernels/                    | contains compiled pex kernels         | kernels|
-|+- compiled_kernel_1/       | output of policy tool for policy 1    | kernels|
-|output/                     | tests binaries & simulation run output| build  |
-|+- test_1/                  | all files related to test_1           | build  |
-|+--+- Makefile              | build test_1 binary                   | build  |
-|+--+- test_1.entities.yml   | test-specific policy config           | build  |
-|+--+- runX.py               | script to run simulator X with test_1 | run    |
-|+--+- srcs/                 | test 1 + ISP wrappers source code     | build  |
-|+--+--+- test_1.c           |                                       | build  |
-|+--+--+- test_status.c      |                                       | build  |
-|+--+--+- test_status.h      |                                       | build  |
-|+--+--+- ...                |                                       | build  |
-|+--+- build/                |                                       | build  |
-|+--+--+- Makefile           | used build test_1 binary              | build  |
-|+--+--+- main               | test_1 binary                         | build  |
-|+--+--+- build.log          | output of test_1 compilation          | build  |
-|+--+- policy_1/             | test_1 & policy_1 simulation output   | run    |
-|+--+--+- Makefile           | run tagging tools or simulation       | run    |
-|+--+--+- compiled_kernel_1/ |policy tool output copied from kernels/| run    |
-|+--+--+- bininfo/           | test_1 & policy_1 tagging tool output | run    |
-|+--+--+--+- main.text       | asm of compiled binary                | run    |
-|+--+--+--+- main.test.tagged| tagged asm of compiled binary         | run    |
-|+--+--+--+- main.taginfo    | initial tag state for binary          | run    |
-|+--+--+- inits.log          | output of tagging tools               | run    |
-|+--+--+- sim.log            | output of simulator for run           | run    |
-|+--+--+- pex.log            | PEX kernel output during simulation   | run    |
-|+--+--+- uart.log           | target UART output during simulation  | run    |
+|`kernels/`                  | contains compiled pex kernels         | kernels|
+|`  compiled_kernel_1/`      | output of policy tool for policy 1    | kernels|
+|`output/`                   | tests binaries & simulation run output| build  |
+|`  test_1/`                 | all files related to test_1           | build  |
+|`    Makefile`              | build test_1 binary                   | build  |
+|`    test_1.entities.yml`   | test-specific policy config           | build  |
+|`    runX.py`               | script to run simulator X with test_1 | run    |
+|`    srcs/`                 | test 1 + ISP wrappers source code     | build  |
+|`      test_1.c`            |                                       | build  |
+|`      test_status.c`       |                                       | build  |
+|`      test_status.h`       |                                       | build  |
+|`      ...`                 |                                       | build  |
+|`    build/`                |                                       | build  |
+|`      Makefile`            | used build test_1 binary              | build  |
+|`      main`                | test_1 binary                         | build  |
+|`      build.log`           | output of test_1 compilation          | build  |
+|`    policy_1/`             | test_1 & policy_1 simulation output   | run    |
+|`      Makefile`            | run tagging tools or simulation       | run    |
+|`      compiled_kernel_1/`  |policy tool output copied from kernels/| run    |
+|`      bininfo/`            | test_1 & policy_1 tagging tool output | run    |
+|`        main.text`         | asm of compiled binary                | run    |
+|`        main.test.tagged`  | tagged asm of compiled binary         | run    |
+|`        main.taginfo`      | initial tag state for binary          | run    |
+|`      inits.log`           | output of tagging tools               | run    |
+|`      sim.log`             | output of simulator for run           | run    |
+|`      pex.log`             | PEX kernel output during simulation   | run    |
+|`      uart.log`            | target UART output during simulation  | run    |
 
 Adding Tests
 ============
