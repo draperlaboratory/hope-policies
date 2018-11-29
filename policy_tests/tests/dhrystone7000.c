@@ -315,7 +315,7 @@ void dhry_proc0(void)
 	starttime = sys_GetWallTimestampUs();
 	for (i = 0; i < LOOPS; ++i)
 	{
-		volatile asm("nop");
+            asm volatile("nop");
 	}
 	endtime = sys_GetWallTimestampUs();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
