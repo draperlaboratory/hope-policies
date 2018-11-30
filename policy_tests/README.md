@@ -50,9 +50,12 @@ See the example below to clarify this process:
 
 ### Pytest config knobs
 
-- XDIST: How many workers to use when running tests in parallel.
-   - note: Variable must be '-n x' where x is the number you want, or 'auto'
-   - note: some things cannot be run in parallel. For example, running the renode simulator and building the kernels are not currently supported in parallel
+- JOBS: How many workers to use when running tests in parallel.
+   - note: some things cannot be run in parallel. For example, running the
+     renode simulator and building the kernels are not currently supported in
+     parallel. In the makefile, the variable XDIST is set to pass
+     configuration for $(JOBS) workers. As such, XDIST should be left blank
+     in order to avoid parallelization.
 
 - ERROR_MSGS: how much info should print on failure? Options from pytest
    - --tb=auto    # (default) 'long' for first & last entry, otherwise 'short'

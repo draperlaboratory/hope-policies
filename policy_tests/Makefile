@@ -8,6 +8,7 @@ TEST_OUTPUT_FILE ?= report.xml
 
 # default for unadorned `make`
 CONFIG ?= qemu
+JOBS   ?= 10
 all: build kernels run
 
 # Standard build configurations can be listed here:
@@ -20,7 +21,7 @@ qemu_TESTS = hifive
 qemu_RUNTIME = hifive
 qemu_MODULE = osv.hifive.main
 qemu_POLICIES = heap,none,rwx,stack,threeClass
-qemu_XDIST = -n 25 # run in parallel
+qemu_XDIST = -n $(JOBS) # run in parallel
 qemu: CONFIG=qemu
 qemu: all
 
