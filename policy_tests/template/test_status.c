@@ -42,7 +42,6 @@ void test_negative(){
 void test_begin(){
   t_printf("MSG: Begin test.\n");
   test_status_passing = true;
-  test_device = (uint32_t *)SIFIVE_TEST_ADDR;
 }
 
 // Set passing status
@@ -57,6 +56,7 @@ void test_fail(){
 
 // print the test status for a positive test case
 int test_done(){
+  test_device = (uint32_t *)SIFIVE_TEST_ADDR;
   if(test_status_passing && test_status_positive && !test_status_negative){
     //  struct timeval tv;
     //  gettimeofday(&tv,NULL);
