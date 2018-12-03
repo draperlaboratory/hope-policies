@@ -45,6 +45,15 @@ PYTEST_ARGS ?= -v -rsx --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DE
 # avoid short-circuiting targets based on local file/dir names
 .PHONY: build-kernels
 
+list: COLLECT_ONLY= --collect-only
+list: run-tests
+
+list-kernels: COLLECT_ONLY= --collect-only
+list-kernels: build-kernels
+
+list-build: COLLECT_ONLY= --collect-only
+list-build: build-tests
+
 # build the tests 
 build-tests: SIM ?= $($(CONFIG)_SIM)
 build-tests: TESTS ?= $($(CONFIG)_TESTS)
@@ -53,7 +62,7 @@ build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: 
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 # build PEX kernels
 build-kernels: SIM ?= $($(CONFIG)_SIM)
@@ -63,7 +72,7 @@ build-kernels: MODULE ?= $($(CONFIG)_MODULE)
 build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_install_kernel install_kernels.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
 
 # run tests
 run-tests: SIM ?= $($(CONFIG)_SIM)
@@ -73,16 +82,7 @@ run-tests: MODULE ?= $($(CONFIG)_MODULE)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests build-kernels
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_new run_unit_tests.py
-
-#list:
-#	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only run_unit_tests.py
-
-#list-kernels:
-#	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
-
-#list-build:
-#	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 clean: clean-kernels
 	rm -rf output debug prof broken __pycache__ *.pyc assets report.html report.xml prof_results.log .cache
