@@ -12,3 +12,12 @@ def test_name(main, runtime):
 
 def test_from_testname(testname):
     return testname.split(".")[:-1].join(".")
+
+def doMkDir(dir):
+    try:
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise    
+

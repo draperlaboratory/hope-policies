@@ -21,9 +21,9 @@ def test_build(test, runtime):
     if not test:
         pytest.fail("No test provided to build")
 
-    doBuild(test, "output", runtime)
+    do_build(test, "output", runtime)
 
-def doBuild(main, outDir, runtime):
+def do_build(main, outDir, runtime):
 
     # output directory (for all tests)
     doMkDir(outDir)
@@ -34,7 +34,7 @@ def doBuild(main, outDir, runtime):
     if os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("Test directory already exists: " + name)
     doMkDir(dirPath)
-        
+
     # make policy-common test sources & tools
     doMkApp(runtime, dirPath, main)
     
@@ -64,14 +64,6 @@ def doMkBuildDir(dp, runtime):
     elif "hifive" in runtime:
         shutil.copy(os.path.join("template", "hifive.makefile"), os.path.join(build_dir, "Makefile"))
         shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(build_dir, "bsp"))
-
-def doMkDir(dir):
-    try:
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise
         
 def doMkApp(runtime, dp, main):
 

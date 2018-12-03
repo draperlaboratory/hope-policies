@@ -154,14 +154,6 @@ clean:
 	rm -rf *.o *.log bininfo/*
 """.format(main=main.replace('/', '-'), p=policy)
         
-def doMkDir(dir):
-    try:
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise    
-
 # Generate the resc script
 def doReSc(policy, dp):
 
