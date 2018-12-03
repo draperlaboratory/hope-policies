@@ -9,7 +9,7 @@ TEST_OUTPUT_FILE ?= report.xml
 # default for unadorned `make`
 CONFIG ?= qemu
 JOBS   ?= 10
-all: build kernels run
+all: build-tests build-kernels run-tests
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
@@ -43,46 +43,46 @@ DEBUG ?= no
 PYTEST_ARGS ?= -v -rsx --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
 # avoid short-circuiting targets based on local file/dir names
-.PHONY: kernels
+.PHONY: build-kernels
 
 # build the tests 
-build: SIM ?= $($(CONFIG)_SIM)
-build: TESTS ?= $($(CONFIG)_TESTS)
-build: RUNTIME ?= $($(CONFIG)_RUNTIME)
-build: MODULE ?= $($(CONFIG)_MODULE)
-build: POLICIES ?= $($(CONFIG)_POLICIES)
-build: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-build: 
+build-tests: SIM ?= $($(CONFIG)_SIM)
+build-tests: TESTS ?= $($(CONFIG)_TESTS)
+build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
+build-tests: MODULE ?= $($(CONFIG)_MODULE)
+build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
+build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-tests: 
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build build_unit_tests.py
 
 # build PEX kernels
-kernels: SIM ?= $($(CONFIG)_SIM)
-kernels: TESTS ?= $($(CONFIG)_TESTS)
-kernels: RUNTIME ?= $($(CONFIG)_RUNTIME)
-kernels: MODULE ?= $($(CONFIG)_MODULE)
-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-kernels:
+build-kernels: SIM ?= $($(CONFIG)_SIM)
+build-kernels: TESTS ?= $($(CONFIG)_TESTS)
+build-kernels: RUNTIME ?= $($(CONFIG)_RUNTIME)
+build-kernels: MODULE ?= $($(CONFIG)_MODULE)
+build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
+build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) -k test_install_kernel install_kernels.py
 
 # run tests
-run: SIM ?= $($(CONFIG)_SIM)
-run: TESTS ?= $($(CONFIG)_TESTS)
-run: RUNTIME ?= $($(CONFIG)_RUNTIME)
-run: MODULE ?= $($(CONFIG)_MODULE)
-run: POLICIES ?= $($(CONFIG)_POLICIES)
-run: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-run: build kernels
+run-tests: SIM ?= $($(CONFIG)_SIM)
+run-tests: TESTS ?= $($(CONFIG)_TESTS)
+run-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
+run-tests: MODULE ?= $($(CONFIG)_MODULE)
+run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
+run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+run-tests: build-tests build-kernels
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_new run_unit_tests.py
 
-list:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only run_unit_tests.py
+#list:
+#	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only run_unit_tests.py
 
-list-kernels:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
+#list-kernels:
+#	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only install_kernels.py
 
-list-build:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only build_unit_tests.py
+#list-build:
+#	$(PYTHON) -m pytest $(PYTEST_ARGS) --collect-only build_unit_tests.py
 
 clean: clean-kernels
 	rm -rf output debug prof broken __pycache__ *.pyc assets report.html report.xml prof_results.log .cache
