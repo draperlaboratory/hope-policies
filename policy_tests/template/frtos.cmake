@@ -56,10 +56,10 @@ add_library(free-rtos-dover
   ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/soc/src/ns16550.c
   ${FREE_RTOS_DIR}/Demo/RISCV_DOVER_GCC/arch/utils.c)
 
-AUX_SOURCE_DIRECTORY(srcs TEST_SOURCES)
-include_directories(.)
+AUX_SOURCE_DIRECTORY(../srcs TEST_SOURCES)
+include_directories(../srcs)
 
-add_executable(main frtos.c test_status.c ${TEST_SOURCES})
+add_executable(main ${TEST_SOURCES})
 
 
 target_link_libraries(main free-rtos free-rtos-dover)

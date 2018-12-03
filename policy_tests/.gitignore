@@ -7,5 +7,5 @@ report.html
 report.xml
 prof_results.log
 *.pyc
-/kernel_dir
+kernels/
 .pytest_cache

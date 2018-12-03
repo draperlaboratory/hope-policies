@@ -11,327 +11,190 @@ import time
 import glob
 import errno
 
-from setup_test import *
-#TODO make these cmd-line options?
-quick_opt = ["O2"]
-more_opts = ["O1", "O3"]
+from helper_fns import *
 
-# Nothing to configure below this point
+# in this function, a set of policy test parameters is checked
+#   to make sure that the test makes sense. If it doesnt, the
+#   function returns the reason why
+def incompatible_reason(test, policy, sim):
 
-# filter fn for removing negative test cases that will fail due to 
-#     missing the necessary policy
-def valid(pol, test):
-    print(pol)
-    if os.path.dirname(test) == '':
-        return True
-    elif os.path.dirname(test) in pol:
-        return True
-    else:
-        return False
-
-# data collection for performance profiling
-class Profiler:
-
-    def __init__(self):
-        self.results = []
-
-    def test(self, policy, main, opt):
-        self.p = policy
-        self.m = main
-        self.o = opt
-
-    def start(self, str):
-        self.s=self.toInt(str)
-
-    def end(self, str):
-        e=self.toInt(str)
-        self.results.append((self.p,self.m,self.o,self.s,e))
-
-    def report(self):
-        self.rpt = open("prof_results.log", "w")
-        list(map(self.rptFmt, sorted(self.results, key=self.file_key)))
-        self.rpt.close()
-
-    def toInt(self, str):
-        ls = str.split("time:")
-        return float(ls[1])
+    # skip negative tests that are not matched to the correct policy
+    if "/" in test and (not test.split("/")[0] in policy):
+        return "incorrect policy to detect violation in negative test"
     
-    def rptFmt(self, res):
-        (p,m,o,s,e) = res
-        print(tName((p,m,o)), s, e, e-s, file=self.rpt)
+    return None
 
-    def file_key(self, p_m_o_s_e):
-        (p,m,o,s,e) = p_m_o_s_e
-        return m
+def xfail_reason(test, policy, sim):
 
-# build list of test cases, skip tests where required policy is not included in tools
-@pytest.yield_fixture(scope="session")
-def simpleFiles(testFile, simpleF):
-    if(valid(simpleF, testFile)):
-       return testFile
-    else:
-       pytest.skip(testFile)
+    if "threeClass" in policy and "coremark" in test:
+        return "threeClass and coremark; known unsolved bug"
 
-# build list of test cases from broken list, skip tests where required policy is not included in tools
-@pytest.yield_fixture(scope="session")
-def brokenFiles(brokenTestFile, simpleF):
-    testFile = brokenTestFile
-    if(valid(simpleF, testFile)):
-       return testFile
-    else:
-       pytest.skip(testFile)
+    if "longjump" in test:
+        return "longjump test known to be broken"
 
-# build tools and kernel for the policy combination to be tested
-@pytest.yield_fixture(scope="session")
-def simpleF(simplePol):
-    return simplePol[2]
+    return None
 
-# build tools and kernel for the policy combination to be tested
-@pytest.yield_fixture(scope="session")
-def fullF(fullPol):
-    return fullPol[2]
+# test function found automatically by pytest. Pytest calls
+#   pytest_generate_tests in conftest.py to determine the
+#   arguments. If they are parameterized, it will call this
+#   function many times -- once for each combination of
+#   arguments
+def test_new(test, runtime, policy, sim, rc):
 
-# build list of test cases, skip tests where required policy is not included in tools
-@pytest.yield_fixture(scope="session")
-def fullFiles(testFile, fullF):
-    if(valid(fullF, testFile)):
-       return testFile
-    else:
-       pytest.skip(testFile)
+    # policy = string of policy to be run, i.e. osv.hifive.main.rwx
+    # test   = string of test to be run, i.e. hello_world_1.c
+    # sim    = string of simulator to be used
+    # rc     = tuple, rc[0] = rule cache type string, rc[1] = rule cache size
+    # runtime= WHAT RUNTIME THE TEST WAS COMPILED FOR
+    #          --> do not confuse this with simulator
+    
+    # check for test validity
+    incompatible = incompatible_reason(test, policy, sim)
+    if incompatible:
+        pytest.skip(incompatible)
 
-# build list of test cases, skip tests where required policy is not included in tools
-@pytest.yield_fixture(scope="session")
-def profileFiles(profileTestFile, simpleF):
-    testFile = profileTestFile
-    if(valid(simpleF, testFile)):
-       return testFile
-    else:
-       pytest.skip(testFile)
+    xfail = xfail_reason(test, policy, sim)
+    if xfail:
+        pytest.xfail(xfail)
 
-# set up performance profiler
-@pytest.yield_fixture(scope="session")
-def profileRpt():
-    prof = Profiler()
-    yield prof
-    prof.report()
-
-# test targets that can be run with py.test - k <target prefix>
-@pytest.mark.parametrize("opt", quick_opt + more_opts)
-def test_all(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
-    policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "output", sim, rule_cache, rule_cache_size)
-
-@pytest.mark.parametrize("opt", quick_opt)
-def test_full(fullF, fullFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
-    policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, remove_passing, "output", sim, rule_cache, rule_cache_size)
-
-@pytest.mark.parametrize("opt", quick_opt)
-def test_simple(simpleF, simpleFiles, opt, profileRpt, sim, remove_passing, rule_cache, rule_cache_size):
-    policyParams = []
-    doTest(simpleF,simpleFiles,opt, profileRpt, policyParams, remove_passing, "output", sim, rule_cache, rule_cache_size)
-
-#debug target always leaves test dir under debug dir
-@pytest.mark.parametrize("opt", quick_opt)
-def test_debug(fullF, fullFiles, opt, profileRpt, sim, rule_cache, rule_cache_size):
-    policyParams = []
-    doTest(fullF,fullFiles,opt, profileRpt, policyParams, False, "debug", sim, rule_cache, rule_cache_size)
-
-#broken target always leaves test dir under debug dir
-@pytest.mark.parametrize("opt", quick_opt)
-def test_broken(simpleF, brokenFiles, opt, profileRpt, sim, rule_cache, rule_cache_size):
-    policyParams = []
-    doTest(simpleF,brokenFiles,opt, profileRpt, policyParams, False, "broken", sim, rule_cache, rule_cache_size)
-
-#profile target always leaves test dir under debug dir
-@pytest.mark.parametrize("opt", quick_opt)
-def test_profile(profileF, profileFiles, opt, profileRpt, sim, rule_cache, rule_cache_size):
-    policyParams = []
-    doTest(profileF,profileFiles,opt, profileRpt, policyParams, False, "prof", sim, rule_cache, rule_cache_size)
-
-
-# Test execution function
-def doTest(policy, main,opt, rpt, policyParams, removeDir, outDir, simulator, rule_cache, rule_cache_size):
-    name = tName((policy, main,opt))
-    rpt.test(policy, main,opt)
-    doMkDir(outDir)
-    dirPath = os.path.join(outDir, name)
-    if not "debug" in outDir:
-        if not removeDir:
-            doMkDir(os.path.join(outDir,"pass"))
-        doMkDir(os.path.join(outDir,"fail"))
-    doBinDir(dirPath)
-    doMkApp(policy, dirPath, main, opt)
-    doMakefile(policy, dirPath, main, opt, "")
-    doReSc(policy, dirPath, simulator)
-    doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size)
-    doSim(dirPath, simulator)
-
-    testOK = checkResult(dirPath, policy, rpt)
-
-    # cleanup / move test to appropriate directory
-    if testOK:
-        if removeDir:
-            runit(None, "", "rm", ["-rf", dirPath])
-        elif not "debug" in outDir:
-            runit(None, "", "mv", [dirPath, os.path.join(outDir, "pass")])
-    else:
-        if not "debug" in outDir:
-            runit(None, "", "mv", [dirPath, os.path.join(outDir, "fail")])
-        pytest.fail("User code did not produce correct result")
-
-def doMkDir(dir):
-    try:
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-    except OSError as e:
-        if e.errno == errno.EEXIST:
-            print("{} already exists\n".format(dir))
-        else:
-            raise
-
-
-def doBinDir(dp):
-    shutil.rmtree(dp, ignore_errors=True)
-    os.makedirs(os.path.join(dp, "build"))
-
-def is32os(targ):
-    switch = {
-        "RV32" : "--disable-64bit",
-        "RV32pex" : "--disable-64bit"
-    }
-    return switch.get(targ, "")
-
-def doMkApp(policy, dp, main, opt):
-
-    # runtime specific code 
-    if "dos" in policy:
-        runit(dp, "", "cp", [os.path.join("template", "dos-mem.h"), os.path.join(dp, "mem.h")])
-        runit(dp, "", "cp", [os.path.join("template", "dos.cmake"), os.path.join(dp, "CMakeLists.txt")])
-    elif "frtos" in policy:
-        runit(dp, "", "cp", [os.path.join("template", "frtos-mem.h"), os.path.join(dp, "mem.h")])
-        runit(dp, "", "cp", [os.path.join("template", "frtos.cmake"), os.path.join(dp, "CMakeLists.txt")])
-    elif "hifive" in policy:
-        runit(dp, "", "cp", [os.path.join("template", "hifive-mem.h"), os.path.join(dp, "mem.h")])
-        shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(dp, "build/bsp"))
-        makefile = os.path.join(dp, "build/Makefile")
-        shutil.copy(os.path.join("template", "hifive.makefile"), makefile)
-    else:
-        pytest.fail("Unknown OS, can't copy app files")
-
-    # pytest code run wrappers
-    runit(dp, "", "cp", [os.path.join("template", "runFPGA.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runRenode.py"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "runQEMU.py"), dp])
-
-    # generic test code 
-    runit(dp, "", "cp", [os.path.join("template", "doverlib.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "dover-os.c"), os.path.join(dp, "dos.c")])
-    runit(dp, "", "cp", [os.path.join("template", "frtos.c"), os.path.join(dp, "frtos.c")])
-    runit(dp, "", "cp", [os.path.join("template", "hifive.c"), os.path.join(dp, "hifive.c")])
-    runit(dp, "", "cp", [os.path.join("template", "test.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "test_status.c"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "test_status.h"), dp])
-    runit(dp, "", "cp", [os.path.join("template", "sifive_test.h"), dp])
-
-    # test specific code
-
-    # destination sources dir contains c sources & headers 
-    srcdir = os.path.join(dp, "srcs")
-    runit(dp, "", "mkdir", [srcdir])
-
-    if os.path.isfile(os.path.join("tests", main)):
-        runit(dp, "", "cp", [os.path.join("tests", main), srcdir])
-    else:
-        for f in os.listdir(os.path.join("tests", main)):
-            runit(dp, "", "cp", [os.path.join("tests", main, f), srcdir])
-
+    name = test_name(test, runtime)
         
-    # create entity for file elements
-    entDir = os.path.abspath("../entities")
-    entFile = main + ".entities.yml"
-    srcEnt = os.path.join(entDir, entFile)
-    destEnt = os.path.join(dp, entFile.replace('/', '-'))
-    if os.path.isfile(srcEnt):
-        shutil.copyfile(srcEnt, destEnt)
+    # check that this test has been built
+    dirPath = os.path.join("output", name)
+    if not os.path.isfile(os.path.join(dirPath, "build", "main")):
+        pytest.skip("No binary found for test: " + name)
+
+    # simulator-specific run options
+    if "qemu" in sim:
+        shutil.copy(os.path.join("template", "runQEMU.py"), dirPath)
+    elif "renode" in sim:
+        shutil.copy(os.path.join("template", "runRenode.py"), dirPath)
     else:
-        shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
+        shutil.copy(os.path.join("template", "runFPGA.py"), dirPath)
+
+    # policy-specific stuff
+
+    # generate directory name
+    pol_dir_name = policy;
+    if rc[0] != '' and rc[1] != '':
+        pol_dir_name = pol_dir_name + '-' + rc[0] + rc[1]
+        
+    pol_test_path = os.path.join(dirPath, pol_dir_name)
+    doMkDir(pol_test_path)
+
+    # retrieve policy
+    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
+    if not os.path.isdir(os.path.join(pol_test_path, policy)):
+        pytest.fail("Policy not found: " + policy)
+
+    # test-run-level makefile. ie make inits & make qemu
+    doMakefile(policy, pol_test_path, test)
+
+    # script for renode config
+    if sim == "renode":
+        doReSc(policy, pol_test_path)
+
+    doDebugScript(pol_test_path, sim)
     
+    # config validator including rule cache
+    doValidatorCfg(policy, pol_test_path, rc[0], rc[1])
+
+    # run tagging tools
+    doMkDir(os.path.join(pol_test_path, "bininfo"))
+    with open(os.path.join(pol_test_path, "inits.log"), "w+") as initlog:
+        subprocess.Popen(["make", "inits"], stdout=initlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
+
+    # Check for tag information
+    if not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.taginfo")) or \
+       not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text"))    or \
+       not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text.tagged")):
+       pytest.fail("Tagging tools did not produce expected output")
+    
+    # run test
+    simlog = open(os.path.join(pol_test_path, "sim.log"), "w+")
+    subprocess.Popen(["make", sim], stdout=simlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
+
+    # evaluate results
+    fail = fail_reason(pol_test_path)
+    if fail != None:
+        pytest.fail(fail)
 
 # Generate the makefile
-def doMakefile(policy, dp, main, opt, debug):
-    if "frtos" in policy:
-        mf = frtosMakefile(policy, main, opt, debug)
-    elif "hifive" in policy:
-        mf = hifiveMakefile(policy, main, opt, debug)
-    else:
-        pytest.fail("Unknown OS, can't generate Makefile")
+def doMakefile(policy, dp, main):
+
+    mf = sim_makefile(policy, main)
 
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
 
-    # compile the test
-    runit(dp, "", "make", ["-C", dp])
-    # check that build succeeded
-    assert os.path.isfile(os.path.join(dp, "build", "main"))
-    # copy over support files
-    runit(dp, "", "make", ["-C", dp, "inits"])
-    # Check for tag information
-    assert os.path.isfile(os.path.join(dp, "build", "main.taginfo"))
-    assert os.path.isfile(os.path.join(dp, "build", "main.text"))
-    assert os.path.isfile(os.path.join(dp, "build", "main.text.tagged"))
+def sim_makefile(policy, main):
+    return """
+PYTHON ?= python3
 
-# Generate the makefile
-def doReSc(policy, dp, simulator):
-    if "dos" in policy:
-        rs = rescScript(dp, policy)
-    elif "frtos" in policy:
-        rs = rescScript(dp, policy)
-    elif "hifive" in policy:
-        rs = rescScriptHifive(dp, policy)
-    else:
-        pytest.fail("Unknown OS, can't generate Scripts")
+inits:
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
 
-    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
+renode:
+	$(PYTHON) ../runRenode.py
+
+renode-console:
+	renode main.resc
+
+qemu:
+	$(PYTHON) ../runQEMU.py {p}
+
+qemu-console:
+	$(PYTHON) ../runQEMU.py {p} -d
+
+gdb:
+	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" ../build/main
+
+clean:
+	rm -rf *.o *.log bininfo/*
+""".format(main=main.replace('/', '-'), p=policy)
+        
+def doMkDir(dir):
+    try:
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise    
+
+# Generate the resc script
+def doReSc(policy, dp):
+
+    rs = rescScript(dp, policy)
 
     print("Renode Script: {}".format(dp))
     with open(os.path.join(dp,'main.resc'), 'w') as f:
         f.write(rs)
+
+# generate a debug script
+def doDebugScript(dp, simulator):
+    gs = gdbScriptQemu(dp) if simulator == "qemu" else gdbScript(dp)
+
     print("GDB Script: {}".format(dp))
     with open(os.path.join(dp,'.gdbinit'), 'w') as f:
         f.write(gs)
-
-def doSim(dp, mkTarg):
-    runit(dp, "", "make", ["-C", dp, mkTarg])
-
-def checkPolicy(dp, policy, rpt):
-    print("Checking policy...")
-    with open(os.path.join(dp,"test.log"), "r") as fh:
-        searchlines = fh.readlines()
-    for line in searchlines:
-        if "init policies:" in line:
-            pexPolicy = line.split(":")[-1].strip().lower()
-            testPolicy = policy.lower()
-            if testPolicy != pexPolicy:
-                print("ERROR: Wrong policy {pex} != {test}".format(pex = pexPolicy, test = testPolicy))
-                return False
-            else:
-                return True
-    return False
-
-def checkResult(dp, policy, rpt):
+        
+def fail_reason(dp):
     print("Checking result...")
     with open(os.path.join(dp,"uart.log"), "r") as fh:
         searchlines = fh.readlines()
     searchlines = [line for line in searchlines if line != "\n"]
     for i, line in enumerate(searchlines):
         if "MSG: Positive test." in line:
-            rpt.start(searchlines[i+1])
             for j, l in enumerate(searchlines[i:]):
                 if "PASS: test passed." in l:
-                    rpt.end(searchlines[i+j+1])
-                    return True
+                    return None
+            with open(os.path.join(dp,"pex.log"), "r") as sh:
+                statuslines = sh.readlines()
+                for l2 in statuslines:
+                    if "Policy Violation:" in l2:
+                        return "Policy violation for positive test"
+            return "unknown error for positive test"
         elif "MSG: Negative test." in line:
             for j, l1 in enumerate(searchlines[i:]):
                 if "MSG: Begin test." in l1:
@@ -339,127 +202,10 @@ def checkResult(dp, policy, rpt):
                         statuslines = sh.readlines()
                         for l2 in statuslines:
                             if "Policy Violation:" in l2:
-                                return True
-    fh.close()
-    return False #   User code did not produce correct result
+                                return None
+            return "No policy violation found for negative test"
 
-# this way seems to have process sync issues
-def runitCall(dp, path, cmd, args):
-    runcmd = [os.path.join(path,cmd)] + args
-    print(runcmd)
-    if dp != None:
-        se = open(os.path.join(dp,"build.log"), "a")
-        so = open(os.path.join(dp,"test.log"), "a")
-        rc = subprocess.call(runcmd, stderr=se, stdout=so)
-        se.close()
-        so.close()
-    else:
-        print(str(runcmd))
-        rc = subprocess.call(runcmd)
-
-def runit(dp, path, cmd, args):
-    runcmd = [os.path.join(path,cmd)] + args
-    print(runcmd)
-    if dp != None:
-        se = open(os.path.join(dp,"spike.log"), "a")
-        so = open(os.path.join(dp,"test.log"), "a")
-        rc = subprocess.Popen(runcmd, stderr=se, stdout=so)
-        while rc.poll() is None:
-            time.sleep(0.01)
-        se.close()
-        so.close()
-    else:
-        print(str(runcmd))
-        rc = subprocess.Popen(runcmd)
-        while rc.poll() is None:
-            time.sleep(0.01)
-
-# The makefile that is generated in the test dir for hifive bare-metal tests
-def hifiveMakefile(policy, main, opt, debug):
-    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
-    return """
-PYTHON ?= python3
-
-build/main: hifive.c
-	cd build && make
-
-inits:
-	cp -r {kernel_dir}/kernels/{policies} .
-	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -e ./{policies}/{policies}.entities.yml {main}.entities.yml
-
-verilator:
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
-	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	cp all.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif TEST=unit_test TIMEOUT=50000000 FPGA=1 TRACE_START=50000000
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart0.log .
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
-
-fpga:
-	$(PYTHON) runFPGA.py
-
-renode:
-	$(PYTHON) runRenode.py
-
-renode-console:
-	renode main.resc
-
-qemu:
-	$(PYTHON) runQEMU.py {policies}
-
-qemu-console:
-	$(PYTHON) runQEMU.py {policies} -d
-
-gdb:
-	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
-
-clean:
-	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-""".format(opt=opt, debug=debug,
-           main_src=main, main_bin=main.replace(".c", ""),
-           main=main.replace('/', '-'),
-           policies=policy, kernel_dir=kernel_dir)
-
-# The makefile that is generated in the test dir for frtos tests
-def frtosMakefile(policy, main, opt, debug):
-    kernel_dir = os.path.join(os.getcwd(), 'kernel_dir')
-    return """
-PYTHON ?= python3
-
-rtos: frtos.c
-	cd build && cmake .. && make
-
-inits:
-	cp -r {kernel_dir}/kernels/{policies} .
-	gen_tag_info -d ./{policies} -t build/main.taginfo -b build/main -e ./{policies}/{policies}.entities.yml {main}.entities.yml
-
-verilator:
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif clean
-	cp bl.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	cp all.vh $(DOVER_SOURCES)/dover-verilog/SOC/verif
-	$(MAKE) -C $(DOVER_SOURCES)/dover-verilog/SOC/verif TEST=unit_test TIMEOUT=50000000 FPGA=1 TRACE_START=50000000
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart0.log .
-	cp $(DOVER_SOURCES)/dover-verilog/SOC/verif/Outputs/unit_test/unit_test_uart1.log .
-
-fpga:
-	$(PYTHON) runFPGA.py
-
-renode:
-	$(PYTHON) runRenode.py
-
-renode-console:
-	renode main.resc
-
-gdb:
-	riscv32-unknown-elf-gdb -q -iex "set auto-load safe-path ./" build/main
-
-socat:
-	socat - tcp:localhost:4444
-
-clean:
-	rm -f *.o main.out main.out.taginfo  main.out.text  main.out.text.tagged main.out.hex *.log
-""".format(opt=opt, debug=debug, main = main.replace('/', '-'),
-           policies=policy, kernel_dir=kernel_dir)
+    return "Unknown error"
 
 def rescScript(dir, policy):
     return """
@@ -471,34 +217,11 @@ connector Connect sysbus.uart1 uart-socket
 #showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
 #emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
 #connector Connect sysbus.uart uart-pty
-sysbus LoadELF @{path}/build/main
+sysbus LoadELF @{path}/../build/main
 sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
 sysbus.ap_core StartGdbServer 3333
 logLevel 1 sysbus.ap_core
 sysbus.ap_core StartStatusServer 3344
-""".format(path = os.path.join(os.getcwd(), dir), policies=policy)
-
-
-def rescScriptHifive(dir, policy):
-    return """
-using sysbus
-mach create
-machine LoadPlatformDescription @platforms/cpus/sifive-fe310.repl
-sysbus.cpu MaximumBlockSize 1
-emulation CreateServerSocketTerminal 4444 "uart-socket"
-connector Connect uart0 uart-socket
-#showAnalyzer sysbus.uart Antmicro.Renode.UI.ConsoleWindowBackendAnalyzer
-#emulation CreateUartPtyTerminal "uart-pty" "/tmp/uart-pty"
-#connector Connect sysbus.uart uart-pty
-sysbus LoadELF @{path}/build/main
-sysbus Tag <0x10008000 4> "PRCI_HFROSCCFG" 0xFFFFFFFF
-sysbus Tag <0x10008008 4> "PRCI_PLLCFG" 0xFFFFFFFF
-cpu PC `sysbus GetSymbolAddress "vinit"`
-cpu PerformanceInMips 320
-sysbus.ap_core SetExternalValidator @{path}/{policies}/librv32-renode-validator.so @{path}/validator_cfg.yml
-sysbus.cpu StartGdbServer 3333
-logLevel 1 sysbus.cpu
-sysbus.cpu StartStatusServer 3344
 """.format(path = os.path.join(os.getcwd(), dir), policies=policy)
 
 def gdbScript(dir):
@@ -733,6 +456,7 @@ continue
 """.format(path = os.path.join(os.getcwd(), dir))
 
 def doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size):
+
     if "hifive" in policy:
         soc_cfg = "hifive_e_cfg.yml"
     else:
@@ -744,7 +468,7 @@ def doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size):
    tags_file: {tagfile}
    soc_cfg_path: {soc_cfg}
 """.format(policyDir=os.path.join(os.getcwd(), dirPath, policy),
-           tagfile=os.path.join(os.getcwd(), dirPath, "build/main.taginfo"),
+           tagfile=os.path.join(os.getcwd(), dirPath, "bininfo/main.taginfo"),
            soc_cfg=os.path.join(os.getcwd(), dirPath, policy, "soc_cfg", soc_cfg))
 
     if (rule_cache):
@@ -756,11 +480,3 @@ def doValidatorCfg(policy, dirPath, rule_cache, rule_cache_size):
 
     with open(os.path.join(dirPath,'validator_cfg.yml'), 'w') as f:
         f.write(validatorCfg)
-
-# Special formatting for the pytest-html plugin
-
-@pytest.mark.optionalhook
-def pytest_html_results_table_html(report, data):
-#    if report.passed:
-        del data[:]
-        data.append(html.div('No log output captured.', class_='empty log'))
