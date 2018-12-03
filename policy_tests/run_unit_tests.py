@@ -60,7 +60,7 @@ def test_new(test, runtime, policy, sim, rc):
     name = test_name(test, runtime)
         
     # check that this test has been built
-    dirPath = os.path.join("output", name)
+    dirPath = t_directory(name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("No binary found for test: " + name)
 
@@ -78,7 +78,7 @@ def test_new(test, runtime, policy, sim, rc):
     pol_dir_name = policy;
     if rc[0] != '' and rc[1] != '':
         pol_dir_name = pol_dir_name + '-' + rc[0] + rc[1]
-        
+
     pol_test_path = os.path.join(dirPath, pol_dir_name)
     doMkDir(pol_test_path)
 
@@ -122,18 +122,18 @@ def test_new(test, runtime, policy, sim, rc):
 # Generate the makefile
 def doMakefile(policy, dp, main):
 
-    mf = sim_makefile(policy, main)
+    mf = sim_makefile(policy)
 
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
 
-def sim_makefile(policy, main):
+def sim_makefile(policy):
     return """
 PYTHON ?= python3
 
 inits:
-	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../main.entities.yml
 
 renode:
 	$(PYTHON) ../runRenode.py
@@ -152,7 +152,7 @@ gdb:
 
 clean:
 	rm -rf *.o *.log bininfo/*
-""".format(main=main.replace('/', '-'), p=policy)
+""".format(p=policy)
         
 # Generate the resc script
 def doReSc(policy, dp):

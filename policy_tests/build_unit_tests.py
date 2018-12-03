@@ -30,7 +30,7 @@ def do_build(main, outDir, runtime):
 
     name = test_name(main, runtime)
     
-    dirPath = os.path.join(outDir, name)
+    dirPath = t_directory(name)
     if os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("Test directory already exists: " + name)
     doMkDir(dirPath)
@@ -99,7 +99,7 @@ def doMkApp(runtime, dp, main):
         
     # create entity for file elements
     entDir = os.path.abspath("../entities")
-    entFile = main + ".entities.yml"
+    entFile = "main.entities.yml"
     srcEnt = os.path.join(entDir, entFile)
     destEnt = os.path.join(dp, entFile.replace('/', '-'))
     if os.path.isfile(srcEnt):
