@@ -26,8 +26,11 @@
 
 module osv.frtos.main:
 
-/* Composition of four micro-policies.
- * All four policies are evaluated in parallel
+/* All interesting compositions of our current micropolicies.
+ *
+ * TODO: It is worth considering whether we should eliminate the need for
+ * this file by allowing the policy tool to accept multiple policies at the
+ * command line.
  */
 
 import:
@@ -35,62 +38,54 @@ import:
     osv.rwx
     osv.stack
     osv.heap
-    osv.nop
-    osv.none
     osv.threeClass
+    osv.none
+    osv.testSimple
+    osv.testComplex
     
 policy:
     none = nonePol
+    testSimple = testSimplePol
+    testComplex = testComplexPol
+
     cfi =  cfiPol
-    rwx =  rwxPol
-    nop =  nopPol
     heap = heapPol
+    rwx =  rwxPol
     stack = stackPol
     threeClass = threeClassPol
 
-    nop-threeClass =  threeClassPol & nopPol
-    rwx-threeClass =  (threeClassPol & rwxPol)
-    stack-threeClass =  threeClassPol & stackPol
-    
     cfi-heap = cfiPol & heapPol
-    cfi-nop =  cfiPol & nopPol
-    cfi-rwx =  (cfiPol & rwxPol)
-    cfi-stack =  cfiPol & stackPol
+    cfi-rwx = cfiPol & rwxPol
+    cfi-stack = cfiPol & stackPol
+    cfi-threeClass = cfiPol & threeClassPol
 
-    heap-nop = heapPol & nopPol
     heap-rwx = heapPol & rwxPol
     heap-stack = heapPol & stackPol
-
-    nop-rwx =  nopPol & rwxPol  
-    nop-stack =  nopPol & stackPol
+    heap-threeClass = heapPol & threeClassPol
 
     rwx-stack =  rwxPol & stackPol
+    rwx-threeClass = threeClassPol & rwxPol
 
-    cfi-heap-nop = cfiPol & heapPol & nopPol
+    stack-threeClass =  threeClassPol & stackPol
+
     cfi-heap-rwx = cfiPol & heapPol & rwxPol
     cfi-heap-stack = cfiPol & heapPol & stackPol
-    cfi-nop-rwx =  cfiPol & nopPol & rwxPol
-    cfi-nop-stack =  cfiPol & nopPol & stackPol
+    cfi-heap-threeClass = cfiPol & heapPol & threeClassPol
     cfi-rwx-stack =  cfiPol & rwxPol & stackPol
+    cfi-rwx-threeClass =  cfiPol & rwxPol & threeClassPol
+    cfi-stack-threeClass = cfiPol & stackPol & threeClassPol
 
-    heap-nop-rwx = heapPol & nopPol & rwxPol
-    heap-nop-stack = heapPol & nopPol & stackPol
     heap-rwx-stack = heapPol & rwxPol & stackPol
+    heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
+    heap-stack-threeclass = heapPol & stackPol & threeClassPol
 
-    nop-rwx-stack =  nopPol & rwxPol & stackPol
-
-    nop-rwx-threeClass =  threeClassPol & nopPol & rwxPol
-    nop-stack-threeClass =  threeClassPol & nopPol & stackPol
     rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
 
-    nop-rwx-stack-threeClass =  threeClassPol & nopPol & rwxPol & stackPol
-    cfi-heap-nop-rwx = cfiPol & heapPol & nopPol & rwxPol
-    cfi-heap-nop-stack = cfiPol & heapPol & nopPol & stackPol
     cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
-    cfi-nop-rwx-stack =  cfiPol & nopPol & rwxPol & stackPol
-    heap-nop-rwx-stack = heapPol & nopPol & rwxPol & stackPol
+    cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
+    cfi-heap-stack-threeClass = cfiPol & heapPol & stackPol & threeClassPol
+    cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
 
-    cfi-heap-nop-rwx-stack = cfiPol & heapPol & nopPol & rwxPol & stackPol
+    heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
 
-
-
+    cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
