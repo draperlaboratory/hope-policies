@@ -6,15 +6,12 @@ import shutil
 from helper_fns import *
 from build_unit_tests import *
 from run_unit_tests import *
-#from ripe_config import *
+from ripe_configs import *
 
 def ripe_name(attack, tech, loc, ptr, func):
     return "ripe."+"-".join([attack,tech,loc,ptr,func])
 
-@pytest.mark.parametrize("attack, tech, loc, ptr, func", [
-    ("returnintolibc","direct","heap" ,"structfuncptrheap","memcpy"),
-    ("rop"           ,"direct","stack","ret"              ,"memcpy"),
-    ])
+@pytest.mark.parametrize("attack, tech, loc, ptr, func", [(c[0], c[1], c[2], c[3], c[4]) for c in RipeConfigs.configs])
 def test_build_ripe(attack, tech, loc, ptr, func, runtime):
 
     doMkDir("output/ripe")
@@ -54,17 +51,7 @@ def test_build_ripe(attack, tech, loc, ptr, func, runtime):
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.fail("No binary produced. Log: " + dirPath + "/build/build.log")
 
-#@pytest.mark.parametrize("attack, tech, loc, ptr, func, policy", [
-#    ("returnintolibc","direct","heap" ,"structfuncptrheap","memcpy", "osv.hifive.main.heap"),
-#    ("returnintolibc","direct","heap" ,"structfuncptrheap","memcpy", "osv.hifive.main.heap-rwx-stack-threeClass"),
-#    ("rop"           ,"direct","stack","ret"              ,"memcpy", "osv.hifive.main.stack"),
-#    ("rop"           ,"direct","stack","ret"              ,"memcpy", "osv.hifive.main.heap-rwx-stack-threeClass")
-#    ("rop"           ,"direct","stack","ret"              ,"memcpy", "osv.hifive.main.threeClass"),
-#    ])
-@pytest.mark.parametrize("attack, tech, loc, ptr, func, ripepols", [
-    ("returnintolibc","direct","heap" ,"structfuncptrheap","memcpy", ["osv.hifive.main.heap", "osv.hifive.main.heap-rwx-stack-threeClass"]),
-    ("rop"           ,"direct","stack","ret"              ,"memcpy", ["osv.hifive.main.stack", "osv.hifive.main.heap-rwx-stack-threeClass", "osv.hifive.main.threeClass"]),
-    ])
+@pytest.mark.parametrize("attack, tech, loc, ptr, func, ripepols", RipeConfigs.configs, ids = ["-".join([c[0], c[1], c[2], c[3], c[4]]) for c in RipeConfigs.configs])
 def test_run_ripe(attack, tech, loc, ptr, func, ripepols, policy, runtime, sim, rc):
 
     config_name = ripe_name(attack, tech, loc, ptr, func)
