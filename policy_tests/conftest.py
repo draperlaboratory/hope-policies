@@ -134,9 +134,19 @@ def composites(module, policies, simple):
     full_composite_len = len(policies)
     if "none" in policies:
         full_composite_len -= 1
+    if "testSimple" in policies:
+        full_composite_len -= 1
+    if "testComplex" in policies:
+        full_composite_len -= 1
 
     if simple: # single policies or full combination
         return [x[1] for x in r if len(x[0]) == 1 or
-                (len(x[0]) == full_composite_len and not "none" in x[0])]
+                (    (len(x[0]) == full_composite_len)
+                 and (not "none" in x[0])
+                 and (not "testSimple" in x[0])
+                 and (not "testComplex" in x[0]))]
     else: # single policies or any combination without none
-        return [x[1] for x in r if len(x[0]) == 1 or not "none" in x[1]]
+        return [x[1] for x in r if len(x[0]) == 1 or
+                (     (not "none" in x[0])
+                  and (not "testSimple" in x[0])
+                  and (not "testComplex" in x[0]))]
