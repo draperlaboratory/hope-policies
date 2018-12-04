@@ -173,31 +173,49 @@ def doDebugScript(dp, simulator):
         
 def fail_reason(dp):
     print("Checking result...")
-    with open(os.path.join(dp,"uart.log"), "r") as fh:
-        searchlines = fh.readlines()
-    searchlines = [line for line in searchlines if line != "\n"]
-    for i, line in enumerate(searchlines):
-        if "MSG: Positive test." in line:
-            for j, l in enumerate(searchlines[i:]):
-                if "PASS: test passed." in l:
+    with open(os.path.join(dp,"uart.log"), "r") as ulogf, \
+         open(os.path.join(dp,"pex.log"), "r")  as plogf:
+        ulog = ulogf.read()
+        plog = plogf.read()
+        if "MSG: Positive test." in ulog:
+            if "PASS: test passed." in ulog:
+                return None
+            elif "Policy Violation:" in plog:
+                return "Policy violation for positive test"
+        elif "MSG: Negative test." in ulog:
+            if "MSG: Begin test." in ulog:
+                if "Policy Violation:" in plog:
                     return None
-            with open(os.path.join(dp,"pex.log"), "r") as sh:
-                statuslines = sh.readlines()
-                for l2 in statuslines:
-                    if "Policy Violation:" in l2:
-                        return "Policy violation for positive test"
-            return "unknown error for positive test"
-        elif "MSG: Negative test." in line:
-            for j, l1 in enumerate(searchlines[i:]):
-                if "MSG: Begin test." in l1:
-                    with open(os.path.join(dp,"pex.log"), "r") as sh:
-                        statuslines = sh.readlines()
-                        for l2 in statuslines:
-                            if "Policy Violation:" in l2:
-                                return None
-            return "No policy violation found for negative test"
-
+                return "No policy violation found for negative test"
+            return "Test begin message not found"
     return "Unknown error"
+                
+            
+    # with open(os.path.join(dp,"uart.log"), "r") as fh:
+    #     searchlines = fh.readlines()
+    # searchlines = [line for line in searchlines if line != "\n"]
+    # for i, line in enumerate(searchlines):
+    #     if "MSG: Positive test." in line:
+    #         for j, l in enumerate(searchlines[i:]):
+    #             if "PASS: test passed." in l:
+    #                 return None
+    #         with open(os.path.join(dp,"pex.log"), "r") as sh:
+    #             statuslines = sh.readlines()
+    #             for l2 in statuslines:
+    #                 if "Policy Violation:" in l2:
+    #                     return "Policy violation for positive test"
+    #         return "unknown error for positive test"
+    #     elif "MSG: Negative test." in line:
+    #         for j, l1 in enumerate(searchlines[i:]):
+    #             if "MSG: Begin test." in l1:
+    #                 with open(os.path.join(dp,"pex.log"), "r") as sh:
+    #                     statuslines = sh.readlines()
+    #                     for l2 in statuslines:
+    #                         if "Policy Violation:" in l2:
+    #                             return None
+    #         return "No policy violation found for negative test"
+
+    # return "Unknown error"
 
 def rescScript(dir, policy):
     return """

@@ -106,7 +106,7 @@ def is_attack_possible(attack, technique, location, pointer, function):
     if technique == 'direct':
         if (location is 'stack' and pointer is 'ret'):
             return True
-        elif attack is not 'dataonly' and pointer.find(location) is True:
+        elif attack is not 'dataonly' and location not in pointer:
             return False
         elif pointer == 'funcptrstackparam':
             if function is 'strcat' or function is 'snprintf' or function is 'sscanf' or function is 'homebrew':

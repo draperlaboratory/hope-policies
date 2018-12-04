@@ -21,7 +21,7 @@
 #define LOW_BIT_COUNT 3
 #define HIGH_BIT_COUNT 5
 
-static bool output_debug_info = true;
+static bool output_debug_info = false;
 
 bool
 build_payload(ripe_payload_t *payload, ripe_attack_form_t attack, char *shellcode, size_t shellcode_length)

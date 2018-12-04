@@ -42,15 +42,26 @@ DEBUG ?= no
 
 PYTEST_ARGS ?= -v -rsx --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
-ripe: SIM ?= $($(CONFIG)_SIM)
-ripe: TESTS ?= $($(CONFIG)_TESTS)
-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
-ripe: MODULE ?= $($(CONFIG)_MODULE)
-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-ripe:
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe.py
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe.py
+# RIPE Tests
+build-ripe: SIM ?= $($(CONFIG)_SIM)
+build-ripe: TESTS ?= $($(CONFIG)_TESTS)
+build-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
+build-ripe: MODULE ?= $($(CONFIG)_MODULE)
+build-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
+build-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-ripe:
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe/ripe.py
+
+run-ripe: SIM ?= $($(CONFIG)_SIM)
+run-ripe: TESTS ?= $($(CONFIG)_TESTS)
+run-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
+run-ripe: MODULE ?= $($(CONFIG)_MODULE)
+run-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
+run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+run-ripe: 
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
+
+ripe: build-kernels build-ripe run-ripe
 
 # avoid short-circuiting targets based on local file/dir names
 .PHONY: build-kernels
@@ -95,7 +106,7 @@ run-tests: build-tests build-kernels
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 clean: clean-kernels
-	rm -rf output debug prof broken __pycache__ *.pyc assets report.html report.xml prof_results.log .cache
+	rm -rf output debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache
 
 clean-kernels:
 	rm -rf kernels/
