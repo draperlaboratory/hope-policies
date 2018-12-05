@@ -1,5 +1,3 @@
-
-import pytest
 import functools
 import itertools
 import operator
@@ -10,44 +8,36 @@ import time
 import glob
 import errno
 
-from helper_fns import *
+from isp_utils import *
 
-# function automatically found by pytest
-def test_build(test, runtime):
+class retVals:
+    UNKNOWN_FAIL = "No binary produced"
+    NO_RUNTIME   = "Target runtime not found"
+    NO_TEST      = "Target source not found"
+    SUCCESS      = "Target built successfully"
 
-    if not runtime:
-        pytest.fail("No target runtime provided")
+def do_build(src_dir,
+             runtime,
+             out_dir):
 
-    if not test:
-        pytest.fail("No test provided to build")
-
-    do_build(test, "output", runtime)
-
-def do_build(main, outDir, runtime):
-
-    # output directory (for all tests)
-    doMkDir(outDir)
-
-    name = test_name(main, runtime)
-    
-    dirPath = t_directory(name)
-    if os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.skip("Test directory already exists: " + name)
-    doMkDir(dirPath)
+    # output directory
+    doMkDir(out_dir)
 
     # make policy-common test sources & tools
-    doMkApp(runtime, dirPath, main)
+    doMkApp(runtime, out_dir, src_dir)
     
     # make build dir for test
-    doMkBuildDir(dirPath, runtime);
+    doMkBuildDir(out_dir, runtime);
         
     # do the build
-    subprocess.Popen(["make"], stdout=open(os.path.join(dirPath, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=dirPath).wait()
+    subprocess.Popen(["make"], stdout=open(os.path.join(out_dir, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=out_dir).wait()
 
     # check that build succeeded
-    if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.fail("No binary produced. Log: " + dirPath + "/build/build.log")
+    if not os.path.isfile(os.path.join(out_dir, "build", "main")):
+        return retVals.UNKNOWN_FAIL
 
+    return retVals.SUCCESS
+    
 def doMkBuildDir(dp, runtime):
 
     # build directory is 1 per test
@@ -65,19 +55,10 @@ def doMkBuildDir(dp, runtime):
         shutil.copy(os.path.join("template", "hifive.makefile"), os.path.join(build_dir, "Makefile"))
         shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(build_dir, "bsp"))
         
-def doMkApp(runtime, dp, main):
+def doMkApp(runtime, dp, src_dir):
 
-    # destination sources dir contains c sources & headers 
-    src_dir = os.path.join(dp, "srcs")
-    doMkDir(src_dir)
-
-    if os.path.isfile(os.path.join("tests", main)):
-        shutil.copy(os.path.join("tests", main), src_dir)
-    elif os.path.isdir(os.path.join("tests", main)):
-        for f in os.listdir(os.path.join("tests", main)):
-            shutil.copy(os.path.join("tests", main, f), src_dir)
-    else:
-        pytest.fail("Test not found: " + main);
+    if not os.path.isdir(src_dir):
+        return retVals.NO_TEST
         
     # runtime specific code 
     if "frtos" in runtime:
@@ -89,17 +70,11 @@ def doMkApp(runtime, dp, main):
         shutil.copy(os.path.join("template", "hifive.c"), os.path.join(src_dir, "hifive.c"))
         shutil.copyfile(os.path.join("template", "test.makefile"), os.path.join(dp, "Makefile"))
     else:
-        pytest.fail("Target runtime not found: " + runtime)
-
-    # generic test code 
-    shutil.copy(os.path.join("template", "test.h"), src_dir)
-    shutil.copy(os.path.join("template", "test_status.c"), src_dir)
-    shutil.copy(os.path.join("template", "test_status.h"), src_dir)
-    shutil.copy(os.path.join("template", "sifive_test.h"), src_dir)
+        return isp.buildRetVals.NO_RUNTIME
         
     # create entity for file elements
     entDir = os.path.abspath("../entities")
-    entFile = "main.entities.yml"
+    entFile = "main.entities.yml" #TODO
     srcEnt = os.path.join(entDir, entFile)
     destEnt = os.path.join(dp, entFile.replace('/', '-'))
     if os.path.isfile(srcEnt):

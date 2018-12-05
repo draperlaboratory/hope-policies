@@ -83,7 +83,7 @@ build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: 
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build policy_tests_build.py
 
 # build PEX kernels
 build-kernels: SIM ?= $($(CONFIG)_SIM)
@@ -93,7 +93,7 @@ build-kernels: MODULE ?= $($(CONFIG)_MODULE)
 build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $(COLLECT_ONLY) -k test_install_kernel policy_tests_kernels.py
 
 # run tests
 run-tests: SIM ?= $($(CONFIG)_SIM)
@@ -103,7 +103,7 @@ run-tests: MODULE ?= $($(CONFIG)_MODULE)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests build-kernels
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_run policy_tests_run.py
 
 clean: clean-kernels
 	rm -rf output debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache

@@ -1,6 +1,4 @@
 # test script for running unit test
-
-import pytest
 import functools
 import itertools
 import operator
@@ -11,58 +9,22 @@ import time
 import glob
 import errno
 
-from helper_fns import *
+from isp_utils import *
 
-# in this function, a set of policy test parameters is checked
-#   to make sure that the test makes sense. If it doesnt, the
-#   function returns the reason why
-def incompatible_reason(test, policy, sim):
-
-    # skip negative tests that are not matched to the correct policy
-    if "/" in test and (not test.split("/")[0] in policy):
-        return "incorrect policy to detect violation in negative test"
+class retVals:
+    NO_BIN = "No binary found to run"
+    NO_POLICY = "No policy found"
+    TAG_FAIL  = "Tagging tools did not produce expected output"
+    SUCCESS   = "Simulator run successfully"
     
-    return None
-
-def xfail_reason(test, policy, sim):
-
-    if "threeClass" in policy and "coremark" in test:
-        return "threeClass and coremark; known unsolved bug"
-
-    if "longjump" in test:
-        return "longjump test known to be broken"
-
-    return None
-
-# test function found automatically by pytest. Pytest calls
-#   pytest_generate_tests in conftest.py to determine the
-#   arguments. If they are parameterized, it will call this
-#   function many times -- once for each combination of
-#   arguments
-def test_new(test, runtime, policy, sim, rc):
-
-    # policy = string of policy to be run, i.e. osv.hifive.main.rwx
-    # test   = string of test to be run, i.e. hello_world_1.c
-    # sim    = string of simulator to be used
-    # rc     = tuple, rc[0] = rule cache type string, rc[1] = rule cache size
-    # runtime= WHAT RUNTIME THE TEST WAS COMPILED FOR
-    #          --> do not confuse this with simulator
-    
-    # check for test validity
-    incompatible = incompatible_reason(test, policy, sim)
-    if incompatible:
-        pytest.skip(incompatible)
-
-    xfail = xfail_reason(test, policy, sim)
-    if xfail:
-        pytest.xfail(xfail)
+def run_sim(test, runtime, policy, sim, rc):
 
     name = test_name(test, runtime)
         
     # check that this test has been built
     dirPath = t_directory(name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.skip("No binary found for test: " + name)
+        return retVals.NO_BIN
 
     # simulator-specific run options
     if "qemu" in sim:
@@ -85,7 +47,7 @@ def test_new(test, runtime, policy, sim, rc):
     # retrieve policy
     subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
     if not os.path.isdir(os.path.join(pol_test_path, policy)):
-        pytest.fail("Policy not found: " + policy)
+        return retVals.NO_POLICY
 
     # test-run-level makefile. ie make inits & make qemu
     doMakefile(policy, pol_test_path, test)
@@ -108,17 +70,14 @@ def test_new(test, runtime, policy, sim, rc):
     if not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.taginfo")) or \
        not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text"))    or \
        not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text.tagged")):
-       pytest.fail("Tagging tools did not produce expected output")
+        return retVals.TAG_FAIL
     
     # run test
     simlog = open(os.path.join(pol_test_path, "sim.log"), "w+")
     subprocess.Popen(["make", sim], stdout=simlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
 
-    # evaluate results
-    fail = fail_reason(pol_test_path)
-    if fail != None:
-        pytest.fail(fail)
-
+    return retVals.SUCCESS
+    
 # Generate the makefile
 def doMakefile(policy, dp, main):
 
@@ -169,27 +128,7 @@ def doDebugScript(dp, simulator):
 
     print("GDB Script: {}".format(dp))
     with open(os.path.join(dp,'.gdbinit'), 'w') as f:
-        f.write(gs)
-        
-def fail_reason(dp):
-    print("Checking result...")
-    with open(os.path.join(dp,"uart.log"), "r") as ulogf, \
-         open(os.path.join(dp,"pex.log"), "r")  as plogf:
-        ulog = ulogf.read()
-        plog = plogf.read()
-        if "MSG: Positive test." in ulog:
-            if "PASS: test passed." in ulog:
-                return None
-            elif "Policy Violation:" in plog:
-                return "Policy violation for positive test"
-        elif "MSG: Negative test." in ulog:
-            if "MSG: Begin test." in ulog:
-                if "Policy Violation:" in plog:
-                    return None
-                return "No policy violation found for negative test"
-            return "Test begin message not found"
-    return "Unknown error"
-                
+        f.write(gs)                
             
     # with open(os.path.join(dp,"uart.log"), "r") as fh:
     #     searchlines = fh.readlines()
