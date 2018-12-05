@@ -13,6 +13,8 @@ import errno
 
 import isp_run
 
+from policy_tests_utils import *
+
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
@@ -57,7 +59,17 @@ def test_run(test, runtime, policy, sim, rc):
     if xfail:
         pytest.xfail(xfail)
 
-    res = isp_run.run_sim(test, runtime, policy, sim, rc)
+    # find test dir (output of build job)
+    name = policy_test_name(test, runtime)
+    test_dir = policy_test_directory(name)
+
+    # generate directory name (output of run job)
+    run_dir = policy;
+    if rc[0] != '' and rc[1] != '':
+        run_dir = run_dir + '-' + rc[0] + rc[1]
+    run_dir = os.path.join(test_dir, run_dir)
+    
+    res = isp_run.run_sim(test_dir, run_dir, runtime, policy, sim, rc)
 
     if res != isp_run.retVals.SUCCESS:
         if isp_run.retVals.NO_BIN == res or isp_run.retVals.NO_POLICY == res:

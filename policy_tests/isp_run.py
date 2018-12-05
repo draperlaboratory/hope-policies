@@ -17,69 +17,59 @@ class retVals:
     TAG_FAIL  = "Tagging tools did not produce expected output"
     SUCCESS   = "Simulator run successfully"
     
-def run_sim(test, runtime, policy, sim, rc):
+def run_sim(test_dir, run_dir, runtime, policy, sim, rc):
 
-    name = test_name(test, runtime)
-        
-    # check that this test has been built
-    dirPath = t_directory(name)
-    if not os.path.isfile(os.path.join(dirPath, "build", "main")):
+    if not os.path.isfile(os.path.join(test_dir, "build", "main")):
         return retVals.NO_BIN
+
+    doMkDir(run_dir)
 
     # simulator-specific run options
     if "qemu" in sim:
-        shutil.copy(os.path.join("template", "runQEMU.py"), dirPath)
+        shutil.copy(os.path.join("template", "runQEMU.py"), test_dir)
     elif "renode" in sim:
-        shutil.copy(os.path.join("template", "runRenode.py"), dirPath)
+        shutil.copy(os.path.join("template", "runRenode.py"), test_dir)
     else:
-        shutil.copy(os.path.join("template", "runFPGA.py"), dirPath)
+        shutil.copy(os.path.join("template", "runFPGA.py"), test_dir)
 
     # policy-specific stuff
 
-    # generate directory name
-    pol_dir_name = policy;
-    if rc[0] != '' and rc[1] != '':
-        pol_dir_name = pol_dir_name + '-' + rc[0] + rc[1]
-
-    pol_test_path = os.path.join(dirPath, pol_dir_name)
-    doMkDir(pol_test_path)
-
     # retrieve policy
-    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), pol_test_path], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
-    if not os.path.isdir(os.path.join(pol_test_path, policy)):
+    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), run_dir], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
+    if not os.path.isdir(os.path.join(run_dir, policy)):
         return retVals.NO_POLICY
 
     # test-run-level makefile. ie make inits & make qemu
-    doMakefile(policy, pol_test_path, test)
+    doMakefile(policy, run_dir)
 
     # script for renode config
     if sim == "renode":
-        doReSc(policy, pol_test_path)
+        doReSc(policy, run_dir)
 
-    doDebugScript(pol_test_path, sim)
+    doDebugScript(run_dir, sim)
     
     # config validator including rule cache
-    doValidatorCfg(policy, pol_test_path, rc[0], rc[1])
+    doValidatorCfg(policy, run_dir, rc[0], rc[1])
 
     # run tagging tools
-    doMkDir(os.path.join(pol_test_path, "bininfo"))
-    with open(os.path.join(pol_test_path, "inits.log"), "w+") as initlog:
-        subprocess.Popen(["make", "inits"], stdout=initlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
+    doMkDir(os.path.join(run_dir, "bininfo"))
+    with open(os.path.join(run_dir, "inits.log"), "w+") as initlog:
+        subprocess.Popen(["make", "inits"], stdout=initlog, stderr=subprocess.STDOUT, cwd=run_dir).wait()
 
     # Check for tag information
-    if not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.taginfo")) or \
-       not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text"))    or \
-       not os.path.isfile(os.path.join(pol_test_path, "bininfo", "main.text.tagged")):
+    if not os.path.isfile(os.path.join(run_dir, "bininfo", "main.taginfo")) or \
+       not os.path.isfile(os.path.join(run_dir, "bininfo", "main.text"))    or \
+       not os.path.isfile(os.path.join(run_dir, "bininfo", "main.text.tagged")):
         return retVals.TAG_FAIL
     
     # run test
-    simlog = open(os.path.join(pol_test_path, "sim.log"), "w+")
-    subprocess.Popen(["make", sim], stdout=simlog, stderr=subprocess.STDOUT, cwd=pol_test_path).wait()
+    simlog = open(os.path.join(run_dir, "sim.log"), "w+")
+    subprocess.Popen(["make", sim], stdout=simlog, stderr=subprocess.STDOUT, cwd=run_dir).wait()
 
     return retVals.SUCCESS
     
 # Generate the makefile
-def doMakefile(policy, dp, main):
+def doMakefile(policy, dp):
 
     mf = sim_makefile(policy)
 
@@ -129,32 +119,6 @@ def doDebugScript(dp, simulator):
     print("GDB Script: {}".format(dp))
     with open(os.path.join(dp,'.gdbinit'), 'w') as f:
         f.write(gs)                
-            
-    # with open(os.path.join(dp,"uart.log"), "r") as fh:
-    #     searchlines = fh.readlines()
-    # searchlines = [line for line in searchlines if line != "\n"]
-    # for i, line in enumerate(searchlines):
-    #     if "MSG: Positive test." in line:
-    #         for j, l in enumerate(searchlines[i:]):
-    #             if "PASS: test passed." in l:
-    #                 return None
-    #         with open(os.path.join(dp,"pex.log"), "r") as sh:
-    #             statuslines = sh.readlines()
-    #             for l2 in statuslines:
-    #                 if "Policy Violation:" in l2:
-    #                     return "Policy violation for positive test"
-    #         return "unknown error for positive test"
-    #     elif "MSG: Negative test." in line:
-    #         for j, l1 in enumerate(searchlines[i:]):
-    #             if "MSG: Begin test." in l1:
-    #                 with open(os.path.join(dp,"pex.log"), "r") as sh:
-    #                     statuslines = sh.readlines()
-    #                     for l2 in statuslines:
-    #                         if "Policy Violation:" in l2:
-    #                             return None
-    #         return "No policy violation found for negative test"
-
-    # return "Unknown error"
 
 def rescScript(dir, policy):
     return """
