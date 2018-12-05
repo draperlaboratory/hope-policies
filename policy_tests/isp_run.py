@@ -92,7 +92,7 @@ def sim_makefile(policy):
 PYTHON ?= python3
 
 inits:
-	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../main.entities.yml
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../*.entities.yml
 
 renode:
 	$(PYTHON) ../runRenode.py

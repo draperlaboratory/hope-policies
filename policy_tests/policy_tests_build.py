@@ -44,10 +44,21 @@ def test_build(test, runtime):
     shutil.copy(os.path.join("template", "test_status.h"), src_dir)
     shutil.copy(os.path.join("template", "sifive_test.h"), src_dir)
 
+    # create entity for file elements
+    entDir = os.path.abspath("../entities")
+    entFile = test + ".entities.yml"
+    srcEnt = os.path.join(entDir, entFile)
+    destEnt = os.path.join(out_dir, entFile.replace('/', '-'))
+    if os.path.isfile(srcEnt):
+        shutil.copyfile(srcEnt, destEnt)
+    else:
+        shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
+    
     if os.path.isfile(os.path.join(out_dir, "build", "main")):
         pytest.skip("Test already compiled.")
 
-    res = isp_build.do_build(src_dir, runtime, out_dir)
+    # do the build
+    res = isp_build.do_build(src_dir, runtime, out_dir, copy_src = False)
 
     if res != isp_build.retVals.SUCCESS:
         pytest.fail(res)

@@ -18,16 +18,27 @@ class retVals:
 
 def do_build(src_dir,
              runtime,
-             out_dir):
+             out_dir,
+             copy_src = True):
 
+    if not os.path.isdir(src_dir):
+        return retVals.NO_TEST
+    
     # output directory
     doMkDir(out_dir)
+    
+    if copy_src:
+        src_copy = os.path.join(out_dir, "srcs")
+        doMkDir(src_copy)
+        for f in os.listdir(src_dir):
+            shutil.copy(os.path.join(src_dir, f), src_copy)
+        src_dir = src_copy
 
     # make policy-common test sources & tools
-    doMkApp(runtime, out_dir, src_dir)
+    add_runtime(runtime, out_dir, src_dir)
     
     # make build dir for test
-    doMkBuildDir(out_dir, runtime);
+    make_build_dir(out_dir, runtime);
         
     # do the build
     subprocess.Popen(["make"], stdout=open(os.path.join(out_dir, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=out_dir).wait()
@@ -38,7 +49,7 @@ def do_build(src_dir,
 
     return retVals.SUCCESS
     
-def doMkBuildDir(dp, runtime):
+def make_build_dir(dp, runtime):
 
     # build directory is 1 per test
     build_dir = os.path.join(dp, "build")
@@ -55,11 +66,8 @@ def doMkBuildDir(dp, runtime):
         shutil.copy(os.path.join("template", "hifive.makefile"), os.path.join(build_dir, "Makefile"))
         shutil.copytree(os.getenv("ISP_PREFIX")+"/hifive_bsp", os.path.join(build_dir, "bsp"))
         
-def doMkApp(runtime, dp, src_dir):
+def add_runtime(runtime, dp, src_dir):
 
-    if not os.path.isdir(src_dir):
-        return retVals.NO_TEST
-        
     # runtime specific code 
     if "frtos" in runtime:
         shutil.copy(os.path.join("template", "frtos-mem.h"), os.path.join(src_dir, "mem.h"))
@@ -71,13 +79,3 @@ def doMkApp(runtime, dp, src_dir):
         shutil.copyfile(os.path.join("template", "test.makefile"), os.path.join(dp, "Makefile"))
     else:
         return isp.buildRetVals.NO_RUNTIME
-        
-    # create entity for file elements
-    entDir = os.path.abspath("../entities")
-    entFile = "main.entities.yml" #TODO
-    srcEnt = os.path.join(entDir, entFile)
-    destEnt = os.path.join(dp, entFile.replace('/', '-'))
-    if os.path.isfile(srcEnt):
-        shutil.copyfile(srcEnt, destEnt)
-    else:
-        shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
