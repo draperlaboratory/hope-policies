@@ -8,7 +8,7 @@ TEST_OUTPUT_FILE ?= report.xml
 
 # default for unadorned `make`
 CONFIG ?= qemu
-JOBS   ?= 10
+JOBS   ?= 1
 all: build-tests build-kernels run-tests
 
 # Standard build configurations can be listed here:
