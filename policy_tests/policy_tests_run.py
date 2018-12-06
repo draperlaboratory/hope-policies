@@ -78,14 +78,11 @@ def test_run(test, runtime, policy, sim, rc):
             pytest.fail(res)
 
     # evaluate results
-    # TODO : isp should output the output dir name
-    name = isp_run.test_name(test, runtime)
-    dirPath = isp_run.t_directory(name)
     pol_dir_name = policy
     if rc[0] != '' and rc[1] != '':
         pol_dir_name = pol_dir_name + '-' + rc[0] + rc[1]
 
-    pol_test_path = os.path.join(dirPath, pol_dir_name)
+    pol_test_path = os.path.join(test_dir, pol_dir_name)
 
     fail = fail_reason(pol_test_path)
     if fail != None:

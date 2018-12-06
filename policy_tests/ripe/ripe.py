@@ -3,10 +3,11 @@ import errno
 import os
 import shutil
 
-from helper_fns import *
-from build_unit_tests import *
-from run_unit_tests import *
 from ripe_configs import *
+from policy_tests_utils import *
+
+import policy_tests_run
+import isp_build
 
 def ripe_name(attack, tech, loc, ptr, func):
     return "ripe."+"-".join([attack,tech,loc,ptr,func])
@@ -14,25 +15,32 @@ def ripe_name(attack, tech, loc, ptr, func):
 @pytest.mark.parametrize("attack, tech, loc, ptr, func", [(c[0], c[1], c[2], c[3], c[4]) for c in RipeConfigs.configs])
 def test_build_ripe(attack, tech, loc, ptr, func, runtime):
 
-    doMkDir("output/ripe")
-    
-    # "main" test name
-    main = "ripe"
+    if not runtime:
+        pytest.fail("No target runtime provided")
 
-    # name for this test config
-    name = test_name(ripe_name(attack, tech, loc, ptr, func), runtime)
-    
-    # this config dirpath 
-    dirPath = t_directory(name)
-    if os.path.isfile(os.path.join(dirPath, "build", "main")):
+    name = policy_test_name(ripe_name(attack, tech, loc, ptr, func), runtime)
+    out_dir = policy_test_directory(name)
+    if os.path.isfile(os.path.join(out_dir, "build", "main")):
         pytest.skip("Test directory already exists: " + name)
-    doMkDir(dirPath)
+    doMkDir(out_dir)
 
-    # make policy-common test sources & tools
-    doMkApp(runtime, dirPath, main)
+    src_dir = os.path.join(out_dir, "srcs")
+    doMkDir(src_dir)
     
-    # make build dir for test
-    doMkBuildDir(dirPath, runtime);
+    test_path = os.path.join("tests", "ripe")
+    if os.path.isfile(test_path):
+        shutil.copy(test_path, src_dir)
+    elif os.path.isdir(test_path):
+        for f in os.listdir(test_path):
+            shutil.copy(os.path.join(test_path, f), src_dir)
+    else:
+        pytest.skip("No test found")
+
+    # generic test code 
+    shutil.copy(os.path.join("template", "test.h"), src_dir)
+    shutil.copy(os.path.join("template", "test_status.c"), src_dir)
+    shutil.copy(os.path.join("template", "test_status.h"), src_dir)
+    shutil.copy(os.path.join("template", "sifive_test.h"), src_dir)
 
     # add ripe-specific Makefile
     mf_cflags = 'CFLAGS += '
@@ -41,15 +49,25 @@ def test_build_ripe(attack, tech, loc, ptr, func, runtime):
     mf_cflags += '-DATTACK_CODE_PTR=\\\"'+ptr+'\\\" '
     mf_cflags += '-DATTACK_LOCATION=\\\"'+loc+'\\\" '
     mf_cflags += '-DATTACK_FUNCTION=\\\"'+func+'\\\"'
-    with open(os.path.join(dirPath, "srcs", "Makefile"), "w+") as f:
+    with open(os.path.join(src_dir, "Makefile"), "w+") as f:
         f.write(mf_cflags)
 
+    # create entity for file elements
+    entDir = os.path.abspath("../entities")
+    entFile = "ripe" + ".entities.yml"
+    srcEnt = os.path.join(entDir, entFile)
+    destEnt = os.path.join(out_dir, entFile.replace('/', '-'))
+    if os.path.isfile(srcEnt):
+        shutil.copyfile(srcEnt, destEnt)
+    else:
+        shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
+    
     # do the build
-    subprocess.Popen(["make"], stdout=open(os.path.join(dirPath, "build/build.log"), "w+"), stderr=subprocess.STDOUT, cwd=dirPath).wait()
+    res = isp_build.do_build(src_dir, runtime, out_dir, copy_src = False)
 
-    # check that build succeeded
-    if not os.path.isfile(os.path.join(dirPath, "build", "main")):
-        pytest.fail("No binary produced. Log: " + dirPath + "/build/build.log")
+    if res != isp_build.retVals.SUCCESS:
+        pytest.fail(res)
+
 
 @pytest.mark.parametrize("attack, tech, loc, ptr, func, ripepols", RipeConfigs.configs, ids = ["-".join([c[0], c[1], c[2], c[3], c[4]]) for c in RipeConfigs.configs])
 def test_run_ripe(attack, tech, loc, ptr, func, ripepols, policy, runtime, sim, rc):
@@ -59,4 +77,4 @@ def test_run_ripe(attack, tech, loc, ptr, func, ripepols, policy, runtime, sim, 
     if policy not in ripepols:
         pytest.skip("Policy not expected to defeat attack")
     else:
-        test_new(config_name, runtime, policy, sim, rc)
+        policy_tests_run.test_run(config_name, runtime, policy, sim, rc)
