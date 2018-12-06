@@ -24,12 +24,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-module osv.nop:
+module osv.testComplex:
 
 /*
- * The Nop Policy provides no security in the most complicated way possible.
- * The purpose of this policy is to test the system tag initialization and 
- * catch any tags that have not been properly initialized.
+ * The Complex Test policy provides very little security in a complicated 
+ * way.  It is intended to stress test policy compilation, system tag
+ * initialization, and policy execution.
+ *
+ * It does enforce marginally more security than the "none" policy in that
+ * it requires all instructions to be tagged with opgroups.  It will
+ * therefore prevent attacks that write code and attempt to execute it.
+ * This is the minimum level of security it is possible to provide
+ * without use of the __NO_CHECKS escape hatch.
  */
 
 import:
@@ -46,7 +52,7 @@ metadata:
     AllowIO
 
 policy:           // Allow most ops involving regular registers, memory & csrs
-  nopPol =
+  testComplexPol =
      arithGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], op2 == [AllowReg] -> env = {AllowEnv}, res = {AllowReg})
    ^ immArithGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg] -> env = {AllowEnv}, res = {AllowReg})
    ^ mulDivRemGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], op2 == [AllowReg] -> env = {AllowEnv}, res = {AllowReg})
@@ -71,7 +77,6 @@ policy:           // Allow most ops involving regular registers, memory & csrs
      // Change privledge mode
    ^ privGrp(code == [AllowCode], env == [AllowEnv] -> env = {AllowEnv})
    
-//  main = nopPol
 
 require:
     init ISA.RISCV.Reg.Env                   {AllowEnv}
