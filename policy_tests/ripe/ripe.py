@@ -63,7 +63,7 @@ def test_build_ripe(attack, tech, loc, ptr, func, runtime):
         shutil.copyfile(os.path.join(entDir, "empty.entities.yml"), destEnt)
     
     # do the build
-    res = isp_build.do_build(src_dir, runtime, out_dir, copy_src = False)
+    res = isp_build.do_build(src_dir, "template", runtime, out_dir, copy_src = False)
 
     if res != isp_build.retVals.SUCCESS:
         pytest.fail(res)
