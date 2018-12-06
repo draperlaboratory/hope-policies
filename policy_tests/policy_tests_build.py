@@ -58,7 +58,7 @@ def test_build(test, runtime):
         pytest.skip("Test already compiled.")
 
     # do the build
-    res = isp_build.do_build(src_dir, runtime, out_dir, copy_src = False)
+    res = isp_build.do_build(src_dir, "template", runtime, out_dir, copy_src = False)
 
     if res != isp_build.retVals.SUCCESS:
         pytest.fail(res)

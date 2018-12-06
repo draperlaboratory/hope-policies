@@ -12,10 +12,23 @@ import multiprocessing
 
 from isp_utils import *
 
+# backend helper to compile a "pex kernel" to be run on the policy execution
+#   engine of an ISP processor
+
+# -- MAIN MODULE FUNCTIONALITY
+# arguments:
+#   policy: the name of the policy to compile
+#   debug: option to build kernel with debug output. (True/False)
+#   policies_dir: root directory of policy definition. Example:
+#     Directory structure: /{x}/policies/osv/hifive/main.dpl
+#     policy name: osv.hifive.main
+#     policies_dir argument: /{x}/policies
+#   entities_dir: The location of the stored system entities files
+#   engine_dir: The policy engine repo path
+#   pol_out_dir: where should the compiled pex kernel be stored?
+
 def build_policy_kernel(policy, debug, policies_dir, entities_dir,
                         engine_dir, pol_out_dir):
-
-    # TODO: Default /opt/isp policies, entities, engine dirs?
 
     ptcmd = "policy-tool"
     ptarg = ["-t", entities_dir, "-m", policies_dir, "-o", pol_out_dir] + [policy]
@@ -39,8 +52,6 @@ def build_policy_kernel(policy, debug, policies_dir, entities_dir,
         
 def install_policy(policy, out_dir, pol_dir, ent_dir, val_path, soc_cfg_path):
 
-    # TODO: Default /opt/isp policies, entities, engine dirs?
-    
     shutil.rmtree(out_dir, ignore_errors=True)
     doMkDir(out_dir)
     

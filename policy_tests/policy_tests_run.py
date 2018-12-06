@@ -69,7 +69,7 @@ def test_run(test, runtime, policy, sim, rc):
         run_dir = run_dir + '-' + rc[0] + rc[1]
     run_dir = os.path.join(test_dir, run_dir)
     
-    res = isp_run.run_sim(test_dir, run_dir, runtime, policy, sim, rc)
+    res = isp_run.run_sim(test_dir, "kernels", run_dir, "template", runtime, policy, sim, rc)
 
     if res != isp_run.retVals.SUCCESS:
         if isp_run.retVals.NO_BIN == res or isp_run.retVals.NO_POLICY == res:

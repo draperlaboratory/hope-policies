@@ -11,13 +11,30 @@ import errno
 
 from isp_utils import *
 
+# backend helper to run an ISP simulation with a binary & kernel
+
+# possible module outcomes
 class retVals:
     NO_BIN = "No binary found to run"
     NO_POLICY = "No policy found"
     TAG_FAIL  = "Tagging tools did not produce expected output"
     SUCCESS   = "Simulator run successfully"
-    
-def run_sim(test_dir, run_dir, runtime, policy, sim, rc):
+
+# -- MAIN MODULE FUNCTIONALITY
+
+# arguments:
+#  test_dir - output directory produced by isp_build tool
+#  kernels_dir - directory containing the kernel to be run
+#  run_dir - output of this module. Directory to put supporting files, run
+#    the simulation, and store the appropriate logs
+#  template_dir - Directory containing ISP provided generic run simulation
+#    scripts
+#  runtime - Currently supported: frtos, hifive (bare metal)
+#  policy - name of the policy to be run
+#  sim - name of the simultator to use
+#  rc - rule cache configuration tuple. (cache_name, size)
+
+def run_sim(test_dir, kernels_dir, run_dir, template_dir, runtime, policy, sim, rc):
 
     if not os.path.isfile(os.path.join(test_dir, "build", "main")):
         return retVals.NO_BIN
@@ -26,16 +43,16 @@ def run_sim(test_dir, run_dir, runtime, policy, sim, rc):
 
     # simulator-specific run options
     if "qemu" in sim:
-        shutil.copy(os.path.join("template", "runQEMU.py"), test_dir)
+        shutil.copy(os.path.join(template_dir, "runQEMU.py"), test_dir)
     elif "renode" in sim:
-        shutil.copy(os.path.join("template", "runRenode.py"), test_dir)
+        shutil.copy(os.path.join(template_dir, "runRenode.py"), test_dir)
     else:
-        shutil.copy(os.path.join("template", "runFPGA.py"), test_dir)
+        shutil.copy(os.path.join(template_dir, "runFPGA.py"), test_dir)
 
     # policy-specific stuff
 
     # retrieve policy
-    subprocess.Popen(["cp", "-r", os.path.join(os.path.join(os.getcwd(), 'kernels'), policy), run_dir], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
+    subprocess.Popen(["cp", "-r", os.path.join(kernels_dir, policy), run_dir], stdout=open(os.devnull, 'w'), stderr=subprocess.STDOUT).wait()
     if not os.path.isdir(os.path.join(run_dir, policy)):
         return retVals.NO_POLICY
 
