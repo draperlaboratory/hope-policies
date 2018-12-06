@@ -37,7 +37,7 @@
 /*
  * Test that printf works ok on a few different format params.
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t *ptr, *write_ptr, *read_ptr;
 

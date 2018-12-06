@@ -38,7 +38,7 @@
  * Test to check that Stack policy catches a buffer overrun
  *     performing strcpy
  */
-int test_main(void)
+int isp_main(void)
   {
     char buff[20];
     test_negative(); // identify test as negative (will not complete)

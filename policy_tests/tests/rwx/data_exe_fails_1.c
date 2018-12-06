@@ -38,7 +38,7 @@
  * Test to check we can not execute data as code
  * 
  */
-int test_main(void)
+int isp_main(void)
   {
     int foo = 0x8067;  // return instruction
     void (*foo_fn_ptr)()= NULL;

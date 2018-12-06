@@ -31,5 +31,5 @@ int t_printf(const char *s, ...) {
 }
 
 int main(void) {
-  test_main();
+  isp_main();
 }

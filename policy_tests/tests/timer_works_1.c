@@ -42,7 +42,7 @@ extern uint32_t get_inst_ret();
  * Test to calibrate cpu and timer frequency
  * 
  */
-int test_main(void)
+int isp_main(void)
   {
     test_positive(); // identify test as positive (will complete)
     uint32_t inst_ret = 0;

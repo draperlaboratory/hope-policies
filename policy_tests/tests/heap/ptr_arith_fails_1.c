@@ -39,7 +39,7 @@
 /*
  * Test to check that a forged pointer to heap memory of the wrong color fails.
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t *ptr1, *ptr2;
     volatile  uintptr_t *one_ptr, *two_ptr;

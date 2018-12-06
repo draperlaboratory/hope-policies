@@ -18,7 +18,7 @@ void sneaky(void *ptr){
   memset(ptr, 0x0, 4);
 }
 
-int test_main(void){
+int isp_main(void){
   test_negative(); // identify test as negative (will fail to complete due to policy violation)
   test_begin();
 

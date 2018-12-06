@@ -38,14 +38,14 @@
  * Test to check that trying to write code is an error
  * under the RWX policy.
  */
-int test_main(void)
+int isp_main(void)
   {
     volatile int foo = 42;
     volatile int* foo_ptr;
 
     test_negative(); // identify test as negative (will not complete)
     
-    foo_ptr = (int*) test_main;
+    foo_ptr = (int*) isp_main;
 
     // should pass
     t_printf("foo = %d\n", foo);

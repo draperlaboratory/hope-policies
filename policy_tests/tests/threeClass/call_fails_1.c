@@ -8,7 +8,7 @@ __attribute__((noinline)) void target(void){
   return;
 }
 
-int test_main(void){
+int isp_main(void){
   volatile size_t addr = (size_t)target + 4;
   volatile void (*fptr)(void) = (void(*)(void))addr;
   test_negative();

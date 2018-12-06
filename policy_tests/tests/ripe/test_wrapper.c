@@ -38,7 +38,7 @@
  * Hello world sanity test to check we can execute code i.e. main and 
  *     call printf
  */
-int test_main(void)
+int isp_main(void)
 {
   test_negative(); // identify test as negative
   test_begin();

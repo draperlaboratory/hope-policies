@@ -38,7 +38,7 @@
 /*
  * Test to check that basic ptr arithmetic works
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t *ptr, *write_ptr, *read_ptr;
     volatile unsigned long long temp;

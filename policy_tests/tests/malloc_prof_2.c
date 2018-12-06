@@ -48,7 +48,7 @@
  * Performance profiling test case, multiple calls to malloc / free
  *
  */
-int test_main(void){
+int isp_main(void){
     uintptr_t *ptr[MALLOC_COUNT];
     uintptr_t size = 1;
     uintptr_t index;

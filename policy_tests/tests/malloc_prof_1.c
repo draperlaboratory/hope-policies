@@ -40,7 +40,7 @@
  * Performance profiling test case, multiple calls to malloc / free
  *
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t* ptr;
     uintptr_t *write_ptr, *read_ptr;

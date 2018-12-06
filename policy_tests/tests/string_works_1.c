@@ -39,7 +39,7 @@
  * Test to allocate memory for 1 to 26 chars and check that we can 
  * read and write it ok.
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t *ptr1, *ptr2;
     char *one_ptr, *two_ptr;

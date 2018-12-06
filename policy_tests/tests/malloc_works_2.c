@@ -38,7 +38,7 @@
 /*
  * Test to allocate multiple memory chunks and check that we can read and write it ok.
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t* ptr[8];
     uintptr_t *write_ptr, *read_ptr;

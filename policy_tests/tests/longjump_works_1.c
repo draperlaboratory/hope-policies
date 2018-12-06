@@ -56,7 +56,7 @@ void test_longjmp() {
   }
 }
 
-int test_main(void)
+int isp_main(void)
   {
     test_positive(); // identify test as positive (will complete)
 

@@ -12,7 +12,7 @@
 extern int test_main(void);
 void main_task(void *argument)
 {
-  test_main();
+  isp_main();
   vTaskDelay(1);
 
   for( ;; );

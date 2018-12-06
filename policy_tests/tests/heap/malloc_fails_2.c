@@ -39,7 +39,7 @@
 /*
  * Test to allocate memory and check that we can catch out of bounds accesses.
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t *ptr, *write_ptr, *read_ptr;
     volatile uintptr_t dummy;

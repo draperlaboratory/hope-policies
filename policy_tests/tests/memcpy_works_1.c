@@ -39,7 +39,7 @@
  * Test to check that lib Fn memcpy works correctly
  * 
  */
-int test_main(void)
+int isp_main(void)
   {
     uintptr_t *ptr1, *ptr2;
     char *one_ptr, *two_ptr;

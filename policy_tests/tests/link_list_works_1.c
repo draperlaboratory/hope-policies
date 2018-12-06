@@ -44,7 +44,7 @@ typedef struct element {
  * Link list traversal test to verify ptrs to structure of ptrs works correctly 
  *     with the Heap policy
  */
-int test_main(void)
+int isp_main(void)
   {
     element_t* ptr[8];
     element_t *next_ptr, *last_ptr;

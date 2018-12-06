@@ -38,7 +38,7 @@
  * Test to check that trying to read code is not an error
  * under the RWX policy.
  */
-int test_main(void)
+int isp_main(void)
   {
     volatile int foo = 42;
     volatile int* foo_ptr;
@@ -46,7 +46,7 @@ int test_main(void)
     test_positive();
     test_begin();
     
-    foo_ptr = (int*) test_main;
+    foo_ptr = (int*) isp_main;
 
     // should pass
     t_printf("foo = %d\n", foo);

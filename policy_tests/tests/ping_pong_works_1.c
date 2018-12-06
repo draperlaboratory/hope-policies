@@ -124,7 +124,7 @@ static void pong_task(void *p) {
 }
 
 
-int test_main( void )
+int isp_main( void )
 {
     test_positive(); // identify test as positive (will complete)
     test_begin();
