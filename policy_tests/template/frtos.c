@@ -10,6 +10,7 @@
  * Test wrapper for dover-os that calls the test case in test.c
  */
 extern int test_main(void);
+void main_task(void*);
 void main_task(void *argument)
 {
   test_main();
@@ -25,6 +26,9 @@ int main(void){
   xTaskCreate(main_task, "Main task", 1000, NULL, 1, NULL);
   
   vTaskStartScheduler();
+
+  // never reached
+  return 0;
 }
 
 /*
@@ -37,6 +41,7 @@ int t_printf(const char *s, ...){
   printf_uart(s, vl);
   va_end(vl);
 
+  return 0;
 }  
 
 
@@ -46,13 +51,15 @@ int t_printf(const char *s, ...){
  * This function must return uS timestamp with an order of magnitude
  * more resolution than FreeRTOS tick
  */
-extern uint32_t uiPortGetWallTimestampUs();
+extern uint32_t uiPortGetWallTimestampUs(void);
+unsigned long sys_GetWallTimestampUs(void);
 unsigned long sys_GetWallTimestampUs(void)
 {
     /* TBD on real FPGA hw */
   return uiPortGetWallTimestampUs();
 }
 
+void printk(const char*, ...);
 void printk(const char* s, ...)
 {
   va_list vl;
