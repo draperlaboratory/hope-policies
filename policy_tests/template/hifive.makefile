@@ -1,9 +1,7 @@
 TARGET = main
 
-C_SRCS += ../hifive.c ../test_status.c
 C_SRCS += $(wildcard ../srcs/*.c)
 
-HEADERS += ../mem.h ../test.h ../test_status.h
 HEADERS += $(wildcard ../srcs/*.h)
 
 include $(wildcard ../srcs/Makefile)

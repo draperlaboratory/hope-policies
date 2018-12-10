@@ -30,7 +30,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "doverlib.h"
 #include "test_status.h"
 #include "test.h"
 

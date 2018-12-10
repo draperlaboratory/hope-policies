@@ -22,14 +22,12 @@ uartLogFile = "uart.log"
 
 statusLogFile = "pex.log"
 
-qemuLogFile = "qemu.log"
-
 testDone = False
 runcmd = "qemu-system-riscv32"
 cwd = os.getcwd()
 opts = [ "-nographic",
          "-machine", "sifive_e",
-         "-kernel", "build/main",
+         "-kernel", "../build/main",
          "-serial", "file:{}".format(uartLogFile),
          "-D", statusLogFile,
          "-singlestep", #need to instrument every target instruction
@@ -42,7 +40,7 @@ def watchdog():
     global testDone
     for i in range(timeoutSec * 10):
         if not testDone:
-            time.sleep(0.1)
+            time.sleep(0.5)
         else:
             return
     print("Watchdog timeout")
@@ -52,13 +50,11 @@ def launchQEMU(policies):
     global testDone
     try:
         print("Running qemu cmd:{}\n", str([runcmd] + opts))
-        with open(qemuLogFile, 'w+') as f:
-            rc = subprocess.Popen([runcmd] + opts,
-                                  env={"LD_LIBRARY_PATH": cwd + '/' + policies,
-                                       "PATH": os.environ["PATH"]},
-                                  stdout=f, stderr=f)
+        rc = subprocess.Popen([runcmd] + opts,
+                              env={"LD_LIBRARY_PATH": cwd + '/' + policies,
+                                   "PATH": os.environ["PATH"]})
         while rc.poll() is None:
-            time.sleep(0.5)
+            time.sleep(1)
             try:
                 with open(uartLogFile, 'r') as f:
                     for line in f.readlines():
