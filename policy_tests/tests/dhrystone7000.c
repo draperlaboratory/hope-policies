@@ -53,13 +53,6 @@
 #include "test.h"
 #include "mem.h"
 
-#define MYPRINT(...) \
-	do { \
-		char sbuf[2048] = {0}; \
-		snprintf(sbuf, 2048, __VA_ARGS__); \
-		t_printf(sbuf); \
-	} while(0)
-
 /* Accuracy of timings and human fatigue controlled by next two lines */
 #define LOOPS	50000		/* Use this for slow or 16 bit machines */
 
@@ -320,9 +313,9 @@ void dhry_proc0(void)
 	endtime = sys_GetWallTimestampUs();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
 
-	MYPRINT("Start Time: %u (us)\n", starttime);
-	MYPRINT("End Time  : %u (us)\n", endtime);
-	MYPRINT("Null Time : %u (us)\n", nulltime);
+	t_printf("Start Time: %u (us)\n", starttime);
+	t_printf("End Time  : %u (us)\n", endtime);
+	t_printf("Null Time : %u (us)\n", nulltime);
 
 	PtrGlbNext = (RecordPtr)malloc(sizeof(RecordType));
 	PtrGlb = (RecordPtr) malloc(sizeof(RecordType));
@@ -338,7 +331,7 @@ void dhry_proc0(void)
 	/*****************
 	-- Start Timer --
 	*****************/
-	MYPRINT("Starting Timer for %lu Loops\n", (long)LOOPS);
+	t_printf("Starting Timer for %lu Loops\n", (long)LOOPS);
 	starttime = sys_GetWallTimestampUs();
 	for (i = 0; i < LOOPS; ++i)
 	{
@@ -368,11 +361,11 @@ void dhry_proc0(void)
 	}
 	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
 
-	MYPRINT("===================================================\n");
-	MYPRINT("Passes: %u\n", LOOPS);
-	MYPRINT("Benchtime (us): %u\n", benchtime_us);
-	MYPRINT("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
-	MYPRINT("Dhrystones:     %u dhrystones/second\n", LOOPS/(benchtime_us/US_IN_SEC));
+	t_printf("===================================================\n");
+	t_printf("Passes: %u\n", LOOPS);
+	t_printf("Benchtime (us): %u\n", benchtime_us);
+	t_printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
+	t_printf("Dhrystones:     %u dhrystones/second\n", LOOPS/(benchtime_us/US_IN_SEC));
 
 }
 
@@ -380,7 +373,7 @@ int test_main (void)
 {
 	test_positive();
 	test_begin();
-	MYPRINT("Starting dhry_proc0\n");
+	t_printf("Starting dhry_proc0\n");
 	dhry_proc0();
 
 	test_pass();
