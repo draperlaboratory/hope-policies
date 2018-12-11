@@ -32,6 +32,7 @@ class AllTests:
         "stack/stack_fails_1.c",
         "threeClass/jump_data_fails_1.c",
         "threeClass/call_fails_1.c",
+        "dhrystone7000.c",
     ]
 
 class frtos(AllTests):
@@ -48,7 +49,8 @@ class hifive(AllTests):
                       if not any(test in s for s in
                                  ["ping_pong_works_1.c",
                                   "stanford_int_treesort_fixed.c",
-                                  "cfi/jump_data_fails_1.c"
+                                  "cfi/jump_data_fails_1.c",
+                                  "dhrystone7000.c",
                                  ]
                                  )]
 
