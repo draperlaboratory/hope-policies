@@ -224,6 +224,37 @@ can then use it for whatever task-specific operations it needs.
   +        ptarg.insert(0, "-d")
   ```
 
+# RIPE tests
+
+There is another target included in the Makefile to run RIPE tests. RIPE (the
+Runtime Intrusion Detection Evaluator) is designed to execute different memory
+corruption vulnerabilities within its process space. It is intended to be a
+tool to test the coverage of security architectures.
+
+`make ripe` will run the RIPE test with over 100 different attacks. Each of
+these attacks may run with 1 or more policies that are expected to stop the
+attack. By default, all RIPE tests that are run are "negative" tests. In other
+words, a policy violation is expected for every ripe test that is run.
+
+As implemented currently, the RIPE attack configurations are not fully
+parameterized within pytest. Instead, the `ripe/gen_ripe_congigs.py` script
+outputs all supported attack configurations along with the policies that are
+expected to protect against each configuration. Note that the policies _are_
+parameterized with pytest. In other words, the regular pytest configurations
+(`POLICIES` and `MODULES` as discussed elsewhere in this document) are used
+to determine which policies _could_ be run against the ripe tests in a
+particular ripe test run, and those policies listed with each configuration in
+ripe_configs.py are used by pytest to determine whether to run or skip a given
+configuration/policy combination.
+
+Output from the ripe tests goes in `output/ripe/`.
+
+Note that one major weakness of the RIPE testing as currently implemented is
+that the inability to pass arguments to the binary when it runs. This means
+that the configuration needs to be set at compile time, which demands that the
+RIPE binary be compiled separately for each of the 100+ test configurations,
+even though the only thing that changes are 5 configuration variables.
+
 # Debugging
 
 Policy Metadata aware debugging is supported on Renode and QEMU

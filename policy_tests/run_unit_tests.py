@@ -60,7 +60,7 @@ def test_new(test, runtime, policy, sim, rc):
     name = test_name(test, runtime)
         
     # check that this test has been built
-    dirPath = os.path.join("output", name)
+    dirPath = t_directory(name)
     if not os.path.isfile(os.path.join(dirPath, "build", "main")):
         pytest.skip("No binary found for test: " + name)
 
@@ -78,7 +78,7 @@ def test_new(test, runtime, policy, sim, rc):
     pol_dir_name = policy;
     if rc[0] != '' and rc[1] != '':
         pol_dir_name = pol_dir_name + '-' + rc[0] + rc[1]
-        
+
     pol_test_path = os.path.join(dirPath, pol_dir_name)
     doMkDir(pol_test_path)
 
@@ -122,18 +122,18 @@ def test_new(test, runtime, policy, sim, rc):
 # Generate the makefile
 def doMakefile(policy, dp, main):
 
-    mf = sim_makefile(policy, main)
+    mf = sim_makefile(policy)
 
     print("Makefile: {}".format(dp))
     with open(os.path.join(dp,'Makefile'), 'w') as f:
         f.write(mf)
 
-def sim_makefile(policy, main):
+def sim_makefile(policy):
     return """
 PYTHON ?= python3
 
 inits:
-	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../{main}.entities.yml
+	gen_tag_info -d ./{p} -t bininfo/main.taginfo -b ../build/main -e ./{p}/{p}.entities.yml ../main.entities.yml
 
 renode:
 	$(PYTHON) ../runRenode.py
@@ -152,16 +152,8 @@ gdb:
 
 clean:
 	rm -rf *.o *.log bininfo/*
-""".format(main=main.replace('/', '-'), p=policy)
+""".format(p=policy)
         
-def doMkDir(dir):
-    try:
-        if not os.path.isdir(dir):
-            os.makedirs(dir)
-    except OSError as e:
-        if e.errno != errno.EEXIST:
-            raise    
-
 # Generate the resc script
 def doReSc(policy, dp):
 
@@ -181,30 +173,21 @@ def doDebugScript(dp, simulator):
         
 def fail_reason(dp):
     print("Checking result...")
-    with open(os.path.join(dp,"uart.log"), "r") as fh:
-        searchlines = fh.readlines()
-    searchlines = [line for line in searchlines if line != "\n"]
-    for i, line in enumerate(searchlines):
-        if "MSG: Positive test." in line:
-            for j, l in enumerate(searchlines[i:]):
-                if "PASS: test passed." in l:
+    with open(os.path.join(dp,"uart.log"), "r") as ulogf, \
+         open(os.path.join(dp,"pex.log"), "r")  as plogf:
+        ulog = ulogf.read()
+        plog = plogf.read()
+        if "MSG: Positive test." in ulog:
+            if "PASS: test passed." in ulog:
+                return None
+            elif "Policy Violation:" in plog:
+                return "Policy violation for positive test"
+        elif "MSG: Negative test." in ulog:
+            if "MSG: Begin test." in ulog:
+                if "Policy Violation:" in plog:
                     return None
-            with open(os.path.join(dp,"pex.log"), "r") as sh:
-                statuslines = sh.readlines()
-                for l2 in statuslines:
-                    if "Policy Violation:" in l2:
-                        return "Policy violation for positive test"
-            return "unknown error for positive test"
-        elif "MSG: Negative test." in line:
-            for j, l1 in enumerate(searchlines[i:]):
-                if "MSG: Begin test." in l1:
-                    with open(os.path.join(dp,"pex.log"), "r") as sh:
-                        statuslines = sh.readlines()
-                        for l2 in statuslines:
-                            if "Policy Violation:" in l2:
-                                return None
-            return "No policy violation found for negative test"
-
+                return "No policy violation found for negative test"
+            return "Test begin message not found"
     return "Unknown error"
 
 def rescScript(dir, policy):
