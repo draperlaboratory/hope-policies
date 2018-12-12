@@ -36,12 +36,12 @@
 #include "mem.h"
 
 // total number of mallocs
-#define MALLOC_COUNT 2000
+#define MALLOC_COUNT 150 // 2000 larger allocation numbers exhaust heap space on hifive bare metal.
 // amount of computation on the malloced values
 #define TEST_LENGTH_COUNT 7500
 
 // number of times to run the sort test
-#define ITERATIONS      2
+#define ITERATIONS 3
 
 
 /*
@@ -49,9 +49,9 @@
  *
  */
 int test_main(void){
-    uintptr_t *ptr[MALLOC_COUNT];
-    uintptr_t size = 1;
-    uintptr_t index;
+    int *ptr[MALLOC_COUNT];
+    int size = 1;
+    int index;
 
     test_positive(); // identify test as positive (will complete)
    
@@ -60,7 +60,7 @@ int test_main(void){
       t_printf("allocate\n");
       for(int count = 0; count < MALLOC_COUNT; count++){
         size = (count & 0x07) +1;
-        ptr[count] = malloc(size * sizeof(uintptr_t));
+        ptr[count] = malloc(size * sizeof(int));
       } 
       
       t_printf("test\n");

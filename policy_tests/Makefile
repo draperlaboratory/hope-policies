@@ -1,7 +1,7 @@
 # This silences python error trace backs, better for running tests set
 # ERROR_MSGS to an empty string to print error trace backs
 PYTHON ?= python3
-ERROR_MSGS ?= --tb=long
+ERROR_MSGS ?= --tb=short
 
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
