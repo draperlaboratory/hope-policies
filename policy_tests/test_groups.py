@@ -13,6 +13,8 @@ class AllTests:
         "ping_pong_works_1.c",
         "link_list_works_1.c",
         "ptr_arith_works_1.c",
+        "malloc_prof_1.c",
+        "malloc_prof_2.c",
         "malloc_works_1.c",
         "malloc_works_2.c",
         "string_works_1.c",
