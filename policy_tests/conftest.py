@@ -54,20 +54,20 @@ def debug(request):
 
 def pytest_generate_tests(metafunc):
 
-    module = metafunc.config.option.module
-
     if 'policy' in metafunc.fixturenames:
 
         # gather passed policies
         policies = metafunc.config.option.policies.split(",")
 
         # build composites
-        if 'simple' in metafunc.config.option.composite:
-            policies = composites(module, policies, True)
-        elif 'full' in metafunc.config.option.composite:
-            policies = composites(module, policies, False)
-        else:
-            policies = [module + "." + p for p in policies]
+        module = metafunc.config.option.module
+        if module:
+            if 'simple' in metafunc.config.option.composite:
+                policies = composites(module, policies, True)
+            elif 'full' in metafunc.config.option.composite:
+                policies = composites(module, policies, False)
+            else:
+                policies = [module + "." + p for p in policies]
             
         # give all policies to test
         metafunc.parametrize("policy", policies, scope='session')
