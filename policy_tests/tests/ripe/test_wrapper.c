@@ -24,73 +24,26 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <stdlib.h>
 
 #include "test_status.h"
+#include "test.h"
 
-// include malloc wrappers
 #include "mem.h"
-
-// total number of mallocs
-#define MALLOC_COUNT 150 // 2000 larger allocation numbers exhaust heap space on hifive bare metal.
-// amount of computation on the malloced values
-#define TEST_LENGTH_COUNT 7500
-
-// number of times to run the sort test
-#define ITERATIONS 3
-
+#include "ripe_attack_generator.h"
 
 /*
- * Performance profiling test case, multiple calls to malloc / free
- *
+ * Hello world sanity test to check we can execute code i.e. main and 
+ *     call printf
  */
-int test_main(void){
-    int *ptr[MALLOC_COUNT];
-    int size = 1;
-    int index;
-
-    test_positive(); // identify test as positive (will complete)
-   
-    for(int i= 0; i < ITERATIONS;i++){
- 
-      t_printf("allocate\n");
-      for(int count = 0; count < MALLOC_COUNT; count++){
-        size = (count & 0x07) +1;
-        ptr[count] = malloc(size * sizeof(int));
-      } 
-      
-      t_printf("test\n");
-      for(int j = 0; j < TEST_LENGTH_COUNT;j++){
-        index = rand() % MALLOC_COUNT; // rand
-        ptr[index][0]++;
-      }
-      
-      
-      t_printf("free\n");
-      for(int count = 0; count < MALLOC_COUNT; count++){
-        free(ptr[count]);
-      }
-      
-    }
-
-    // code to force violations
-    /*
-    uintptr_t *ptrx = (uintptr_t*) main;
-    ptrx[0] = 0;
-
-    int foo = 42;
-    void (*foo_fn_ptr)()= NULL;
-    foo_fn_ptr = (void (*)()) &foo;
-    foo_fn_ptr();
-
-    ptr = malloc(8);
-    ptr[20] = 0;
-    */
-    test_pass();
-    return test_done();
-  }
-
+int test_main(void)
+{
+  test_negative(); // identify test as negative
+  test_begin();
+  ripe_main();
+  
+  test_pass();
+  return test_done();
+}

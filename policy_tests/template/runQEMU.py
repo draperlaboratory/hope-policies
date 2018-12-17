@@ -56,21 +56,22 @@ def launchQEMU(policies):
         while rc.poll() is None:
             time.sleep(1)
             try:
-                with open(uartLogFile, 'r') as f:
-                    for line in f.readlines():
-                        if terminateMSG in line or testDone:
-                            rc.terminate()
-                            testDone = True
-                            return
-                with open(statusLogFile, 'r') as f:
-                    for line in f.readlines():
-                        if terminateMSG in line or testDone:
-                            rc.terminate()
-                            testDone = True
-                            return
+                if terminateMSG in open(uartLogFile, 'r').read() or testDone:
+                    rc.terminate()
+                    testDone = True
+                    return
+                if terminateMSG in open(statusLogFile, 'r').read() or testDone:
+                    rc.terminate()
+                    testDone = True
+                    return
             except IOError:
                 #keep trying if fail to open uart log
                 pass
+            except UnicodeDecodeError:
+                # TODO: is this really what we want to do on this exception?
+                rc.terminate()
+                testDone = True
+                return;
         if rc.returncode != 0:
             raise Exception("exited with return code " + str(rc.returncode))
         testDone = True
