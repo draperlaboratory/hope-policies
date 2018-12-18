@@ -40,9 +40,10 @@ import:
     osv.heap
     osv.threeClass
     osv.none
+    osv.taint
     osv.testSimple
     osv.testComplex
-    
+
 policy:
     none = nonePol
     testSimple = testSimplePol
@@ -54,6 +55,8 @@ policy:
     stack = stackPol
     threeClass = threeClassPol
 
+    taint = taintPol
+
     cfi-heap = cfiPol & heapPol
     cfi-rwx = cfiPol & rwxPol
     cfi-stack = cfiPol & stackPol
@@ -62,11 +65,14 @@ policy:
     heap-rwx = heapPol & rwxPol
     heap-stack = heapPol & stackPol
     heap-threeClass = heapPol & threeClassPol
+    heap-taint = heapPol & taintPol
 
     rwx-stack =  rwxPol & stackPol
+    rwx-taint =  rwxPol & taintPol
     rwx-threeClass = threeClassPol & rwxPol
 
     stack-threeClass =  threeClassPol & stackPol
+    stack-taint = stackPol & taintPol
 
     cfi-heap-rwx = cfiPol & heapPol & rwxPol
     cfi-heap-stack = cfiPol & heapPol & stackPol
@@ -77,9 +83,13 @@ policy:
 
     heap-rwx-stack = heapPol & rwxPol & stackPol
     heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
+    heap-stack-taint = heapPol & stackPol & taintPol
     heap-stack-threeclass = heapPol & stackPol & threeClassPol
 
     rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
+    rwx-stack-taint =  taintPol & rwxPol & stackPol
+
+    stack-taint-threeClass threeClassPol & taintPol & stackPol
 
     cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
     cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
@@ -87,5 +97,6 @@ policy:
     cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
 
     heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
+    heap-rwx-stack-taint,threeClass = heapPol & rwxPol & stackPol & taintPol & threeClassPol
 
     cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
