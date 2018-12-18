@@ -26,9 +26,6 @@ def incompatible_reason(test, policy, sim):
 
 def xfail_reason(test, policy, sim):
 
-    if "threeClass" in policy and "coremark" in test:
-        return "threeClass and coremark; known unsolved bug"
-
     if "longjump" in test:
         return "longjump test known to be broken"
 
