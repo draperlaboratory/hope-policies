@@ -1,0 +1,105 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module webapp.main:
+
+/* All interesting compositions of our current micropolicies.
+ *
+ * TODO: It is worth considering whether we should eliminate the need for
+ * this file by allowing the policy tool to accept multiple policies at the
+ * command line.
+ */
+
+import:
+    osv.cfi
+    osv.rwx
+    osv.stack
+    osv.heap
+    osv.threeClass
+    osv.none
+    osv.taint
+    osv.testSimple
+    osv.testComplex
+    webapp.ppac
+
+policy:
+    ppac = webappPPACPol
+
+    none = nonePol
+    testSimple = testSimplePol
+    testComplex = testComplexPol
+
+    cfi =  cfiPol
+    heap = heapPol
+    rwx =  rwxPol
+    stack = stackPol
+    threeClass = threeClassPol
+
+    taint = taintPol
+
+    cfi-heap = cfiPol & heapPol
+    cfi-rwx = cfiPol & rwxPol
+    cfi-stack = cfiPol & stackPol
+    cfi-threeClass = cfiPol & threeClassPol
+
+    heap-rwx = heapPol & rwxPol
+    heap-stack = heapPol & stackPol
+    heap-threeClass = heapPol & threeClassPol
+    heap-taint = heapPol & taintPol
+
+    rwx-stack =  rwxPol & stackPol
+    rwx-taint =  rwxPol & taintPol
+    rwx-threeClass = threeClassPol & rwxPol
+
+    stack-threeClass =  threeClassPol & stackPol
+    stack-taint = stackPol & taintPol
+
+    cfi-heap-rwx = cfiPol & heapPol & rwxPol
+    cfi-heap-stack = cfiPol & heapPol & stackPol
+    cfi-heap-threeClass = cfiPol & heapPol & threeClassPol
+    cfi-rwx-stack =  cfiPol & rwxPol & stackPol
+    cfi-rwx-threeClass =  cfiPol & rwxPol & threeClassPol
+    cfi-stack-threeClass = cfiPol & stackPol & threeClassPol
+
+    heap-rwx-stack = heapPol & rwxPol & stackPol
+    heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
+    heap-stack-taint = heapPol & stackPol & taintPol
+    heap-stack-threeclass = heapPol & stackPol & threeClassPol
+
+    rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
+    rwx-stack-taint =  taintPol & rwxPol & stackPol
+
+    stack-taint-threeClass = threeClassPol & taintPol & stackPol
+
+    cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
+    cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
+    cfi-heap-stack-threeClass = cfiPol & heapPol & stackPol & threeClassPol
+    cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
+
+    heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
+    heap-rwx-stack-taint-threeClass = heapPol & rwxPol & stackPol & taintPol & threeClassPol
+
+    cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
