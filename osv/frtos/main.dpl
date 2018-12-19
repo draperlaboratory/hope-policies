@@ -89,7 +89,7 @@ policy:
     rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
     rwx-stack-taint =  taintPol & rwxPol & stackPol
 
-    stack-taint-threeClass threeClassPol & taintPol & stackPol
+    stack-taint-threeClass = threeClassPol & taintPol & stackPol
 
     cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
     cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
@@ -97,6 +97,6 @@ policy:
     cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
 
     heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
-    heap-rwx-stack-taint,threeClass = heapPol & rwxPol & stackPol & taintPol & threeClassPol
+    heap-rwx-stack-taint-threeClass = heapPol & rwxPol & stackPol & taintPol & threeClassPol
 
     cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
