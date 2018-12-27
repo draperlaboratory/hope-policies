@@ -44,7 +44,7 @@ metadata:
 policy:
     cfiPol =
          // Case for not checking cfi (asm code)
-      allGrp    (code == [+NoCFI], env == _ -> env = env)
+      allGrp    (code == [+NoCFI], env == _ -> env = {} )
          // cases for landing on a jump (bounce)
     ^ branchGrp (code == [Target], env == [Jumping] -> env = {Jumping})
     ^ jumpGrp   (code == [Target], env == [Jumping] -> env = {Jumping})
@@ -67,7 +67,10 @@ require:
     init ISA.RISCV.CSR.Default               {}
     init ISA.RISCV.CSR.MTVec                 {}
 
-    init dover.Tools.GCC.CFI_Target                    {Target}
+    init llvm.CFI_Call-Tgt 			       {Target}
+    init llvm.CFI_Branch-Tgt			       {Target}
+    init llvm.CFI_Return-Tgt			       {Target}
+
     init dover.Tools.GCC.NoCFI                         {NoCFI}
     
     init dover.Kernel.MemoryMap.Default       {}

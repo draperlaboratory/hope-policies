@@ -42,7 +42,6 @@ class frtos(AllTests):
                       if not any(test in s for s in
                                  ["timer_works_1.c",
                                   "coremark",
-                                  "cfi/jump_data_fails_1.c"
                                  ]
                                  )]
 
@@ -50,7 +49,6 @@ class hifive(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1.c",
-                                  "cfi/jump_data_fails_1.c",
                                   "dhrystone7000.c",
                                  ]
                                  )]
