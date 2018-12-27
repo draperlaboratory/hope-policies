@@ -30,7 +30,7 @@ renode_SIM = renode
 renode_TESTS = frtos
 renode_RUNTIME = frtos
 renode_MODULE = osv.frtos.main
-renode_POLICIES = cfi,heap,rwx,stack,none,testSimple
+renode_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 renode_XDIST=
 renode: CONFIG=renode
 renode: all
