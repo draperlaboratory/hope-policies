@@ -43,8 +43,12 @@ metadata:
 
 policy:
     cfiPol =
-         // Case for not checking cfi (asm code)
-      allGrp    (code == [+NoCFI], env == _ -> env = {} )
+
+    // special case: allow return to C from asm interrupt handling
+    mretGrp ( env == _ -> env = {} )
+
+     // Case for not checking cfi (asm code)
+    ^ allGrp    (code == [+NoCFI], env == _ -> env = env )
          // cases for landing on a jump (bounce)
     ^ branchGrp (code == [Target], env == [Jumping] -> env = {Jumping})
     ^ jumpGrp   (code == [Target], env == [Jumping] -> env = {Jumping})
