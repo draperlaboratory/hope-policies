@@ -1,91 +1,274 @@
-/*
- * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
- *
- * Use and disclosure subject to the following license. 
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 module osv.frtos.main:
-
-/* All interesting compositions of our current micropolicies.
- *
- * TODO: It is worth considering whether we should eliminate the need for
- * this file by allowing the policy tool to accept multiple policies at the
- * command line.
- */
-
 import:
-    osv.cfi
-    osv.rwx
-    osv.stack
-    osv.heap
-    osv.threeClass
-    osv.none
-    osv.testSimple
-    osv.testComplex
-    
+  osv.cfi
+  osv.rwx
+  osv.stack
+  osv.heap
+  osv.threeClass
+  osv.none
+  osv.testSimple
+  osv.testComplex
 policy:
-    none = nonePol
-    testSimple = testSimplePol
-    testComplex = testComplexPol
-
-    cfi =  cfiPol
-    heap = heapPol
-    rwx =  rwxPol
-    stack = stackPol
-    threeClass = threeClassPol
-
-    cfi-heap = cfiPol & heapPol
-    cfi-rwx = cfiPol & rwxPol
-    cfi-stack = cfiPol & stackPol
-    cfi-threeClass = cfiPol & threeClassPol
-
-    heap-rwx = heapPol & rwxPol
-    heap-stack = heapPol & stackPol
-    heap-threeClass = heapPol & threeClassPol
-
-    rwx-stack =  rwxPol & stackPol
-    rwx-threeClass = threeClassPol & rwxPol
-
-    stack-threeClass =  threeClassPol & stackPol
-
-    cfi-heap-rwx = cfiPol & heapPol & rwxPol
-    cfi-heap-stack = cfiPol & heapPol & stackPol
-    cfi-heap-threeClass = cfiPol & heapPol & threeClassPol
-    cfi-rwx-stack =  cfiPol & rwxPol & stackPol
-    cfi-rwx-threeClass =  cfiPol & rwxPol & threeClassPol
-    cfi-stack-threeClass = cfiPol & stackPol & threeClassPol
-
-    heap-rwx-stack = heapPol & rwxPol & stackPol
-    heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
-    heap-stack-threeclass = heapPol & stackPol & threeClassPol
-
-    rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
-
-    cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
-    cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
-    cfi-heap-stack-threeClass = cfiPol & heapPol & stackPol & threeClassPol
-    cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
-
-    heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
-
-    cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
+  cfi = cfiPol
+  rwx = rwxPol
+  stack = stackPol
+  heap = heapPol
+  threeClass = threeClassPol
+  none = nonePol
+  testSimple = testSimplePol
+  testComplex = testComplexPol
+  cfi = cfiPol
+  heap = heapPol
+  none = nonePol
+  rwx = rwxPol
+  stack = stackPol
+  testComplex = testComplexPol
+  testSimple = testSimplePol
+  threeClass = threeClassPol
+  cfi-heap = cfiPol & heapPol
+  cfi-none = cfiPol & nonePol
+  cfi-rwx = cfiPol & rwxPol
+  cfi-stack = cfiPol & stackPol
+  cfi-testComplex = cfiPol & testComplexPol
+  cfi-testSimple = cfiPol & testSimplePol
+  cfi-threeClass = cfiPol & threeClassPol
+  heap-none = heapPol & nonePol
+  heap-rwx = heapPol & rwxPol
+  heap-stack = heapPol & stackPol
+  heap-testComplex = heapPol & testComplexPol
+  heap-testSimple = heapPol & testSimplePol
+  heap-threeClass = heapPol & threeClassPol
+  none-rwx = nonePol & rwxPol
+  none-stack = nonePol & stackPol
+  none-testComplex = nonePol & testComplexPol
+  none-testSimple = nonePol & testSimplePol
+  none-threeClass = nonePol & threeClassPol
+  rwx-stack = rwxPol & stackPol
+  rwx-testComplex = rwxPol & testComplexPol
+  rwx-testSimple = rwxPol & testSimplePol
+  rwx-threeClass = rwxPol & threeClassPol
+  stack-testComplex = stackPol & testComplexPol
+  stack-testSimple = stackPol & testSimplePol
+  stack-threeClass = stackPol & threeClassPol
+  testComplex-testSimple = testComplexPol & testSimplePol
+  testComplex-threeClass = testComplexPol & threeClassPol
+  testSimple-threeClass = testSimplePol & threeClassPol
+  cfi-heap-none = cfiPol & heapPol & nonePol
+  cfi-heap-rwx = cfiPol & heapPol & rwxPol
+  cfi-heap-stack = cfiPol & heapPol & stackPol
+  cfi-heap-testComplex = cfiPol & heapPol & testComplexPol
+  cfi-heap-testSimple = cfiPol & heapPol & testSimplePol
+  cfi-heap-threeClass = cfiPol & heapPol & threeClassPol
+  cfi-none-rwx = cfiPol & nonePol & rwxPol
+  cfi-none-stack = cfiPol & nonePol & stackPol
+  cfi-none-testComplex = cfiPol & nonePol & testComplexPol
+  cfi-none-testSimple = cfiPol & nonePol & testSimplePol
+  cfi-none-threeClass = cfiPol & nonePol & threeClassPol
+  cfi-rwx-stack = cfiPol & rwxPol & stackPol
+  cfi-rwx-testComplex = cfiPol & rwxPol & testComplexPol
+  cfi-rwx-testSimple = cfiPol & rwxPol & testSimplePol
+  cfi-rwx-threeClass = cfiPol & rwxPol & threeClassPol
+  cfi-stack-testComplex = cfiPol & stackPol & testComplexPol
+  cfi-stack-testSimple = cfiPol & stackPol & testSimplePol
+  cfi-stack-threeClass = cfiPol & stackPol & threeClassPol
+  cfi-testComplex-testSimple = cfiPol & testComplexPol & testSimplePol
+  cfi-testComplex-threeClass = cfiPol & testComplexPol & threeClassPol
+  cfi-testSimple-threeClass = cfiPol & testSimplePol & threeClassPol
+  heap-none-rwx = heapPol & nonePol & rwxPol
+  heap-none-stack = heapPol & nonePol & stackPol
+  heap-none-testComplex = heapPol & nonePol & testComplexPol
+  heap-none-testSimple = heapPol & nonePol & testSimplePol
+  heap-none-threeClass = heapPol & nonePol & threeClassPol
+  heap-rwx-stack = heapPol & rwxPol & stackPol
+  heap-rwx-testComplex = heapPol & rwxPol & testComplexPol
+  heap-rwx-testSimple = heapPol & rwxPol & testSimplePol
+  heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
+  heap-stack-testComplex = heapPol & stackPol & testComplexPol
+  heap-stack-testSimple = heapPol & stackPol & testSimplePol
+  heap-stack-threeClass = heapPol & stackPol & threeClassPol
+  heap-testComplex-testSimple = heapPol & testComplexPol & testSimplePol
+  heap-testComplex-threeClass = heapPol & testComplexPol & threeClassPol
+  heap-testSimple-threeClass = heapPol & testSimplePol & threeClassPol
+  none-rwx-stack = nonePol & rwxPol & stackPol
+  none-rwx-testComplex = nonePol & rwxPol & testComplexPol
+  none-rwx-testSimple = nonePol & rwxPol & testSimplePol
+  none-rwx-threeClass = nonePol & rwxPol & threeClassPol
+  none-stack-testComplex = nonePol & stackPol & testComplexPol
+  none-stack-testSimple = nonePol & stackPol & testSimplePol
+  none-stack-threeClass = nonePol & stackPol & threeClassPol
+  none-testComplex-testSimple = nonePol & testComplexPol & testSimplePol
+  none-testComplex-threeClass = nonePol & testComplexPol & threeClassPol
+  none-testSimple-threeClass = nonePol & testSimplePol & threeClassPol
+  rwx-stack-testComplex = rwxPol & stackPol & testComplexPol
+  rwx-stack-testSimple = rwxPol & stackPol & testSimplePol
+  rwx-stack-threeClass = rwxPol & stackPol & threeClassPol
+  rwx-testComplex-testSimple = rwxPol & testComplexPol & testSimplePol
+  rwx-testComplex-threeClass = rwxPol & testComplexPol & threeClassPol
+  rwx-testSimple-threeClass = rwxPol & testSimplePol & threeClassPol
+  stack-testComplex-testSimple = stackPol & testComplexPol & testSimplePol
+  stack-testComplex-threeClass = stackPol & testComplexPol & threeClassPol
+  stack-testSimple-threeClass = stackPol & testSimplePol & threeClassPol
+  testComplex-testSimple-threeClass = testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx = cfiPol & heapPol & nonePol & rwxPol
+  cfi-heap-none-stack = cfiPol & heapPol & nonePol & stackPol
+  cfi-heap-none-testComplex = cfiPol & heapPol & nonePol & testComplexPol
+  cfi-heap-none-testSimple = cfiPol & heapPol & nonePol & testSimplePol
+  cfi-heap-none-threeClass = cfiPol & heapPol & nonePol & threeClassPol
+  cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
+  cfi-heap-rwx-testComplex = cfiPol & heapPol & rwxPol & testComplexPol
+  cfi-heap-rwx-testSimple = cfiPol & heapPol & rwxPol & testSimplePol
+  cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
+  cfi-heap-stack-testComplex = cfiPol & heapPol & stackPol & testComplexPol
+  cfi-heap-stack-testSimple = cfiPol & heapPol & stackPol & testSimplePol
+  cfi-heap-stack-threeClass = cfiPol & heapPol & stackPol & threeClassPol
+  cfi-heap-testComplex-testSimple = cfiPol & heapPol & testComplexPol & testSimplePol
+  cfi-heap-testComplex-threeClass = cfiPol & heapPol & testComplexPol & threeClassPol
+  cfi-heap-testSimple-threeClass = cfiPol & heapPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack = cfiPol & nonePol & rwxPol & stackPol
+  cfi-none-rwx-testComplex = cfiPol & nonePol & rwxPol & testComplexPol
+  cfi-none-rwx-testSimple = cfiPol & nonePol & rwxPol & testSimplePol
+  cfi-none-rwx-threeClass = cfiPol & nonePol & rwxPol & threeClassPol
+  cfi-none-stack-testComplex = cfiPol & nonePol & stackPol & testComplexPol
+  cfi-none-stack-testSimple = cfiPol & nonePol & stackPol & testSimplePol
+  cfi-none-stack-threeClass = cfiPol & nonePol & stackPol & threeClassPol
+  cfi-none-testComplex-testSimple = cfiPol & nonePol & testComplexPol & testSimplePol
+  cfi-none-testComplex-threeClass = cfiPol & nonePol & testComplexPol & threeClassPol
+  cfi-none-testSimple-threeClass = cfiPol & nonePol & testSimplePol & threeClassPol
+  cfi-rwx-stack-testComplex = cfiPol & rwxPol & stackPol & testComplexPol
+  cfi-rwx-stack-testSimple = cfiPol & rwxPol & stackPol & testSimplePol
+  cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
+  cfi-rwx-testComplex-testSimple = cfiPol & rwxPol & testComplexPol & testSimplePol
+  cfi-rwx-testComplex-threeClass = cfiPol & rwxPol & testComplexPol & threeClassPol
+  cfi-rwx-testSimple-threeClass = cfiPol & rwxPol & testSimplePol & threeClassPol
+  cfi-stack-testComplex-testSimple = cfiPol & stackPol & testComplexPol & testSimplePol
+  cfi-stack-testComplex-threeClass = cfiPol & stackPol & testComplexPol & threeClassPol
+  cfi-stack-testSimple-threeClass = cfiPol & stackPol & testSimplePol & threeClassPol
+  cfi-testComplex-testSimple-threeClass = cfiPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack = heapPol & nonePol & rwxPol & stackPol
+  heap-none-rwx-testComplex = heapPol & nonePol & rwxPol & testComplexPol
+  heap-none-rwx-testSimple = heapPol & nonePol & rwxPol & testSimplePol
+  heap-none-rwx-threeClass = heapPol & nonePol & rwxPol & threeClassPol
+  heap-none-stack-testComplex = heapPol & nonePol & stackPol & testComplexPol
+  heap-none-stack-testSimple = heapPol & nonePol & stackPol & testSimplePol
+  heap-none-stack-threeClass = heapPol & nonePol & stackPol & threeClassPol
+  heap-none-testComplex-testSimple = heapPol & nonePol & testComplexPol & testSimplePol
+  heap-none-testComplex-threeClass = heapPol & nonePol & testComplexPol & threeClassPol
+  heap-none-testSimple-threeClass = heapPol & nonePol & testSimplePol & threeClassPol
+  heap-rwx-stack-testComplex = heapPol & rwxPol & stackPol & testComplexPol
+  heap-rwx-stack-testSimple = heapPol & rwxPol & stackPol & testSimplePol
+  heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
+  heap-rwx-testComplex-testSimple = heapPol & rwxPol & testComplexPol & testSimplePol
+  heap-rwx-testComplex-threeClass = heapPol & rwxPol & testComplexPol & threeClassPol
+  heap-rwx-testSimple-threeClass = heapPol & rwxPol & testSimplePol & threeClassPol
+  heap-stack-testComplex-testSimple = heapPol & stackPol & testComplexPol & testSimplePol
+  heap-stack-testComplex-threeClass = heapPol & stackPol & testComplexPol & threeClassPol
+  heap-stack-testSimple-threeClass = heapPol & stackPol & testSimplePol & threeClassPol
+  heap-testComplex-testSimple-threeClass = heapPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-testComplex = nonePol & rwxPol & stackPol & testComplexPol
+  none-rwx-stack-testSimple = nonePol & rwxPol & stackPol & testSimplePol
+  none-rwx-stack-threeClass = nonePol & rwxPol & stackPol & threeClassPol
+  none-rwx-testComplex-testSimple = nonePol & rwxPol & testComplexPol & testSimplePol
+  none-rwx-testComplex-threeClass = nonePol & rwxPol & testComplexPol & threeClassPol
+  none-rwx-testSimple-threeClass = nonePol & rwxPol & testSimplePol & threeClassPol
+  none-stack-testComplex-testSimple = nonePol & stackPol & testComplexPol & testSimplePol
+  none-stack-testComplex-threeClass = nonePol & stackPol & testComplexPol & threeClassPol
+  none-stack-testSimple-threeClass = nonePol & stackPol & testSimplePol & threeClassPol
+  none-testComplex-testSimple-threeClass = nonePol & testComplexPol & testSimplePol & threeClassPol
+  rwx-stack-testComplex-testSimple = rwxPol & stackPol & testComplexPol & testSimplePol
+  rwx-stack-testComplex-threeClass = rwxPol & stackPol & testComplexPol & threeClassPol
+  rwx-stack-testSimple-threeClass = rwxPol & stackPol & testSimplePol & threeClassPol
+  rwx-testComplex-testSimple-threeClass = rwxPol & testComplexPol & testSimplePol & threeClassPol
+  stack-testComplex-testSimple-threeClass = stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack = cfiPol & heapPol & nonePol & rwxPol & stackPol
+  cfi-heap-none-rwx-testComplex = cfiPol & heapPol & nonePol & rwxPol & testComplexPol
+  cfi-heap-none-rwx-testSimple = cfiPol & heapPol & nonePol & rwxPol & testSimplePol
+  cfi-heap-none-rwx-threeClass = cfiPol & heapPol & nonePol & rwxPol & threeClassPol
+  cfi-heap-none-stack-testComplex = cfiPol & heapPol & nonePol & stackPol & testComplexPol
+  cfi-heap-none-stack-testSimple = cfiPol & heapPol & nonePol & stackPol & testSimplePol
+  cfi-heap-none-stack-threeClass = cfiPol & heapPol & nonePol & stackPol & threeClassPol
+  cfi-heap-none-testComplex-testSimple = cfiPol & heapPol & nonePol & testComplexPol & testSimplePol
+  cfi-heap-none-testComplex-threeClass = cfiPol & heapPol & nonePol & testComplexPol & threeClassPol
+  cfi-heap-none-testSimple-threeClass = cfiPol & heapPol & nonePol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-testComplex = cfiPol & heapPol & rwxPol & stackPol & testComplexPol
+  cfi-heap-rwx-stack-testSimple = cfiPol & heapPol & rwxPol & stackPol & testSimplePol
+  cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
+  cfi-heap-rwx-testComplex-testSimple = cfiPol & heapPol & rwxPol & testComplexPol & testSimplePol
+  cfi-heap-rwx-testComplex-threeClass = cfiPol & heapPol & rwxPol & testComplexPol & threeClassPol
+  cfi-heap-rwx-testSimple-threeClass = cfiPol & heapPol & rwxPol & testSimplePol & threeClassPol
+  cfi-heap-stack-testComplex-testSimple = cfiPol & heapPol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-stack-testComplex-threeClass = cfiPol & heapPol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-stack-testSimple-threeClass = cfiPol & heapPol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-testComplex-testSimple-threeClass = cfiPol & heapPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-testComplex = cfiPol & nonePol & rwxPol & stackPol & testComplexPol
+  cfi-none-rwx-stack-testSimple = cfiPol & nonePol & rwxPol & stackPol & testSimplePol
+  cfi-none-rwx-stack-threeClass = cfiPol & nonePol & rwxPol & stackPol & threeClassPol
+  cfi-none-rwx-testComplex-testSimple = cfiPol & nonePol & rwxPol & testComplexPol & testSimplePol
+  cfi-none-rwx-testComplex-threeClass = cfiPol & nonePol & rwxPol & testComplexPol & threeClassPol
+  cfi-none-rwx-testSimple-threeClass = cfiPol & nonePol & rwxPol & testSimplePol & threeClassPol
+  cfi-none-stack-testComplex-testSimple = cfiPol & nonePol & stackPol & testComplexPol & testSimplePol
+  cfi-none-stack-testComplex-threeClass = cfiPol & nonePol & stackPol & testComplexPol & threeClassPol
+  cfi-none-stack-testSimple-threeClass = cfiPol & nonePol & stackPol & testSimplePol & threeClassPol
+  cfi-none-testComplex-testSimple-threeClass = cfiPol & nonePol & testComplexPol & testSimplePol & threeClassPol
+  cfi-rwx-stack-testComplex-testSimple = cfiPol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-rwx-stack-testComplex-threeClass = cfiPol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-rwx-stack-testSimple-threeClass = cfiPol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-rwx-testComplex-testSimple-threeClass = cfiPol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-stack-testComplex-testSimple-threeClass = cfiPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-testComplex = heapPol & nonePol & rwxPol & stackPol & testComplexPol
+  heap-none-rwx-stack-testSimple = heapPol & nonePol & rwxPol & stackPol & testSimplePol
+  heap-none-rwx-stack-threeClass = heapPol & nonePol & rwxPol & stackPol & threeClassPol
+  heap-none-rwx-testComplex-testSimple = heapPol & nonePol & rwxPol & testComplexPol & testSimplePol
+  heap-none-rwx-testComplex-threeClass = heapPol & nonePol & rwxPol & testComplexPol & threeClassPol
+  heap-none-rwx-testSimple-threeClass = heapPol & nonePol & rwxPol & testSimplePol & threeClassPol
+  heap-none-stack-testComplex-testSimple = heapPol & nonePol & stackPol & testComplexPol & testSimplePol
+  heap-none-stack-testComplex-threeClass = heapPol & nonePol & stackPol & testComplexPol & threeClassPol
+  heap-none-stack-testSimple-threeClass = heapPol & nonePol & stackPol & testSimplePol & threeClassPol
+  heap-none-testComplex-testSimple-threeClass = heapPol & nonePol & testComplexPol & testSimplePol & threeClassPol
+  heap-rwx-stack-testComplex-testSimple = heapPol & rwxPol & stackPol & testComplexPol & testSimplePol
+  heap-rwx-stack-testComplex-threeClass = heapPol & rwxPol & stackPol & testComplexPol & threeClassPol
+  heap-rwx-stack-testSimple-threeClass = heapPol & rwxPol & stackPol & testSimplePol & threeClassPol
+  heap-rwx-testComplex-testSimple-threeClass = heapPol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  heap-stack-testComplex-testSimple-threeClass = heapPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-testComplex-testSimple = nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  none-rwx-stack-testComplex-threeClass = nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  none-rwx-stack-testSimple-threeClass = nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  none-rwx-testComplex-testSimple-threeClass = nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  none-stack-testComplex-testSimple-threeClass = nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  rwx-stack-testComplex-testSimple-threeClass = rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-testComplex = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol
+  cfi-heap-none-rwx-stack-testSimple = cfiPol & heapPol & nonePol & rwxPol & stackPol & testSimplePol
+  cfi-heap-none-rwx-stack-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & threeClassPol
+  cfi-heap-none-rwx-testComplex-testSimple = cfiPol & heapPol & nonePol & rwxPol & testComplexPol & testSimplePol
+  cfi-heap-none-rwx-testComplex-threeClass = cfiPol & heapPol & nonePol & rwxPol & testComplexPol & threeClassPol
+  cfi-heap-none-rwx-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & testSimplePol & threeClassPol
+  cfi-heap-none-stack-testComplex-testSimple = cfiPol & heapPol & nonePol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-none-stack-testComplex-threeClass = cfiPol & heapPol & nonePol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-none-stack-testSimple-threeClass = cfiPol & heapPol & nonePol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-none-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-testComplex-testSimple = cfiPol & heapPol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-rwx-stack-testComplex-threeClass = cfiPol & heapPol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-rwx-stack-testSimple-threeClass = cfiPol & heapPol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-testComplex-testSimple-threeClass = cfiPol & heapPol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-testComplex-testSimple = cfiPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-none-rwx-stack-testComplex-threeClass = cfiPol & nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-none-rwx-stack-testSimple-threeClass = cfiPol & nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-none-rwx-testComplex-testSimple-threeClass = cfiPol & nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-stack-testComplex-testSimple-threeClass = cfiPol & nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-rwx-stack-testComplex-testSimple-threeClass = cfiPol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-testComplex-testSimple = heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  heap-none-rwx-stack-testComplex-threeClass = heapPol & nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  heap-none-rwx-stack-testSimple-threeClass = heapPol & nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  heap-none-rwx-testComplex-testSimple-threeClass = heapPol & nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-stack-testComplex-testSimple-threeClass = heapPol & nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-rwx-stack-testComplex-testSimple-threeClass = heapPol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-testComplex-testSimple-threeClass = nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-testComplex-testSimple = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-none-rwx-stack-testComplex-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-none-rwx-stack-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-testComplex-testSimple-threeClass = cfiPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-testComplex-testSimple-threeClass = heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol

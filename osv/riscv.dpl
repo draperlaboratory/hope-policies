@@ -209,6 +209,9 @@ group:
         csrrsi
         csrrci
 
+    mretGrp ( -> )
+    	mret
+
     privGrp( -> )
         ecall
         ebreak
