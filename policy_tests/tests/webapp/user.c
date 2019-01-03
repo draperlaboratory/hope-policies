@@ -10,6 +10,12 @@
   
 //}
 
+void __attribute__ ((noinline))                  
+UserSetType(user_t *user, user_type_t type)
+{                                          
+  user->type = type;                       
+}     
+
 user_t *UserCreate(char *username, char *password, 
                    char *first_name, char *last_name,
                    char *address)
@@ -34,7 +40,7 @@ user_t *UserCreate(char *username, char *password,
   user->patient = NULL;
   user->doctor = NULL;
   user->administrator = NULL;
-  
+
   return user;
 }
 
@@ -62,7 +68,8 @@ void UserDestroy(user_t *user)
 bool
 UserSetPatient(user_t *user)
 {
-  user->type = USER_PATIENT;
+
+  UserSetType(user, USER_PATIENT);
   user->patient = malloc(sizeof(patient_t));
   if(user->patient == NULL) {
     return false;
@@ -75,7 +82,7 @@ UserSetPatient(user_t *user)
 bool
 UserSetDoctor(user_t *user)
 {
-  user->type = USER_DOCTOR;
+  UserSetType(user->type, USER_DOCTOR);
   user->doctor = malloc(sizeof(doctor_t));
   if(user->doctor == NULL) {
     return false;
@@ -88,7 +95,7 @@ UserSetDoctor(user_t *user)
 bool
 UserSetAdministrator(user_t *user)
 {
-  user->type = USER_ADMINISTRATOR;
+  UserSetType(user->type, USER_ADMINISTRATOR);
   user->administrator = malloc(sizeof(administrator_t));
   if(user->administrator == NULL) {
     return false;

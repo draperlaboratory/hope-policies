@@ -45,8 +45,11 @@ import:
     osv.testSimple
     osv.testComplex
     osv.ppac
+    osv.usr_type
 
 policy:
+
+    usr_type = usrTypePol
 
     heap-ppac = ppacPol & heapPol
 
