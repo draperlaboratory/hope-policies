@@ -44,8 +44,13 @@ import:
     osv.taint
     osv.testSimple
     osv.testComplex
+    osv.ppac
 
 policy:
+
+    heap-ppac = ppacPol & heapPol
+
+    ppac = ppacPol
     none = nonePol
     testSimple = testSimplePol
     testComplex = testComplexPol

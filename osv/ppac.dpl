@@ -24,7 +24,7 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-module webapp.ppac:
+module osv.ppac:
 
 /*
  * The Simple Test policy provides very little security in a simple way.
@@ -40,13 +40,31 @@ module webapp.ppac:
 
 import:
       osv.riscv
+      osv.heap
 
 metadata:
         Nothing
+	User UserID
+	UserP UserID
+	UserCreate
+
+type:
+  data UserID = Int
 
 policy:
         // a policy that allows anything and contributes no results
-    webappPPACPol = branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+    ppacPol =
+
+            allGrp( code == [+UserCreate] -> env = {UserCreate} )
+	    ^ retGrp ( code == [+UserCreate] -> env = {} )
+
+    	    // Malloc hooks: TODO: make better interface?
+            ^ storeGrp( code == [ApplyColor], mem == [RawHeap], addr == [+(UserP id)], val == [ModColor], env == [UserCreate]
+	                -> mem = {(Cell id)}, env = env )
+       	    ^ storeGrp( code == [ApplyColor], mem == [+NewColor], env == [UserCreate]
+             	        -> mem = mem[(UserP new)], env = env )
+
+    	    ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
             ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
             ^ jumpGrp(code == _, env == _ -> return = {})
             ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
@@ -82,3 +100,5 @@ require:
     init Tools.Elf.Section.SHF_ALLOC         {Nothing}
     init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
     init Tools.Elf.Section.SHF_WRITE         {Nothing}
+
+    init osv.hifive.ppac.user_create         {UserCreate}

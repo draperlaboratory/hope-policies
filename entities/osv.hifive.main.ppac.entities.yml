@@ -1,0 +1,6 @@
+-
+    name: osv.hifive.ppac.user_create
+    elf_name: UserCreate
+    kind: symbol
+    tag_all: true
+    optional: true
