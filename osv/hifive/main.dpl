@@ -1,143 +1,532 @@
-/*
- * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
- *
- * Use and disclosure subject to the following license. 
- *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
- * 
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- * 
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
-
 module osv.hifive.main:
-
-/* All interesting compositions of our current micropolicies.
- *
- * TODO: It is worth considering whether we should eliminate the need for
- * this file by allowing the policy tool to accept multiple policies at the
- * command line.
- */
-
 import:
-    osv.cfi
-    osv.rwx
-    osv.stack
-    osv.heap
-    osv.threeClass
-    osv.cpi
-    osv.none
-    osv.taint
-    osv.testSimple
-    osv.testComplex
-
+  osv.cfi
+  osv.rwx
+  osv.stack
+  osv.taint
+  osv.heap
+  osv.threeClass
+  osv.none
+  osv.testSimple
+  osv.testComplex
 policy:
-    none = nonePol
-    testSimple = testSimplePol
-    testComplex = testComplexPol
-
-    cfi =  cfiPol
-    cpi = cpiPol
-    heap = heapPol
-    rwx =  rwxPol
-    stack = stackPol
-    threeClass = threeClassPol
-
-    taint = taintPol
-
-    cfi-cpi = cfiPol & cpiPol
-    cfi-heap = cfiPol & heapPol
-    cfi-rwx = cfiPol & rwxPol
-    cfi-stack = cfiPol & stackPol
-    cfi-threeClass = cfiPol & threeClassPol
-
-    cpi-heap = cpiPol & heapPol
-    cpi-rwx = cpiPol & rwxPol
-    cpi-stack = cpiPol & stackPol
-    cpi-threeClass = cpiPol & threeClassPol
-    
-    heap-rwx = heapPol & rwxPol
-    heap-stack = heapPol & stackPol
-    heap-taint = heapPol & taintPol
-    heap-threeClass = heapPol & threeClassPol
-
-    rwx-stack =  rwxPol & stackPol
-    rwx-taint = threeClassPol & taintPol
-    rwx-threeClass = threeClassPol & rwxPol
-
-    stack-taint =  taintPol & stackPol
-    stack-threeClass =  threeClassPol & stackPol
-
-    taint-threeClass = taintPol & threeClassPol
-
-    cfi-cpi-heap = cfiPol & cpiPol & heapPol
-    cfi-cpi-rwx = cfiPol & cpiPol & rwxPol
-    cfi-cpi-stack = cfiPol & cpiPol & stackPol
-    cfi-cpi-threeClass = cfiPol & cpiPol & threeClassPol
-    cfi-heap-rwx = cfiPol & heapPol & rwxPol
-    cfi-heap-stack = cfiPol & heapPol & stackPol
-    cfi-heap-threeClass = cfiPol & heapPol & threeClassPol
-    cfi-rwx-stack =  cfiPol & rwxPol & stackPol
-    cfi-rwx-threeClass =  cfiPol & rwxPol & threeClassPol
-    cfi-stack-threeClass = cfiPol & stackPol & threeClassPol
-
-    cpi-heap-rwx = cpiPol & heapPol & rwxPol
-    cpi-heap-stack = cpiPol & heapPol & stackPol
-    cpi-heap-threeClass = cpiPol & heapPol & threeClassPol
-    cpi-rwx-stack =  cpiPol & rwxPol & stackPol
-    cpi-rwx-threeClass =  cpiPol & rwxPol & threeClassPol
-    cpi-stack-threeClass = cpiPol & stackPol & threeClassPol
-
-    heap-rwx-stack = heapPol & rwxPol & stackPol
-    heap-rwx-taint = heapPol & rwxPol & taintPol
-    heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
-    heap-stack-taint = heapPol & stackPol & taintPol
-    heap-stack-threeclass = heapPol & stackPol & threeClassPol
-
-    rwx-stack-taint =  taintPol & rwxPol & stackPol
-    rwx-stack-threeClass =  threeClassPol & rwxPol & stackPol
-
-    cfi-cpi-heap-rwx = cfiPol & cpiPol & heapPol & rwxPol
-    cfi-cpi-heap-stack = cfiPol & cpiPol & heapPol & stackPol
-    cfi-cpi-heap-threeClass = cfiPol & cpiPol & heapPol & threeClassPol
-    cfi-cpi-rwx-stack = cfiPol & cpiPol & rwxPol & stackPol
-    cfi-cpi-rwx-threeClass = cfiPol & cpiPol & rwxPol & threeClassPol
-    cfi-cpi-stack-threeClass = cfiPol & cpiPol & stackPol & threeClassPol
-    cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
-    cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
-    cfi-heap-stack-threeClass = cfiPol & heapPol & stackPol & threeClassPol
-    cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
-
-    cpi-heap-rwx-stack = cpiPol & heapPol & rwxPol & stackPol
-    cpi-heap-rwx-threeClass = cpiPol & heapPol & rwxPol & threeClassPol
-    cpi-heap-stack-threeClass = cpiPol & heapPol & stackPol & threeClassPol
-    cpi-rwx-stack-threeClass = cpiPol & rwxPol & stackPol & threeClassPol
-
-    heap-rwx-stack-taint = heapPol & rwxPol & stackPol & taintPol
-    heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
-
-    heap-rwx-stack-taint-threeClass = heapPol & rwxPol & stackPol & threeClassPol & taintPol
-
-    cfi-cpi-heap-rwx-stack = cfiPol & cpiPol & heapPol & rwxPol & stackPol
-    cfi-cpi-heap-rwx-threeClass = cfiPol & cpiPol & heapPol & rwxPol & threeClassPol
-    cfi-cpi-heap-stack-threeclass = cfiPol & cpiPol & heapPol & stackPol & threeClassPol
-    cfi-cpi-rwx-stack-threeClass = cfiPol & cpiPol & threeClassPol & rwxPol & stackPol
-    cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
-
-    cpi-heap-rwx-stack-threeClass = cpiPol & heapPol & rwxPol & stackPol & threeClassPol
-
-    cfi-cpi-heap-rwx-stack-threeClass = cfiPol & cpiPol & heapPol & rwxPol & stackPol & threeClassPol
+  cfi = cfiPol
+  rwx = rwxPol
+  stack = stackPol
+  taint = taintPol
+  heap = heapPol
+  threeClass = threeClassPol
+  none = nonePol
+  testSimple = testSimplePol
+  testComplex = testComplexPol
+  cfi = cfiPol
+  heap = heapPol
+  none = nonePol
+  rwx = rwxPol
+  stack = stackPol
+  taint = taintPol
+  testComplex = testComplexPol
+  testSimple = testSimplePol
+  threeClass = threeClassPol
+  cfi-heap = cfiPol & heapPol
+  cfi-none = cfiPol & nonePol
+  cfi-rwx = cfiPol & rwxPol
+  cfi-stack = cfiPol & stackPol
+  cfi-taint = cfiPol & taintPol
+  cfi-testComplex = cfiPol & testComplexPol
+  cfi-testSimple = cfiPol & testSimplePol
+  cfi-threeClass = cfiPol & threeClassPol
+  heap-none = heapPol & nonePol
+  heap-rwx = heapPol & rwxPol
+  heap-stack = heapPol & stackPol
+  heap-taint = heapPol & taintPol
+  heap-testComplex = heapPol & testComplexPol
+  heap-testSimple = heapPol & testSimplePol
+  heap-threeClass = heapPol & threeClassPol
+  none-rwx = nonePol & rwxPol
+  none-stack = nonePol & stackPol
+  none-taint = nonePol & taintPol
+  none-testComplex = nonePol & testComplexPol
+  none-testSimple = nonePol & testSimplePol
+  none-threeClass = nonePol & threeClassPol
+  rwx-stack = rwxPol & stackPol
+  rwx-taint = rwxPol & taintPol
+  rwx-testComplex = rwxPol & testComplexPol
+  rwx-testSimple = rwxPol & testSimplePol
+  rwx-threeClass = rwxPol & threeClassPol
+  stack-taint = stackPol & taintPol
+  stack-testComplex = stackPol & testComplexPol
+  stack-testSimple = stackPol & testSimplePol
+  stack-threeClass = stackPol & threeClassPol
+  taint-testComplex = taintPol & testComplexPol
+  taint-testSimple = taintPol & testSimplePol
+  taint-threeClass = taintPol & threeClassPol
+  testComplex-testSimple = testComplexPol & testSimplePol
+  testComplex-threeClass = testComplexPol & threeClassPol
+  testSimple-threeClass = testSimplePol & threeClassPol
+  cfi-heap-none = cfiPol & heapPol & nonePol
+  cfi-heap-rwx = cfiPol & heapPol & rwxPol
+  cfi-heap-stack = cfiPol & heapPol & stackPol
+  cfi-heap-taint = cfiPol & heapPol & taintPol
+  cfi-heap-testComplex = cfiPol & heapPol & testComplexPol
+  cfi-heap-testSimple = cfiPol & heapPol & testSimplePol
+  cfi-heap-threeClass = cfiPol & heapPol & threeClassPol
+  cfi-none-rwx = cfiPol & nonePol & rwxPol
+  cfi-none-stack = cfiPol & nonePol & stackPol
+  cfi-none-taint = cfiPol & nonePol & taintPol
+  cfi-none-testComplex = cfiPol & nonePol & testComplexPol
+  cfi-none-testSimple = cfiPol & nonePol & testSimplePol
+  cfi-none-threeClass = cfiPol & nonePol & threeClassPol
+  cfi-rwx-stack = cfiPol & rwxPol & stackPol
+  cfi-rwx-taint = cfiPol & rwxPol & taintPol
+  cfi-rwx-testComplex = cfiPol & rwxPol & testComplexPol
+  cfi-rwx-testSimple = cfiPol & rwxPol & testSimplePol
+  cfi-rwx-threeClass = cfiPol & rwxPol & threeClassPol
+  cfi-stack-taint = cfiPol & stackPol & taintPol
+  cfi-stack-testComplex = cfiPol & stackPol & testComplexPol
+  cfi-stack-testSimple = cfiPol & stackPol & testSimplePol
+  cfi-stack-threeClass = cfiPol & stackPol & threeClassPol
+  cfi-taint-testComplex = cfiPol & taintPol & testComplexPol
+  cfi-taint-testSimple = cfiPol & taintPol & testSimplePol
+  cfi-taint-threeClass = cfiPol & taintPol & threeClassPol
+  cfi-testComplex-testSimple = cfiPol & testComplexPol & testSimplePol
+  cfi-testComplex-threeClass = cfiPol & testComplexPol & threeClassPol
+  cfi-testSimple-threeClass = cfiPol & testSimplePol & threeClassPol
+  heap-none-rwx = heapPol & nonePol & rwxPol
+  heap-none-stack = heapPol & nonePol & stackPol
+  heap-none-taint = heapPol & nonePol & taintPol
+  heap-none-testComplex = heapPol & nonePol & testComplexPol
+  heap-none-testSimple = heapPol & nonePol & testSimplePol
+  heap-none-threeClass = heapPol & nonePol & threeClassPol
+  heap-rwx-stack = heapPol & rwxPol & stackPol
+  heap-rwx-taint = heapPol & rwxPol & taintPol
+  heap-rwx-testComplex = heapPol & rwxPol & testComplexPol
+  heap-rwx-testSimple = heapPol & rwxPol & testSimplePol
+  heap-rwx-threeClass = heapPol & rwxPol & threeClassPol
+  heap-stack-taint = heapPol & stackPol & taintPol
+  heap-stack-testComplex = heapPol & stackPol & testComplexPol
+  heap-stack-testSimple = heapPol & stackPol & testSimplePol
+  heap-stack-threeClass = heapPol & stackPol & threeClassPol
+  heap-taint-testComplex = heapPol & taintPol & testComplexPol
+  heap-taint-testSimple = heapPol & taintPol & testSimplePol
+  heap-taint-threeClass = heapPol & taintPol & threeClassPol
+  heap-testComplex-testSimple = heapPol & testComplexPol & testSimplePol
+  heap-testComplex-threeClass = heapPol & testComplexPol & threeClassPol
+  heap-testSimple-threeClass = heapPol & testSimplePol & threeClassPol
+  none-rwx-stack = nonePol & rwxPol & stackPol
+  none-rwx-taint = nonePol & rwxPol & taintPol
+  none-rwx-testComplex = nonePol & rwxPol & testComplexPol
+  none-rwx-testSimple = nonePol & rwxPol & testSimplePol
+  none-rwx-threeClass = nonePol & rwxPol & threeClassPol
+  none-stack-taint = nonePol & stackPol & taintPol
+  none-stack-testComplex = nonePol & stackPol & testComplexPol
+  none-stack-testSimple = nonePol & stackPol & testSimplePol
+  none-stack-threeClass = nonePol & stackPol & threeClassPol
+  none-taint-testComplex = nonePol & taintPol & testComplexPol
+  none-taint-testSimple = nonePol & taintPol & testSimplePol
+  none-taint-threeClass = nonePol & taintPol & threeClassPol
+  none-testComplex-testSimple = nonePol & testComplexPol & testSimplePol
+  none-testComplex-threeClass = nonePol & testComplexPol & threeClassPol
+  none-testSimple-threeClass = nonePol & testSimplePol & threeClassPol
+  rwx-stack-taint = rwxPol & stackPol & taintPol
+  rwx-stack-testComplex = rwxPol & stackPol & testComplexPol
+  rwx-stack-testSimple = rwxPol & stackPol & testSimplePol
+  rwx-stack-threeClass = rwxPol & stackPol & threeClassPol
+  rwx-taint-testComplex = rwxPol & taintPol & testComplexPol
+  rwx-taint-testSimple = rwxPol & taintPol & testSimplePol
+  rwx-taint-threeClass = rwxPol & taintPol & threeClassPol
+  rwx-testComplex-testSimple = rwxPol & testComplexPol & testSimplePol
+  rwx-testComplex-threeClass = rwxPol & testComplexPol & threeClassPol
+  rwx-testSimple-threeClass = rwxPol & testSimplePol & threeClassPol
+  stack-taint-testComplex = stackPol & taintPol & testComplexPol
+  stack-taint-testSimple = stackPol & taintPol & testSimplePol
+  stack-taint-threeClass = stackPol & taintPol & threeClassPol
+  stack-testComplex-testSimple = stackPol & testComplexPol & testSimplePol
+  stack-testComplex-threeClass = stackPol & testComplexPol & threeClassPol
+  stack-testSimple-threeClass = stackPol & testSimplePol & threeClassPol
+  taint-testComplex-testSimple = taintPol & testComplexPol & testSimplePol
+  taint-testComplex-threeClass = taintPol & testComplexPol & threeClassPol
+  taint-testSimple-threeClass = taintPol & testSimplePol & threeClassPol
+  testComplex-testSimple-threeClass = testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx = cfiPol & heapPol & nonePol & rwxPol
+  cfi-heap-none-stack = cfiPol & heapPol & nonePol & stackPol
+  cfi-heap-none-taint = cfiPol & heapPol & nonePol & taintPol
+  cfi-heap-none-testComplex = cfiPol & heapPol & nonePol & testComplexPol
+  cfi-heap-none-testSimple = cfiPol & heapPol & nonePol & testSimplePol
+  cfi-heap-none-threeClass = cfiPol & heapPol & nonePol & threeClassPol
+  cfi-heap-rwx-stack = cfiPol & heapPol & rwxPol & stackPol
+  cfi-heap-rwx-taint = cfiPol & heapPol & rwxPol & taintPol
+  cfi-heap-rwx-testComplex = cfiPol & heapPol & rwxPol & testComplexPol
+  cfi-heap-rwx-testSimple = cfiPol & heapPol & rwxPol & testSimplePol
+  cfi-heap-rwx-threeClass = cfiPol & heapPol & rwxPol & threeClassPol
+  cfi-heap-stack-taint = cfiPol & heapPol & stackPol & taintPol
+  cfi-heap-stack-testComplex = cfiPol & heapPol & stackPol & testComplexPol
+  cfi-heap-stack-testSimple = cfiPol & heapPol & stackPol & testSimplePol
+  cfi-heap-stack-threeClass = cfiPol & heapPol & stackPol & threeClassPol
+  cfi-heap-taint-testComplex = cfiPol & heapPol & taintPol & testComplexPol
+  cfi-heap-taint-testSimple = cfiPol & heapPol & taintPol & testSimplePol
+  cfi-heap-taint-threeClass = cfiPol & heapPol & taintPol & threeClassPol
+  cfi-heap-testComplex-testSimple = cfiPol & heapPol & testComplexPol & testSimplePol
+  cfi-heap-testComplex-threeClass = cfiPol & heapPol & testComplexPol & threeClassPol
+  cfi-heap-testSimple-threeClass = cfiPol & heapPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack = cfiPol & nonePol & rwxPol & stackPol
+  cfi-none-rwx-taint = cfiPol & nonePol & rwxPol & taintPol
+  cfi-none-rwx-testComplex = cfiPol & nonePol & rwxPol & testComplexPol
+  cfi-none-rwx-testSimple = cfiPol & nonePol & rwxPol & testSimplePol
+  cfi-none-rwx-threeClass = cfiPol & nonePol & rwxPol & threeClassPol
+  cfi-none-stack-taint = cfiPol & nonePol & stackPol & taintPol
+  cfi-none-stack-testComplex = cfiPol & nonePol & stackPol & testComplexPol
+  cfi-none-stack-testSimple = cfiPol & nonePol & stackPol & testSimplePol
+  cfi-none-stack-threeClass = cfiPol & nonePol & stackPol & threeClassPol
+  cfi-none-taint-testComplex = cfiPol & nonePol & taintPol & testComplexPol
+  cfi-none-taint-testSimple = cfiPol & nonePol & taintPol & testSimplePol
+  cfi-none-taint-threeClass = cfiPol & nonePol & taintPol & threeClassPol
+  cfi-none-testComplex-testSimple = cfiPol & nonePol & testComplexPol & testSimplePol
+  cfi-none-testComplex-threeClass = cfiPol & nonePol & testComplexPol & threeClassPol
+  cfi-none-testSimple-threeClass = cfiPol & nonePol & testSimplePol & threeClassPol
+  cfi-rwx-stack-taint = cfiPol & rwxPol & stackPol & taintPol
+  cfi-rwx-stack-testComplex = cfiPol & rwxPol & stackPol & testComplexPol
+  cfi-rwx-stack-testSimple = cfiPol & rwxPol & stackPol & testSimplePol
+  cfi-rwx-stack-threeClass = cfiPol & rwxPol & stackPol & threeClassPol
+  cfi-rwx-taint-testComplex = cfiPol & rwxPol & taintPol & testComplexPol
+  cfi-rwx-taint-testSimple = cfiPol & rwxPol & taintPol & testSimplePol
+  cfi-rwx-taint-threeClass = cfiPol & rwxPol & taintPol & threeClassPol
+  cfi-rwx-testComplex-testSimple = cfiPol & rwxPol & testComplexPol & testSimplePol
+  cfi-rwx-testComplex-threeClass = cfiPol & rwxPol & testComplexPol & threeClassPol
+  cfi-rwx-testSimple-threeClass = cfiPol & rwxPol & testSimplePol & threeClassPol
+  cfi-stack-taint-testComplex = cfiPol & stackPol & taintPol & testComplexPol
+  cfi-stack-taint-testSimple = cfiPol & stackPol & taintPol & testSimplePol
+  cfi-stack-taint-threeClass = cfiPol & stackPol & taintPol & threeClassPol
+  cfi-stack-testComplex-testSimple = cfiPol & stackPol & testComplexPol & testSimplePol
+  cfi-stack-testComplex-threeClass = cfiPol & stackPol & testComplexPol & threeClassPol
+  cfi-stack-testSimple-threeClass = cfiPol & stackPol & testSimplePol & threeClassPol
+  cfi-taint-testComplex-testSimple = cfiPol & taintPol & testComplexPol & testSimplePol
+  cfi-taint-testComplex-threeClass = cfiPol & taintPol & testComplexPol & threeClassPol
+  cfi-taint-testSimple-threeClass = cfiPol & taintPol & testSimplePol & threeClassPol
+  cfi-testComplex-testSimple-threeClass = cfiPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack = heapPol & nonePol & rwxPol & stackPol
+  heap-none-rwx-taint = heapPol & nonePol & rwxPol & taintPol
+  heap-none-rwx-testComplex = heapPol & nonePol & rwxPol & testComplexPol
+  heap-none-rwx-testSimple = heapPol & nonePol & rwxPol & testSimplePol
+  heap-none-rwx-threeClass = heapPol & nonePol & rwxPol & threeClassPol
+  heap-none-stack-taint = heapPol & nonePol & stackPol & taintPol
+  heap-none-stack-testComplex = heapPol & nonePol & stackPol & testComplexPol
+  heap-none-stack-testSimple = heapPol & nonePol & stackPol & testSimplePol
+  heap-none-stack-threeClass = heapPol & nonePol & stackPol & threeClassPol
+  heap-none-taint-testComplex = heapPol & nonePol & taintPol & testComplexPol
+  heap-none-taint-testSimple = heapPol & nonePol & taintPol & testSimplePol
+  heap-none-taint-threeClass = heapPol & nonePol & taintPol & threeClassPol
+  heap-none-testComplex-testSimple = heapPol & nonePol & testComplexPol & testSimplePol
+  heap-none-testComplex-threeClass = heapPol & nonePol & testComplexPol & threeClassPol
+  heap-none-testSimple-threeClass = heapPol & nonePol & testSimplePol & threeClassPol
+  heap-rwx-stack-taint = heapPol & rwxPol & stackPol & taintPol
+  heap-rwx-stack-testComplex = heapPol & rwxPol & stackPol & testComplexPol
+  heap-rwx-stack-testSimple = heapPol & rwxPol & stackPol & testSimplePol
+  heap-rwx-stack-threeClass = heapPol & rwxPol & stackPol & threeClassPol
+  heap-rwx-taint-testComplex = heapPol & rwxPol & taintPol & testComplexPol
+  heap-rwx-taint-testSimple = heapPol & rwxPol & taintPol & testSimplePol
+  heap-rwx-taint-threeClass = heapPol & rwxPol & taintPol & threeClassPol
+  heap-rwx-testComplex-testSimple = heapPol & rwxPol & testComplexPol & testSimplePol
+  heap-rwx-testComplex-threeClass = heapPol & rwxPol & testComplexPol & threeClassPol
+  heap-rwx-testSimple-threeClass = heapPol & rwxPol & testSimplePol & threeClassPol
+  heap-stack-taint-testComplex = heapPol & stackPol & taintPol & testComplexPol
+  heap-stack-taint-testSimple = heapPol & stackPol & taintPol & testSimplePol
+  heap-stack-taint-threeClass = heapPol & stackPol & taintPol & threeClassPol
+  heap-stack-testComplex-testSimple = heapPol & stackPol & testComplexPol & testSimplePol
+  heap-stack-testComplex-threeClass = heapPol & stackPol & testComplexPol & threeClassPol
+  heap-stack-testSimple-threeClass = heapPol & stackPol & testSimplePol & threeClassPol
+  heap-taint-testComplex-testSimple = heapPol & taintPol & testComplexPol & testSimplePol
+  heap-taint-testComplex-threeClass = heapPol & taintPol & testComplexPol & threeClassPol
+  heap-taint-testSimple-threeClass = heapPol & taintPol & testSimplePol & threeClassPol
+  heap-testComplex-testSimple-threeClass = heapPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-taint = nonePol & rwxPol & stackPol & taintPol
+  none-rwx-stack-testComplex = nonePol & rwxPol & stackPol & testComplexPol
+  none-rwx-stack-testSimple = nonePol & rwxPol & stackPol & testSimplePol
+  none-rwx-stack-threeClass = nonePol & rwxPol & stackPol & threeClassPol
+  none-rwx-taint-testComplex = nonePol & rwxPol & taintPol & testComplexPol
+  none-rwx-taint-testSimple = nonePol & rwxPol & taintPol & testSimplePol
+  none-rwx-taint-threeClass = nonePol & rwxPol & taintPol & threeClassPol
+  none-rwx-testComplex-testSimple = nonePol & rwxPol & testComplexPol & testSimplePol
+  none-rwx-testComplex-threeClass = nonePol & rwxPol & testComplexPol & threeClassPol
+  none-rwx-testSimple-threeClass = nonePol & rwxPol & testSimplePol & threeClassPol
+  none-stack-taint-testComplex = nonePol & stackPol & taintPol & testComplexPol
+  none-stack-taint-testSimple = nonePol & stackPol & taintPol & testSimplePol
+  none-stack-taint-threeClass = nonePol & stackPol & taintPol & threeClassPol
+  none-stack-testComplex-testSimple = nonePol & stackPol & testComplexPol & testSimplePol
+  none-stack-testComplex-threeClass = nonePol & stackPol & testComplexPol & threeClassPol
+  none-stack-testSimple-threeClass = nonePol & stackPol & testSimplePol & threeClassPol
+  none-taint-testComplex-testSimple = nonePol & taintPol & testComplexPol & testSimplePol
+  none-taint-testComplex-threeClass = nonePol & taintPol & testComplexPol & threeClassPol
+  none-taint-testSimple-threeClass = nonePol & taintPol & testSimplePol & threeClassPol
+  none-testComplex-testSimple-threeClass = nonePol & testComplexPol & testSimplePol & threeClassPol
+  rwx-stack-taint-testComplex = rwxPol & stackPol & taintPol & testComplexPol
+  rwx-stack-taint-testSimple = rwxPol & stackPol & taintPol & testSimplePol
+  rwx-stack-taint-threeClass = rwxPol & stackPol & taintPol & threeClassPol
+  rwx-stack-testComplex-testSimple = rwxPol & stackPol & testComplexPol & testSimplePol
+  rwx-stack-testComplex-threeClass = rwxPol & stackPol & testComplexPol & threeClassPol
+  rwx-stack-testSimple-threeClass = rwxPol & stackPol & testSimplePol & threeClassPol
+  rwx-taint-testComplex-testSimple = rwxPol & taintPol & testComplexPol & testSimplePol
+  rwx-taint-testComplex-threeClass = rwxPol & taintPol & testComplexPol & threeClassPol
+  rwx-taint-testSimple-threeClass = rwxPol & taintPol & testSimplePol & threeClassPol
+  rwx-testComplex-testSimple-threeClass = rwxPol & testComplexPol & testSimplePol & threeClassPol
+  stack-taint-testComplex-testSimple = stackPol & taintPol & testComplexPol & testSimplePol
+  stack-taint-testComplex-threeClass = stackPol & taintPol & testComplexPol & threeClassPol
+  stack-taint-testSimple-threeClass = stackPol & taintPol & testSimplePol & threeClassPol
+  stack-testComplex-testSimple-threeClass = stackPol & testComplexPol & testSimplePol & threeClassPol
+  taint-testComplex-testSimple-threeClass = taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack = cfiPol & heapPol & nonePol & rwxPol & stackPol
+  cfi-heap-none-rwx-taint = cfiPol & heapPol & nonePol & rwxPol & taintPol
+  cfi-heap-none-rwx-testComplex = cfiPol & heapPol & nonePol & rwxPol & testComplexPol
+  cfi-heap-none-rwx-testSimple = cfiPol & heapPol & nonePol & rwxPol & testSimplePol
+  cfi-heap-none-rwx-threeClass = cfiPol & heapPol & nonePol & rwxPol & threeClassPol
+  cfi-heap-none-stack-taint = cfiPol & heapPol & nonePol & stackPol & taintPol
+  cfi-heap-none-stack-testComplex = cfiPol & heapPol & nonePol & stackPol & testComplexPol
+  cfi-heap-none-stack-testSimple = cfiPol & heapPol & nonePol & stackPol & testSimplePol
+  cfi-heap-none-stack-threeClass = cfiPol & heapPol & nonePol & stackPol & threeClassPol
+  cfi-heap-none-taint-testComplex = cfiPol & heapPol & nonePol & taintPol & testComplexPol
+  cfi-heap-none-taint-testSimple = cfiPol & heapPol & nonePol & taintPol & testSimplePol
+  cfi-heap-none-taint-threeClass = cfiPol & heapPol & nonePol & taintPol & threeClassPol
+  cfi-heap-none-testComplex-testSimple = cfiPol & heapPol & nonePol & testComplexPol & testSimplePol
+  cfi-heap-none-testComplex-threeClass = cfiPol & heapPol & nonePol & testComplexPol & threeClassPol
+  cfi-heap-none-testSimple-threeClass = cfiPol & heapPol & nonePol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-taint = cfiPol & heapPol & rwxPol & stackPol & taintPol
+  cfi-heap-rwx-stack-testComplex = cfiPol & heapPol & rwxPol & stackPol & testComplexPol
+  cfi-heap-rwx-stack-testSimple = cfiPol & heapPol & rwxPol & stackPol & testSimplePol
+  cfi-heap-rwx-stack-threeClass = cfiPol & heapPol & rwxPol & stackPol & threeClassPol
+  cfi-heap-rwx-taint-testComplex = cfiPol & heapPol & rwxPol & taintPol & testComplexPol
+  cfi-heap-rwx-taint-testSimple = cfiPol & heapPol & rwxPol & taintPol & testSimplePol
+  cfi-heap-rwx-taint-threeClass = cfiPol & heapPol & rwxPol & taintPol & threeClassPol
+  cfi-heap-rwx-testComplex-testSimple = cfiPol & heapPol & rwxPol & testComplexPol & testSimplePol
+  cfi-heap-rwx-testComplex-threeClass = cfiPol & heapPol & rwxPol & testComplexPol & threeClassPol
+  cfi-heap-rwx-testSimple-threeClass = cfiPol & heapPol & rwxPol & testSimplePol & threeClassPol
+  cfi-heap-stack-taint-testComplex = cfiPol & heapPol & stackPol & taintPol & testComplexPol
+  cfi-heap-stack-taint-testSimple = cfiPol & heapPol & stackPol & taintPol & testSimplePol
+  cfi-heap-stack-taint-threeClass = cfiPol & heapPol & stackPol & taintPol & threeClassPol
+  cfi-heap-stack-testComplex-testSimple = cfiPol & heapPol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-stack-testComplex-threeClass = cfiPol & heapPol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-stack-testSimple-threeClass = cfiPol & heapPol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-taint-testComplex-testSimple = cfiPol & heapPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-taint-testComplex-threeClass = cfiPol & heapPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-taint-testSimple-threeClass = cfiPol & heapPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-testComplex-testSimple-threeClass = cfiPol & heapPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-taint = cfiPol & nonePol & rwxPol & stackPol & taintPol
+  cfi-none-rwx-stack-testComplex = cfiPol & nonePol & rwxPol & stackPol & testComplexPol
+  cfi-none-rwx-stack-testSimple = cfiPol & nonePol & rwxPol & stackPol & testSimplePol
+  cfi-none-rwx-stack-threeClass = cfiPol & nonePol & rwxPol & stackPol & threeClassPol
+  cfi-none-rwx-taint-testComplex = cfiPol & nonePol & rwxPol & taintPol & testComplexPol
+  cfi-none-rwx-taint-testSimple = cfiPol & nonePol & rwxPol & taintPol & testSimplePol
+  cfi-none-rwx-taint-threeClass = cfiPol & nonePol & rwxPol & taintPol & threeClassPol
+  cfi-none-rwx-testComplex-testSimple = cfiPol & nonePol & rwxPol & testComplexPol & testSimplePol
+  cfi-none-rwx-testComplex-threeClass = cfiPol & nonePol & rwxPol & testComplexPol & threeClassPol
+  cfi-none-rwx-testSimple-threeClass = cfiPol & nonePol & rwxPol & testSimplePol & threeClassPol
+  cfi-none-stack-taint-testComplex = cfiPol & nonePol & stackPol & taintPol & testComplexPol
+  cfi-none-stack-taint-testSimple = cfiPol & nonePol & stackPol & taintPol & testSimplePol
+  cfi-none-stack-taint-threeClass = cfiPol & nonePol & stackPol & taintPol & threeClassPol
+  cfi-none-stack-testComplex-testSimple = cfiPol & nonePol & stackPol & testComplexPol & testSimplePol
+  cfi-none-stack-testComplex-threeClass = cfiPol & nonePol & stackPol & testComplexPol & threeClassPol
+  cfi-none-stack-testSimple-threeClass = cfiPol & nonePol & stackPol & testSimplePol & threeClassPol
+  cfi-none-taint-testComplex-testSimple = cfiPol & nonePol & taintPol & testComplexPol & testSimplePol
+  cfi-none-taint-testComplex-threeClass = cfiPol & nonePol & taintPol & testComplexPol & threeClassPol
+  cfi-none-taint-testSimple-threeClass = cfiPol & nonePol & taintPol & testSimplePol & threeClassPol
+  cfi-none-testComplex-testSimple-threeClass = cfiPol & nonePol & testComplexPol & testSimplePol & threeClassPol
+  cfi-rwx-stack-taint-testComplex = cfiPol & rwxPol & stackPol & taintPol & testComplexPol
+  cfi-rwx-stack-taint-testSimple = cfiPol & rwxPol & stackPol & taintPol & testSimplePol
+  cfi-rwx-stack-taint-threeClass = cfiPol & rwxPol & stackPol & taintPol & threeClassPol
+  cfi-rwx-stack-testComplex-testSimple = cfiPol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-rwx-stack-testComplex-threeClass = cfiPol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-rwx-stack-testSimple-threeClass = cfiPol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-rwx-taint-testComplex-testSimple = cfiPol & rwxPol & taintPol & testComplexPol & testSimplePol
+  cfi-rwx-taint-testComplex-threeClass = cfiPol & rwxPol & taintPol & testComplexPol & threeClassPol
+  cfi-rwx-taint-testSimple-threeClass = cfiPol & rwxPol & taintPol & testSimplePol & threeClassPol
+  cfi-rwx-testComplex-testSimple-threeClass = cfiPol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-stack-taint-testComplex-testSimple = cfiPol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-stack-taint-testComplex-threeClass = cfiPol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-stack-taint-testSimple-threeClass = cfiPol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-stack-testComplex-testSimple-threeClass = cfiPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-taint-testComplex-testSimple-threeClass = cfiPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-taint = heapPol & nonePol & rwxPol & stackPol & taintPol
+  heap-none-rwx-stack-testComplex = heapPol & nonePol & rwxPol & stackPol & testComplexPol
+  heap-none-rwx-stack-testSimple = heapPol & nonePol & rwxPol & stackPol & testSimplePol
+  heap-none-rwx-stack-threeClass = heapPol & nonePol & rwxPol & stackPol & threeClassPol
+  heap-none-rwx-taint-testComplex = heapPol & nonePol & rwxPol & taintPol & testComplexPol
+  heap-none-rwx-taint-testSimple = heapPol & nonePol & rwxPol & taintPol & testSimplePol
+  heap-none-rwx-taint-threeClass = heapPol & nonePol & rwxPol & taintPol & threeClassPol
+  heap-none-rwx-testComplex-testSimple = heapPol & nonePol & rwxPol & testComplexPol & testSimplePol
+  heap-none-rwx-testComplex-threeClass = heapPol & nonePol & rwxPol & testComplexPol & threeClassPol
+  heap-none-rwx-testSimple-threeClass = heapPol & nonePol & rwxPol & testSimplePol & threeClassPol
+  heap-none-stack-taint-testComplex = heapPol & nonePol & stackPol & taintPol & testComplexPol
+  heap-none-stack-taint-testSimple = heapPol & nonePol & stackPol & taintPol & testSimplePol
+  heap-none-stack-taint-threeClass = heapPol & nonePol & stackPol & taintPol & threeClassPol
+  heap-none-stack-testComplex-testSimple = heapPol & nonePol & stackPol & testComplexPol & testSimplePol
+  heap-none-stack-testComplex-threeClass = heapPol & nonePol & stackPol & testComplexPol & threeClassPol
+  heap-none-stack-testSimple-threeClass = heapPol & nonePol & stackPol & testSimplePol & threeClassPol
+  heap-none-taint-testComplex-testSimple = heapPol & nonePol & taintPol & testComplexPol & testSimplePol
+  heap-none-taint-testComplex-threeClass = heapPol & nonePol & taintPol & testComplexPol & threeClassPol
+  heap-none-taint-testSimple-threeClass = heapPol & nonePol & taintPol & testSimplePol & threeClassPol
+  heap-none-testComplex-testSimple-threeClass = heapPol & nonePol & testComplexPol & testSimplePol & threeClassPol
+  heap-rwx-stack-taint-testComplex = heapPol & rwxPol & stackPol & taintPol & testComplexPol
+  heap-rwx-stack-taint-testSimple = heapPol & rwxPol & stackPol & taintPol & testSimplePol
+  heap-rwx-stack-taint-threeClass = heapPol & rwxPol & stackPol & taintPol & threeClassPol
+  heap-rwx-stack-testComplex-testSimple = heapPol & rwxPol & stackPol & testComplexPol & testSimplePol
+  heap-rwx-stack-testComplex-threeClass = heapPol & rwxPol & stackPol & testComplexPol & threeClassPol
+  heap-rwx-stack-testSimple-threeClass = heapPol & rwxPol & stackPol & testSimplePol & threeClassPol
+  heap-rwx-taint-testComplex-testSimple = heapPol & rwxPol & taintPol & testComplexPol & testSimplePol
+  heap-rwx-taint-testComplex-threeClass = heapPol & rwxPol & taintPol & testComplexPol & threeClassPol
+  heap-rwx-taint-testSimple-threeClass = heapPol & rwxPol & taintPol & testSimplePol & threeClassPol
+  heap-rwx-testComplex-testSimple-threeClass = heapPol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  heap-stack-taint-testComplex-testSimple = heapPol & stackPol & taintPol & testComplexPol & testSimplePol
+  heap-stack-taint-testComplex-threeClass = heapPol & stackPol & taintPol & testComplexPol & threeClassPol
+  heap-stack-taint-testSimple-threeClass = heapPol & stackPol & taintPol & testSimplePol & threeClassPol
+  heap-stack-testComplex-testSimple-threeClass = heapPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-taint-testComplex-testSimple-threeClass = heapPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-taint-testComplex = nonePol & rwxPol & stackPol & taintPol & testComplexPol
+  none-rwx-stack-taint-testSimple = nonePol & rwxPol & stackPol & taintPol & testSimplePol
+  none-rwx-stack-taint-threeClass = nonePol & rwxPol & stackPol & taintPol & threeClassPol
+  none-rwx-stack-testComplex-testSimple = nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  none-rwx-stack-testComplex-threeClass = nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  none-rwx-stack-testSimple-threeClass = nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  none-rwx-taint-testComplex-testSimple = nonePol & rwxPol & taintPol & testComplexPol & testSimplePol
+  none-rwx-taint-testComplex-threeClass = nonePol & rwxPol & taintPol & testComplexPol & threeClassPol
+  none-rwx-taint-testSimple-threeClass = nonePol & rwxPol & taintPol & testSimplePol & threeClassPol
+  none-rwx-testComplex-testSimple-threeClass = nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  none-stack-taint-testComplex-testSimple = nonePol & stackPol & taintPol & testComplexPol & testSimplePol
+  none-stack-taint-testComplex-threeClass = nonePol & stackPol & taintPol & testComplexPol & threeClassPol
+  none-stack-taint-testSimple-threeClass = nonePol & stackPol & taintPol & testSimplePol & threeClassPol
+  none-stack-testComplex-testSimple-threeClass = nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  none-taint-testComplex-testSimple-threeClass = nonePol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  rwx-stack-taint-testComplex-testSimple = rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  rwx-stack-taint-testComplex-threeClass = rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  rwx-stack-taint-testSimple-threeClass = rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  rwx-stack-testComplex-testSimple-threeClass = rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  rwx-taint-testComplex-testSimple-threeClass = rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  stack-taint-testComplex-testSimple-threeClass = stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-taint = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol
+  cfi-heap-none-rwx-stack-testComplex = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol
+  cfi-heap-none-rwx-stack-testSimple = cfiPol & heapPol & nonePol & rwxPol & stackPol & testSimplePol
+  cfi-heap-none-rwx-stack-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & threeClassPol
+  cfi-heap-none-rwx-taint-testComplex = cfiPol & heapPol & nonePol & rwxPol & taintPol & testComplexPol
+  cfi-heap-none-rwx-taint-testSimple = cfiPol & heapPol & nonePol & rwxPol & taintPol & testSimplePol
+  cfi-heap-none-rwx-taint-threeClass = cfiPol & heapPol & nonePol & rwxPol & taintPol & threeClassPol
+  cfi-heap-none-rwx-testComplex-testSimple = cfiPol & heapPol & nonePol & rwxPol & testComplexPol & testSimplePol
+  cfi-heap-none-rwx-testComplex-threeClass = cfiPol & heapPol & nonePol & rwxPol & testComplexPol & threeClassPol
+  cfi-heap-none-rwx-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & testSimplePol & threeClassPol
+  cfi-heap-none-stack-taint-testComplex = cfiPol & heapPol & nonePol & stackPol & taintPol & testComplexPol
+  cfi-heap-none-stack-taint-testSimple = cfiPol & heapPol & nonePol & stackPol & taintPol & testSimplePol
+  cfi-heap-none-stack-taint-threeClass = cfiPol & heapPol & nonePol & stackPol & taintPol & threeClassPol
+  cfi-heap-none-stack-testComplex-testSimple = cfiPol & heapPol & nonePol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-none-stack-testComplex-threeClass = cfiPol & heapPol & nonePol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-none-stack-testSimple-threeClass = cfiPol & heapPol & nonePol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-none-taint-testComplex-testSimple = cfiPol & heapPol & nonePol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-none-taint-testComplex-threeClass = cfiPol & heapPol & nonePol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-none-taint-testSimple-threeClass = cfiPol & heapPol & nonePol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-none-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-taint-testComplex = cfiPol & heapPol & rwxPol & stackPol & taintPol & testComplexPol
+  cfi-heap-rwx-stack-taint-testSimple = cfiPol & heapPol & rwxPol & stackPol & taintPol & testSimplePol
+  cfi-heap-rwx-stack-taint-threeClass = cfiPol & heapPol & rwxPol & stackPol & taintPol & threeClassPol
+  cfi-heap-rwx-stack-testComplex-testSimple = cfiPol & heapPol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-rwx-stack-testComplex-threeClass = cfiPol & heapPol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-rwx-stack-testSimple-threeClass = cfiPol & heapPol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-taint-testComplex-testSimple = cfiPol & heapPol & rwxPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-rwx-taint-testComplex-threeClass = cfiPol & heapPol & rwxPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-rwx-taint-testSimple-threeClass = cfiPol & heapPol & rwxPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-testComplex-testSimple-threeClass = cfiPol & heapPol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-stack-taint-testComplex-testSimple = cfiPol & heapPol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-stack-taint-testComplex-threeClass = cfiPol & heapPol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-stack-taint-testSimple-threeClass = cfiPol & heapPol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-taint-testComplex = cfiPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol
+  cfi-none-rwx-stack-taint-testSimple = cfiPol & nonePol & rwxPol & stackPol & taintPol & testSimplePol
+  cfi-none-rwx-stack-taint-threeClass = cfiPol & nonePol & rwxPol & stackPol & taintPol & threeClassPol
+  cfi-none-rwx-stack-testComplex-testSimple = cfiPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-none-rwx-stack-testComplex-threeClass = cfiPol & nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-none-rwx-stack-testSimple-threeClass = cfiPol & nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-none-rwx-taint-testComplex-testSimple = cfiPol & nonePol & rwxPol & taintPol & testComplexPol & testSimplePol
+  cfi-none-rwx-taint-testComplex-threeClass = cfiPol & nonePol & rwxPol & taintPol & testComplexPol & threeClassPol
+  cfi-none-rwx-taint-testSimple-threeClass = cfiPol & nonePol & rwxPol & taintPol & testSimplePol & threeClassPol
+  cfi-none-rwx-testComplex-testSimple-threeClass = cfiPol & nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-stack-taint-testComplex-testSimple = cfiPol & nonePol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-none-stack-taint-testComplex-threeClass = cfiPol & nonePol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-none-stack-taint-testSimple-threeClass = cfiPol & nonePol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-none-stack-testComplex-testSimple-threeClass = cfiPol & nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-taint-testComplex-testSimple-threeClass = cfiPol & nonePol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-rwx-stack-taint-testComplex-testSimple = cfiPol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-rwx-stack-taint-testComplex-threeClass = cfiPol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-rwx-stack-taint-testSimple-threeClass = cfiPol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-rwx-stack-testComplex-testSimple-threeClass = cfiPol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-rwx-taint-testComplex-testSimple-threeClass = cfiPol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-stack-taint-testComplex-testSimple-threeClass = cfiPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-taint-testComplex = heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol
+  heap-none-rwx-stack-taint-testSimple = heapPol & nonePol & rwxPol & stackPol & taintPol & testSimplePol
+  heap-none-rwx-stack-taint-threeClass = heapPol & nonePol & rwxPol & stackPol & taintPol & threeClassPol
+  heap-none-rwx-stack-testComplex-testSimple = heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  heap-none-rwx-stack-testComplex-threeClass = heapPol & nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  heap-none-rwx-stack-testSimple-threeClass = heapPol & nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  heap-none-rwx-taint-testComplex-testSimple = heapPol & nonePol & rwxPol & taintPol & testComplexPol & testSimplePol
+  heap-none-rwx-taint-testComplex-threeClass = heapPol & nonePol & rwxPol & taintPol & testComplexPol & threeClassPol
+  heap-none-rwx-taint-testSimple-threeClass = heapPol & nonePol & rwxPol & taintPol & testSimplePol & threeClassPol
+  heap-none-rwx-testComplex-testSimple-threeClass = heapPol & nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-stack-taint-testComplex-testSimple = heapPol & nonePol & stackPol & taintPol & testComplexPol & testSimplePol
+  heap-none-stack-taint-testComplex-threeClass = heapPol & nonePol & stackPol & taintPol & testComplexPol & threeClassPol
+  heap-none-stack-taint-testSimple-threeClass = heapPol & nonePol & stackPol & taintPol & testSimplePol & threeClassPol
+  heap-none-stack-testComplex-testSimple-threeClass = heapPol & nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-taint-testComplex-testSimple-threeClass = heapPol & nonePol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-rwx-stack-taint-testComplex-testSimple = heapPol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  heap-rwx-stack-taint-testComplex-threeClass = heapPol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  heap-rwx-stack-taint-testSimple-threeClass = heapPol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  heap-rwx-stack-testComplex-testSimple-threeClass = heapPol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-rwx-taint-testComplex-testSimple-threeClass = heapPol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-stack-taint-testComplex-testSimple-threeClass = heapPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-taint-testComplex-testSimple = nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  none-rwx-stack-taint-testComplex-threeClass = nonePol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  none-rwx-stack-taint-testSimple-threeClass = nonePol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  none-rwx-stack-testComplex-testSimple-threeClass = nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-taint-testComplex-testSimple-threeClass = nonePol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  none-stack-taint-testComplex-testSimple-threeClass = nonePol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  rwx-stack-taint-testComplex-testSimple-threeClass = rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-taint-testComplex = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol
+  cfi-heap-none-rwx-stack-taint-testSimple = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & testSimplePol
+  cfi-heap-none-rwx-stack-taint-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & threeClassPol
+  cfi-heap-none-rwx-stack-testComplex-testSimple = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol
+  cfi-heap-none-rwx-stack-testComplex-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol & threeClassPol
+  cfi-heap-none-rwx-stack-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-taint-testComplex-testSimple = cfiPol & heapPol & nonePol & rwxPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-none-rwx-taint-testComplex-threeClass = cfiPol & heapPol & nonePol & rwxPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-none-rwx-taint-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-stack-taint-testComplex-testSimple = cfiPol & heapPol & nonePol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-none-stack-taint-testComplex-threeClass = cfiPol & heapPol & nonePol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-none-stack-taint-testSimple-threeClass = cfiPol & heapPol & nonePol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-none-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-taint-testComplex-testSimple = cfiPol & heapPol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-rwx-stack-taint-testComplex-threeClass = cfiPol & heapPol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-rwx-stack-taint-testSimple-threeClass = cfiPol & heapPol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-stack-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-taint-testComplex-testSimple = cfiPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-none-rwx-stack-taint-testComplex-threeClass = cfiPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-none-rwx-stack-taint-testSimple-threeClass = cfiPol & nonePol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-testComplex-testSimple-threeClass = cfiPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-taint-testComplex-testSimple-threeClass = cfiPol & nonePol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-stack-taint-testComplex-testSimple-threeClass = cfiPol & nonePol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-rwx-stack-taint-testComplex-testSimple-threeClass = cfiPol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-taint-testComplex-testSimple = heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  heap-none-rwx-stack-taint-testComplex-threeClass = heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  heap-none-rwx-stack-taint-testSimple-threeClass = heapPol & nonePol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-testComplex-testSimple-threeClass = heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-taint-testComplex-testSimple-threeClass = heapPol & nonePol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-stack-taint-testComplex-testSimple-threeClass = heapPol & nonePol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-rwx-stack-taint-testComplex-testSimple-threeClass = heapPol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  none-rwx-stack-taint-testComplex-testSimple-threeClass = nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-taint-testComplex-testSimple = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol
+  cfi-heap-none-rwx-stack-taint-testComplex-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & threeClassPol
+  cfi-heap-none-rwx-stack-taint-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-stack-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-rwx-stack-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-none-rwx-stack-taint-testComplex-testSimple-threeClass = cfiPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  heap-none-rwx-stack-taint-testComplex-testSimple-threeClass = heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol
+  cfi-heap-none-rwx-stack-taint-testComplex-testSimple-threeClass = cfiPol & heapPol & nonePol & rwxPol & stackPol & taintPol & testComplexPol & testSimplePol & threeClassPol

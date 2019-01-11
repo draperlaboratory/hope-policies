@@ -35,6 +35,7 @@ class AllTests:
         "threeClass/jump_data_fails_1.c",
         "threeClass/call_fails_1.c",
         "taint/tainted_print_fails.c",
+        "dhrystone7000.c",
     ]
 
 class frtos(AllTests):
@@ -42,7 +43,6 @@ class frtos(AllTests):
                       if not any(test in s for s in
                                  ["timer_works_1.c",
                                   "coremark",
-                                  "cfi/jump_data_fails_1.c"
                                  ]
                                  )]
 
@@ -50,8 +50,7 @@ class hifive(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1.c",
-                                  "stanford_int_treesort_fixed.c",
-                                  "cfi/jump_data_fails_1.c"
+                                  "dhrystone7000.c",
                                  ]
                                  )]
 

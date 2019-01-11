@@ -28,8 +28,12 @@ int t_printf(const char *s, ...) {
   va_end(vl);
 
   puts(p);
+
+  return 0;
 }
 
 int main(void) {
   test_main();
+
+  return 0;
 }
