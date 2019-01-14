@@ -19,7 +19,7 @@ all: build-tests build-kernels run-tests
 #   minimum variables (probably) needed: SIM, TESTS, RUNTIME, POLICIES
 
 webapp_SIM = qemu
-webapp_TESTS = webapp,webapp_double_usr_set
+webapp_TESTS = webapp,cfi/webapp_double_usr_set
 webapp_RUNTIME = hifive
 webapp_MODULE = osv.hifive.main
 webapp_POLICIES = none,ppac,usr_type
