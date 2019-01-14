@@ -15,6 +15,15 @@ all: build-tests build-kernels run-tests
 #   variable format: {config_name}_{VAR}
 #   minimum variables (probably) needed: SIM, TESTS, RUNTIME, POLICIES
 
+webapp_SIM = qemu
+webapp_TESTS = webapp,webapp_double_usr_set
+webapp_RUNTIME = hifive
+webapp_MODULE = osv.hifive.main
+webapp_POLICIES = none,ppac,usr_type
+webapp_XDIST = -n $(JOBS) # run in parallel
+webapp: CONFIG=webapp
+webapp: all
+
 # simple qemu build
 qemu_SIM = qemu
 qemu_TESTS = hifive
