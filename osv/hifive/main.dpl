@@ -46,10 +46,15 @@ import:
     osv.testComplex
     osv.ppac
     osv.usr_type
+    osv.password
 
 policy:
 
+    password = passwordPol
+
     usr_type = usrTypePol
+
+    password-usr_type = passwordPol & usrTypePol
 
     heap-ppac = ppacPol & heapPol
 
