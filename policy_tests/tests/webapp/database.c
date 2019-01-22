@@ -5,9 +5,10 @@
 #include "database.h"
 #include "hashtable.h"
 #include "cgic.h"
+#include "medical.h"
 
 #define DATABASE_KEY_LENGTH USER_NAME_LENGTH
-#define DATABASE_CAPACITY 0x1000
+#define DATABASE_CAPACITY 0x10
 
 static hash_table_t database_table;
 
@@ -127,7 +128,7 @@ size_t DatabaseSize()
 }
 
 database_search_result_t *
-DatabaseSearch(char *first_name, char *last_name, char *address)
+DatabaseSearch(user_type_t type, char *first_name, char *last_name, char *address, char *condition)
 {
   size_t i;
   size_t size;
@@ -146,6 +147,10 @@ DatabaseSearch(char *first_name, char *last_name, char *address)
   }
 
   for(i = 0; i < size; i++) {
+    if((type != USER_UNKNOWN) && (users[i]->type != type)) {
+      continue;
+    }
+
     if((first_name != NULL) &&
        (strcmp(first_name, users[i]->first_name) != 0)) {
       continue;
@@ -158,6 +163,12 @@ DatabaseSearch(char *first_name, char *last_name, char *address)
        (strcmp(address, users[i]->address) != 0)) {
       continue;
     }
+
+    if((type == USER_DOCTOR) && (condition != NULL)) {
+      if(MedicalDoctorCertified(MedicalGetDoctor(users[i]), condition) == false) {
+        continue;
+      }
+    }
     
     if(DatabaseSearchResultAppend(result, users[i]) == false) {
       free(users);
@@ -169,6 +180,19 @@ DatabaseSearch(char *first_name, char *last_name, char *address)
   free(users);
 
   return result;
+}
+
+user_t **
+DatabaseUserList(size_t max)
+{
+  user_t **users;
+
+  users = (user_t **)HashTableToArray(&database_table);
+  if(users == NULL) {
+    return NULL;
+  }
+
+  return users;
 }
 
 void

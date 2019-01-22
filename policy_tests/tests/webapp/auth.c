@@ -6,25 +6,61 @@
 #include "hashtable.h"
 #include "database.h"
 
-#define AUTH_TABLE_CAPACITY 0x1000
+#define AUTH_TABLE_CAPACITY 0x10
 
 static hash_table_t active_session_table;
 
-static uint8_t *
-AuthGenerateSessionId(user_t *user)
-{
-  sha1_context_t context;
-  uint8_t *session_id;
+volatile int current_auth_user_type;
 
-  session_id = malloc(AUTH_SESSION_ID_SIZE);
+void
+AuthClearCurrentUserType(void)
+{
+}
+
+void
+AuthSetCurrentUserType(user_t *user)
+{
+  current_auth_user_type = user->type;
+}
+
+static char *
+AuthDigestToSessionId(uint8_t *digest)
+{
+  size_t i, j = 0;
+  char hex[3];
+  char *session_id;
+
+  session_id = malloc(AUTH_SESSION_ID_SIZE + 1);
   if(session_id == NULL) {
     return NULL;
   }
 
+  for(i = 0 ; i < SHA1_BLOCK_SIZE; i++) {
+    snprintf(hex, sizeof(hex), "%02x", digest[i]);
+    session_id[j] = hex[0];
+    session_id[j + 1] = hex[1];
+    j += 2;
+  }
+  session_id[AUTH_SESSION_ID_SIZE] = '\0';
+
+  return session_id;
+}
+
+static char *
+AuthGenerateSessionId(user_t *user)
+{
+  sha1_context_t context;
+  uint8_t digest[SHA1_BLOCK_SIZE];
+  char *session_id;
+
   Sha1Init(&context);
   Sha1Update(&context, (uint8_t *)user, sizeof(user_t));
-  Sha1Final(&context, session_id);
-  session_id[AUTH_SESSION_ID_SIZE] = '\0';
+  Sha1Final(&context, digest);
+
+  session_id = AuthDigestToSessionId(digest);
+  if(session_id == NULL) {
+    return NULL;
+  }
 
   return session_id;
 }
@@ -53,10 +89,10 @@ AuthInit()
 }
 
 auth_result_t
-AuthStartSession(char *username, char *password, uint8_t *session_id_out)
+AuthStartSession(char *username, char *password, char *session_id_out)
 {
   user_t *user;
-  uint8_t *session_id;
+  char *session_id;
 
   user = DatabaseGetUser(username);
   if(user == NULL) {
@@ -78,14 +114,14 @@ AuthStartSession(char *username, char *password, uint8_t *session_id_out)
   }
 
   if(session_id_out != NULL) {
-    memcpy(session_id_out, session_id, AUTH_SESSION_ID_SIZE);
+    snprintf(session_id_out, AUTH_SESSION_ID_SIZE + 1, "%s", session_id);
   }
 
   return AUTH_SUCCESS;
 }
 
 user_t *
-AuthCheckSessionId(uint8_t *session_id)
+AuthCheckSessionId(char *session_id)
 {
   user_t *user;
 
@@ -98,7 +134,7 @@ AuthCheckSessionId(uint8_t *session_id)
 }
 
 bool
-AuthEndSession(uint8_t *session_id)
+AuthEndSession(char *session_id)
 {
   if(HashTableErase(&active_session_table, session_id) == HASH_TABLE_ERROR) {
     return false;

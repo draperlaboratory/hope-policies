@@ -44,9 +44,9 @@ import:
     osv.taint
     osv.testSimple
     osv.testComplex
-    osv.ppac
     osv.usr_type
     osv.password
+    osv.ppac
 
 policy:
 
@@ -54,11 +54,14 @@ policy:
 
     usr_type = usrTypePol
 
+    password-ppac = passwordPol & ppacPol
     password-usr_type = passwordPol & usrTypePol
+    ppac-usr_type = ppacPol & usrTypePol
 
-    heap-ppac = ppacPol & heapPol
+    password-ppac-usr_type = passwordPol & usrTypePol & ppacPol
 
     ppac = ppacPol
+
     none = nonePol
     testSimple = testSimplePol
     testComplex = testComplexPol

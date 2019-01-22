@@ -4,21 +4,11 @@
 
 #include "user.h"
 
-//void isp_memset(
+#define USER_FULL_NAME_LENGTH (USER_NAME_LENGTH * 2 + 3)
 
-  
-  
-//}
-
-void __attribute__ ((noinline))                  
-UserSetType(user_t *user, user_type_t type)
-{                                          
-  user->type = type;                       
-}     
-
-user_t *UserCreate(char *username, char *password, 
-                   char *first_name, char *last_name,
-                   char *address)
+user_t *
+UserCreate(char *username, char *password, char *first_name, char *last_name,
+           char *address)
 {
   user_t *user;
 
@@ -26,81 +16,59 @@ user_t *UserCreate(char *username, char *password,
   if(user == NULL) {
     return NULL;
   }
-
-  asm("user_create_memset:");
   memset(user, 0, sizeof(user_t));
 
-  snprintf(user->username, USER_NAME_LENGTH, "%s", username);
-  snprintf(user->password, USER_PASSWORD_LENGTH, "%s", password);
-  snprintf(user->first_name, USER_NAME_LENGTH, "%s", first_name);
-  snprintf(user->last_name, USER_NAME_LENGTH, "%s", last_name); 
-  snprintf(user->address, USER_ADDRESS_LENGTH, "%s", address);
+  // user type is write-once
+  //  UserSetType(user, USER_UNKNOWN);
+  user->data = NULL;
 
-  user->type = USER_UNKNOWN;
-  user->patient = NULL;
-  user->doctor = NULL;
-  user->administrator = NULL;
-
+  snprintf(user->username, sizeof(user->username) + 1, "%s", username);
+  snprintf(user->password, sizeof(user->password) + 1, "%s", password);
+  snprintf(user->first_name, sizeof(user->first_name) + 1, "%s", first_name);
+  snprintf(user->last_name, sizeof(user->last_name) + 1, "%s", last_name); 
+  snprintf(user->address, sizeof(user->address) + 1, "%s", address);
+  
   return user;
 }
 
-void UserDestroy(user_t *user)
+void
+UserDestroy(user_t *user)
 {
   if(user == NULL) {
     return;
   }
 
-  if(user->patient != NULL) {
-    free(user->patient);
-  }
-
-  if(user->doctor != NULL) {
-    free(user->doctor);
-  }
-
-  if(user->administrator != NULL) {
-    free(user->administrator);
+  if(user->data != NULL) {
+    free(user->data);
   }
 
   free(user);
 }
 
-bool
-UserSetPatient(user_t *user)
+void __attribute__ ((noinline))
+UserSetType(user_t *user, user_type_t type)
 {
-
-  UserSetType(user, USER_PATIENT);
-  user->patient = malloc(sizeof(patient_t));
-  if(user->patient == NULL) {
-    return false;
-  }
-
-  user->patient->placeholder = 42;
-  return true;
+  user->type = type;
 }
 
-bool
-UserSetDoctor(user_t *user)
+char *
+UserFullName(user_t *user)
 {
-  UserSetType(user->type, USER_DOCTOR);
-  user->doctor = malloc(sizeof(doctor_t));
-  if(user->doctor == NULL) {
-    return false;
+  char buffer[USER_FULL_NAME_LENGTH];
+  char *result;
+
+  snprintf(buffer, sizeof(buffer), "%s, %s", user->last_name, user->first_name);
+
+  result = strdup(buffer);
+  if(result == NULL) {
+    return NULL;
   }
 
-  user->doctor->placeholder = 42;
-  return true;
+  return result;
 }
 
-bool
-UserSetAdministrator(user_t *user)
+void
+UserUpdateAddress(user_t *user, char *address)
 {
-  UserSetType(user->type, USER_ADMINISTRATOR);
-  user->administrator = malloc(sizeof(administrator_t));
-  if(user->administrator == NULL) {
-    return false;
-  }
-
-  user->administrator->placeholder = 42;
-  return true;
+  snprintf(user->address, sizeof(user->address) + 1, "%s", address);
 }
