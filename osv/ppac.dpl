@@ -7,10 +7,6 @@ import:
 
 metadata:
 
-  // objects
-  Record
-  Cert
-
   // Actors
   Patient
   Doctor
@@ -24,13 +20,15 @@ metadata:
   // current type variable
   ActiveUser
 
+  // Protect routines
+  DoctorOnly
+
 policy:
 
   ppacPol =
 
     // explicit failures
-    storeGrp(mem == [+Record], env == [-Doctor] -> fail "Must be a doctor to edit records")
-    ^ storeGrp(mem == [+Cert], env == [-Admin] -> fail "Must be an admin to edit certifications")
+    allGrp(code == [+DoctorOnly], env == [-Doctor] -> fail "non doctor executing doctor only routines")
 
     // to set the behavior, we track the call site of UserSetType and piggyback usr_type policy
 
@@ -88,3 +86,8 @@ require:
   init webapp.ppac.d_init                  {SettingD}
 
   init webapp.ppac.active                  {ActiveUser}
+
+  init webapp.ppac.rm_treatment            {DoctorOnly}
+  init webapp.ppac.add_treatment 	   {DoctorOnly}
+  init webapp.ppac.rm_record               {DoctorOnly}
+  init webapp.ppac.add_record    	   {DoctorOnly}
