@@ -1,0 +1,22 @@
+include isp-runtime-frtos.mk
+
+# SOURCE is the main test source file to be built
+# TARGET is the destination of the compiled test application
+
+TESTS_DIR := tests/
+
+TEST_HELPER_SOURCES := $(TESTS_DIR)/test_status.c
+TEST_HELPER_OBJECTS := $(patsubst %.c,%.o,$(TEST_HELPER_SOURCES))
+
+CFLAGS += $(ISP_CFLAGS)
+INCLUDES += $(ISP_INCLUDES)
+LDFLAGS += $(ISP_LDFLAGS)
+
+all: $(TARGET)
+
+$(TARGET): $(ISP_OBJECTS) $(ISP_LIBS) $(ISP_DEPS) $(TEST_HELPER_OBJECTS)
+	$(CC) $(CFLAGS) $(INCLUDES) $(ISP_LIBS) $(ISP_OBJECTS) $(TEST_HELPER_OBJECTS) \
+		$(SOURCE) -o $@ $(LDFLAGS)
+
+$(TEST_HELPER_OBJECTS): %.o: %.c $(TEST_HELPER_SOURCES)
+	$(CC) $(CFLAGS) $(INCLUDES) $< -c -o $@

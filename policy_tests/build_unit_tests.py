@@ -1,4 +1,3 @@
-
 import pytest
 import functools
 import itertools
@@ -14,14 +13,13 @@ from helper_fns import *
 
 # function automatically found by pytest
 def test_build(test, runtime):
-
     if not runtime:
         pytest.fail("No target runtime provided")
 
     if not test:
         pytest.fail("No test provided to build")
 
-    do_build(test, "output", runtime)
+    # do_build(test, "output", runtime)
 
 def do_build(main, outDir, runtime):
 
