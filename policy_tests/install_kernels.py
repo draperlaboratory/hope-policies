@@ -15,21 +15,21 @@ def test_install_kernel(policy, debug):
         pytest.fail("No policy specified");
     
     # TODO: don't hardcode path?
-    installPath = os.path.join("kernels", policy)
-    if not os.path.isdir(installPath):
-        os.makedirs(installPath)
+    install_path = os.path.join("kernels", policy)
+    if not os.path.isdir(install_path):
+        os.makedirs(install_path)
     
     # do not remake kernel unneccesarily
-    if os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
+    if os.path.isfile(os.path.join(install_path, "librv32-renode-validator.so")):
         pytest.skip("Using previously compiled kernel")
     
-    makePolicy(policy, installPath, debug)
+    makePolicy(policy, "kernels", debug)
 
-    if not os.path.isfile(os.path.join(installPath, "librv32-renode-validator.so")):
-        pytest.fail("Failed to generate validator shared object")
+    if not os.path.isfile(os.path.join(install_path, "librv32-renode-validator.so")):
+        pytest.fail("Failed to generate validator shared object. Install path: {}".format(install_path))
 
 
-def makePolicy(policy, install_path, debug)
+def makePolicy(policy, install_path, debug):
     install_kernel_cmd = "isp_kernel"
     install_kernel_args = [policy, install_path]
     if debug is True:
