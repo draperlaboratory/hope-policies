@@ -6,6 +6,9 @@ ERROR_MSGS ?= --tb=short
 TEST_FORMAT ?= junitxml
 TEST_OUTPUT_FILE ?= report.xml
 
+TEST_BUILD_DIR := build
+TEST_OUTPUT_DIR := output
+
 # default for unadorned `make`
 CONFIG ?= qemu
 JOBS   ?= 1
@@ -88,6 +91,7 @@ build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: install-runtime 
+	mkdir -p $(TEST_BUILD_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 # build PEX kernels
@@ -108,10 +112,11 @@ run-tests: MODULE ?= $($(CONFIG)_MODULE)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests build-kernels
+	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 clean: clean-kernels
-	rm -rf output debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
+	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
 		tests/isp-runtime-frtos* tests/isp-runtime-hifive* tests/*.o
 
 clean-kernels:
