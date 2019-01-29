@@ -1,0 +1,3 @@
+include ../isp-runtime-hifive.mk
+TARGET := $(OUTPUT_DIR)/ripe-$(TECHNIQUE)-$(INJECT_PARAM)-$(CODE_PTR)-$(LOCATION)-$(FUNCTION)
+include common.mk

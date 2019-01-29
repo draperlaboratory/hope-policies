@@ -31,12 +31,12 @@ def test_build(test, runtime):
     if not os.path.isfile(os.path.join(test_dir, makefile)):
         pytest.fail("Test Makefile not found")
 
-    output_dir = os.path.abspath("build")
+    output_dir = os.path.join(os.path.abspath("build"), runtime)
     output_subdir = os.path.join(output_dir, os.path.dirname(test))
     if not os.path.isdir(output_subdir):
         os.mkdir(output_subdir)
 
-    output_file = os.path.join(output_dir, "-".join([test, runtime]))
+    output_file = os.path.join(output_dir, test)
     if os.path.isfile(output_file):
         pytest.skip("Using previously compiled test")
 
