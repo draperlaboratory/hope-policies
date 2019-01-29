@@ -36,6 +36,10 @@ def test_build(test, runtime):
     if not os.path.isdir(output_subdir):
         os.mkdir(output_subdir)
 
+    output_file = os.path.join(output_dir, "-".join([test, runtime]))
+    if os.path.isfile(output_file):
+        pytest.skip("Using previously compiled test")
+
     make_args = ["make", "-C", test_dir, "-f", makefile]
     devnull = open(os.devnull, 'w')
     env = dict(os.environ, OUTPUT_DIR=output_dir)
