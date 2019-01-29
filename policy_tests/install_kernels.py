@@ -10,7 +10,6 @@ import shutil
 import multiprocessing
 
 def test_install_kernel(policy, debug):
-
     if not policy:
         pytest.fail("No policy specified");
     
@@ -23,16 +22,12 @@ def test_install_kernel(policy, debug):
     if os.path.isfile(os.path.join(install_path, "librv32-renode-validator.so")):
         pytest.skip("Using previously compiled kernel")
     
-    makePolicy(policy, "kernels", debug)
-
-    if not os.path.isfile(os.path.join(install_path, "librv32-renode-validator.so")):
-        pytest.fail("Failed to generate validator shared object. Install path: {}".format(install_path))
-
-
-def makePolicy(policy, install_path, debug):
     install_kernel_cmd = "isp_kernel"
-    install_kernel_args = [policy, install_path]
+    install_kernel_args = [policy, "kernels"]
     if debug is True:
         install_kernel_args += ["-d"]
 
     subprocess.call([install_kernel_cmd] + install_kernel_args)
+
+    if not os.path.isfile(os.path.join(install_path, "librv32-renode-validator.so")):
+        pytest.fail("Failed to generate validator shared object. Install path: {}".format(install_path))

@@ -11,7 +11,7 @@ INCLUDES += $(ISP_INCLUDES)
 INCLUDES += -I.
 LDFLAGS += $(ISP_LDFLAGS)
 
-TARGET := $(patsubst %,$(OUTPUT_DIR)/%,$(TEST))
+TARGET := $(patsubst %,$(OUTPUT_DIR)/%-frtos,$(TEST))
 SOURCE := $(patsubst %,%.c,$(TEST))
 
 all: $(TARGET)

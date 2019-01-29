@@ -10,7 +10,6 @@ import glob
 import errno
 import helper_fns
 
-
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
@@ -41,11 +40,12 @@ def test_new(test, runtime, policy, sim, rule_cache):
 
     output_dir = os.path.abspath("output")
     policy_dir = os.path.abspath(os.path.join("kernels", policy))
-    test_path = os.path.abspath(os.path.join("build", test))
+    test_name = "-".join([test, runtime])
+    test_path = os.path.abspath(os.path.join("build", test_name))
 
     runTest(test_path, runtime, policy_dir, sim, rule_cache, output_dir)
     
-    test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
+    test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test_name), policy]))
     if rule_cache != "":
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache[0], rule_cache[1])
 

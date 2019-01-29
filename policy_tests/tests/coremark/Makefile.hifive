@@ -18,7 +18,7 @@ SOURCES += ../test_status.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 
-TARGET := $(OUTPUT_DIR)/coremark
+TARGET := $(OUTPUT_DIR)/coremark-hifive
 
 all: $(TARGET)
 
