@@ -15,7 +15,7 @@ import helper_fns
 #   function returns the reason why
 def incompatibleReason(test, policy):
     # skip negative tests that are not matched to the correct policy
-    if "/" in test and (not test.split("/")[0] in policy):
+    if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy):
         return "incorrect policy to detect violation in negative test"
     return None
 
@@ -29,7 +29,7 @@ def xfailReason(test):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache):
+def test_new(test, runtime, policy, sim, rule_cache, output_subdir=None):
     incompatible = incompatibleReason(test, policy)
     if incompatible:
         pytest.skip(incompatible)
@@ -39,6 +39,9 @@ def test_new(test, runtime, policy, sim, rule_cache):
         pytest.xfail(xfail)
 
     output_dir = os.path.abspath("output")
+    if output_subdir is not None:
+        output_dir = os.path.join(output_dir, output_subdir)
+
     policy_dir = os.path.abspath(os.path.join("kernels", policy))
     test_path = os.path.abspath(os.path.join("build", runtime, test))
 
@@ -56,7 +59,7 @@ def runTest(test, runtime, policy, sim, rule_cache, output_dir):
     run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
         run_args += ["-C", rule_cache[0], "-c", rule_cache[1]]
-
+    
     devnull = open(os.devnull, 'w')
     subprocess.Popen([run_cmd] + run_args, stdout=devnull, stderr=subprocess.STDOUT).wait()
 

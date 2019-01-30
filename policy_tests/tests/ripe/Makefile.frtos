@@ -1,3 +1,2 @@
 include ../isp-runtime-frtos.mk
-TARGET := $(OUTPUT_DIR)/coremark-frtos
 include common.mk

@@ -13,24 +13,24 @@ attacks = ['shellcode', 'returnintolibc', 'rop', 'dataonly']
 techniques = ['direct', 'indirect']
 
 
-def violates_heap_policy(attack, technique, location, pointer, function):
+def violatesHeapPolicy(attack, technique, location, pointer, function):
     if location is 'heap':
         return True
     return False
 
-def violates_composite_policy(attack, technique, location, pointer, function):
-    return violates_heap_policy(attack, technique, location, pointer, function) or \
-        violates_stack_policy(attack, technique, location, pointer, function)   or \
-        violates_rwx_policy(attack, technique, location, pointer, function)     or \
-        violates_three_class_policy(attack, technique, location, pointer, function)
+def violatesCompositePolicy(attack, technique, location, pointer, function):
+    return violatesHeapPolicy(attack, technique, location, pointer, function) or \
+        violatesStackPolicy(attack, technique, location, pointer, function)   or \
+        violatesRwxPolicy(attack, technique, location, pointer, function)     or \
+        violatesThreeClassPolicy(attack, technique, location, pointer, function)
 
-def violates_stack_policy(attack, technique, location, pointer, function):
+def violatesStackPolicy(attack, technique, location, pointer, function):
     if pointer is 'ret':
         return True
     return False
 
 
-def violates_three_class_policy(attack, technique, location, pointer, function):
+def violatesThreeClassPolicy(attack, technique, location, pointer, function):
     if pointer is 'ret':
         return True
     if attack in ['rop', 'shellcode']:
@@ -38,7 +38,7 @@ def violates_three_class_policy(attack, technique, location, pointer, function):
     return False
 
 
-def violates_rwx_policy(attack, technique, location, pointer, function):
+def violatesRwxPolicy(attack, technique, location, pointer, function):
     if attack is 'shellcode':
         return True
     return False
@@ -75,7 +75,7 @@ class RIPEPolicyConfig:
         yield self.function
         yield self.policies
 
-def is_attack_possible(attack, technique, location, pointer, function):
+def isAttackPossible(attack, technique, location, pointer, function):
     # temporarily disabling broken longjmp parameters
     if 'longjmp' in pointer:
         return False
@@ -126,7 +126,7 @@ def generate_ripe_policy_configs(techniques, attacks, locations, code_ptr, funcs
             for loc in locations:
                 for ptr in code_ptr:
                     for func in funcs:
-                        if is_attack_possible(attack, tech, loc, ptr, func):
+                        if isAttackPossible(attack, tech, loc, ptr, func):
                             config = RIPEPolicyConfig(attack, tech, loc, ptr, func, policies)
                             ripe_policy_configs.append(tuple(config))
 
@@ -140,20 +140,20 @@ def main():
     global pointers
 
     policies = [
-        RIPEPolicy('osv.hifive.main.heap', violates_heap_policy),
-        RIPEPolicy('osv.hifive.main.stack', violates_stack_policy),
-        RIPEPolicy('osv.hifive.main.threeClass', violates_three_class_policy),
-        RIPEPolicy('osv.hifive.main.rwx', violates_rwx_policy),
-        RIPEPolicy('osv.hifive.main.heap-rwx-stack-threeClass', violates_composite_policy),
+        RIPEPolicy('osv.hifive.main.heap', violatesHeapPolicy),
+        RIPEPolicy('osv.hifive.main.stack', violatesStackPolicy),
+        RIPEPolicy('osv.hifive.main.threeClass', violatesThreeClassPolicy),
+        RIPEPolicy('osv.hifive.main.rwx', violatesRwxPolicy),
+        RIPEPolicy('osv.hifive.main.heap-rwx-stack-threeClass', violatesCompositePolicy),
     ]
 
     configs = generate_ripe_policy_configs(techniques, attacks, locations, pointers, ['memcpy'], policies)
 
-    print "class RipeConfigs:"
-    print "    configs= ["
+    print("class RipeConfigs:")
+    print("    configs= [")
     for config in configs:
-        print "      " + str(config) + ","
-    print "    ]"
+        print("      " + str(config) + ",")
+    print("    ]")
         
 if __name__ == "__main__":
     main()
