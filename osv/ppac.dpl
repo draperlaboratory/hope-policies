@@ -7,6 +7,8 @@ import:
 
 metadata:
 
+  Return-Instr
+
   // Actors
   Patient
   Doctor
@@ -33,7 +35,7 @@ policy:
     // to set the behavior, we track the call site of UserSetType and piggyback usr_type policy
 
         // make sure env has SettingP within set_patient function
-//        ^ retGrp( code == [+SettingP], env == [+SettingP] -> env = env[-SettingP] )
+        ^ allGrp( code == [+SettingP,+Return-Instr], env == [+SettingP] -> env = env[-SettingP] )
         ^ allGrp( code == [+SettingP], env == [-SettingP] -> env = env[+SettingP] )
 
 	// mark mem as patient
@@ -43,7 +45,7 @@ policy:
    	^ loadGrp(mem == [+Patient], addr == _, env == _ -> env = env, res = mem ) 
 
         // same for doctor	
-//        ^ retGrp( code == [+SettingD], env == [+SettingD] -> env = env[-SettingD] )
+        ^ allGrp( code == [+SettingD,+Return-Instr], env == [+SettingD] -> env = env[-SettingD] )
         ^ allGrp( code == [+SettingD], env == [-SettingD] -> env = env[+SettingD] )
         ^ storeGrp( code == [+Assignment], env == [+SettingD] -> mem = {Doctor} )
 
@@ -55,6 +57,7 @@ policy:
     ^ storeGrp(mem == [+ActiveUser], val == _ -> env = env, mem = mem) 
 
     // all else allowed
+    ^ retGrp(code == _, env == _ -> )
     ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
     ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
     ^ jumpGrp(code == _, env == _ -> return = {})
@@ -81,6 +84,8 @@ require:
   init Tools.Elf.Section.SHF_ALLOC         {}
   init Tools.Elf.Section.SHF_EXECINSTR     {}
   init Tools.Elf.Section.SHF_WRITE         {}
+
+  init llvm.CFI_Return-Instr               {Return-Instr}
 
   init webapp.ppac.p_init                  {SettingP}
   init webapp.ppac.d_init                  {SettingD}
