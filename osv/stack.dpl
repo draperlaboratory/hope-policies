@@ -70,8 +70,8 @@ require:
     init ISA.RISCV.CSR.MTVec                 {}
 
     init dover.Tools.RTL.longjmp             {ClearAuthority}
-    init dover.Tools.GCC.Prologue            {Prologue}
-    init dover.Tools.GCC.Epilogue            {Epilogue}
+    init llvm.Prologue            {Prologue}
+    init llvm.Epilogue            {Epilogue}
 
     init SOC.IO.UART_0                       {}
     init SOC.Memory.Flash_0                  {}

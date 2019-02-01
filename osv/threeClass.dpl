@@ -105,7 +105,7 @@ require:
     init llvm.CFI_Call-Instr                 {Call-Instr}
     init llvm.CFI_Branch-Instr               {Branch-Instr}
     init llvm.CFI_Return-Instr               {Return-Instr}
-    init dover.Tools.GCC.NoCFI               {NoCFI}
+    init llvm.NoCFI                          {NoCFI}
 
     init Tools.Link.MemoryMap.Default        {}
     init Tools.Link.MemoryMap.UserHeap       {}
