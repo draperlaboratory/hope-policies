@@ -20,6 +20,7 @@ qemu_SIM = qemu
 qemu_TESTS = hifive
 qemu_RUNTIME = hifive
 qemu_MODULE = osv.hifive.main
+qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 qemu_XDIST = -n $(JOBS) # run in parallel
 qemu: CONFIG=qemu
@@ -30,7 +31,7 @@ renode_SIM = renode
 renode_TESTS = frtos
 renode_RUNTIME = frtos
 renode_MODULE = osv.frtos.main
-renode_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+renode_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 renode_XDIST=
 renode: CONFIG=renode
 renode: all

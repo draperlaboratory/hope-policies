@@ -34,6 +34,7 @@ class AllTests:
         "stack/stack_fails_1.c",
         "threeClass/jump_data_fails_1.c",
         "threeClass/call_fails_1.c",
+        "taint/tainted_print_fails.c",
         "dhrystone7000.c",
     ]
 

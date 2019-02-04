@@ -1,9 +1,9 @@
 import itertools
 import operator
 
-runtime = "frtos"
+runtime = "hifive"
 module = "osv."
-policies = ["cfi", "rwx", "stack", "heap", "threeClass", "none", "testSimple", "testComplex"]
+policies = ["cfi", "rwx", "stack", "taint", "heap", "threeClass", "none", "testSimple", "testComplex"]
 
 print("module " + module + runtime + ".main:")
 
