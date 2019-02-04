@@ -23,7 +23,7 @@ def test_install_kernel(policy, debug):
         pytest.skip("Using previously compiled kernel")
     
     install_kernel_cmd = "isp_kernel"
-    install_kernel_args = [policy, "kernels"]
+    install_kernel_args = [policy, "-o", "kernels"]
     if debug is True:
         install_kernel_args += ["-d"]
 
