@@ -9,5 +9,3 @@ prof_results.log
 *.pyc
 kernels/
 .pytest_cache
-tests/*.o
-isp-runtime-*

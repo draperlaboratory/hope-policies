@@ -41,7 +41,7 @@ COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
 
-PYTEST_ARGS ?= -v -rsx --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=180 $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
 # RIPE Tests
 build-ripe: SIM ?= $($(CONFIG)_SIM)
@@ -77,8 +77,8 @@ list-build: COLLECT_ONLY= --collect-only
 list-build: build-tests
 
 install-runtime:
-	isp_install_runtime frtos
-	isp_install_runtime hifive
+	isp_install_runtime frtos -b tests
+	isp_install_runtime hifive -b tests
 
 # build the tests 
 build-tests: SIM ?= $($(CONFIG)_SIM)
@@ -111,7 +111,8 @@ run-tests: build-tests build-kernels
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 clean: clean-kernels
-	rm -rf output debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache isp-runtime-frtos* isp-runtime-hifive*
+	rm -rf output debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
+		tests/isp-runtime-frtos* tests/isp-runtime-hifive* tests/*.o
 
 clean-kernels:
 	rm -rf kernels/

@@ -1,16 +1,19 @@
-include isp-runtime-frtos.mk
+include isp-runtime-hifive.mk
 
-# SOURCE is the main test source file to be built
-# TARGET is the destination of the compiled test application
+# TEST is the name of the test to compile
 
-TESTS_DIR := tests/
+# OUTPUT_DIR := ../output
 
-TEST_HELPER_SOURCES := $(TESTS_DIR)/test_status.c
+TEST_HELPER_SOURCES := test_status.c
 TEST_HELPER_OBJECTS := $(patsubst %.c,%.o,$(TEST_HELPER_SOURCES))
 
 CFLAGS += $(ISP_CFLAGS)
 INCLUDES += $(ISP_INCLUDES)
+INCLUDES += -I.
 LDFLAGS += $(ISP_LDFLAGS)
+
+TARGET := $(patsubst %,$(OUTPUT_DIR)/%,$(TEST))
+SOURCE := $(patsubst %,%.c,$(TEST))
 
 all: $(TARGET)
 
