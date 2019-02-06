@@ -20,6 +20,12 @@ static bool test_status_negative = false;
 
 extern uint32_t uiPortGetWallTimestampUs(void);
 
+int isp_main(int argc, char *argv[])
+{
+  test_main();
+  return 0;
+}
+
 // Identify positive case (test will end)
 void test_positive(){
   test_status_positive = true;

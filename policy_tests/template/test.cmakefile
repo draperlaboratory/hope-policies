@@ -1,7 +1,0 @@
-PYTHON ?= python3
-
-rtos:
-	cd build && cmake . && make -j10
-
-clean:
-	rm -rf *.o build/main build/*.log

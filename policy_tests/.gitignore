@@ -1,5 +1,6 @@
 .cache/
 output/
+build/
 debug/
 __pycache__/
 assets/
