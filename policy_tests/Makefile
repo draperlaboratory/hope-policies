@@ -12,7 +12,7 @@ TEST_OUTPUT_DIR := output
 # default for unadorned `make`
 CONFIG ?= qemu
 JOBS   ?= 1
-all: build-tests build-kernels run-tests
+all: install-runtime build-tests build-kernels run-tests
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}

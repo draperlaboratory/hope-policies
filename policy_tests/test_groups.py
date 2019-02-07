@@ -35,6 +35,9 @@ class AllTests:
         "threeClass/call_fails_1",
         "taint/tainted_print_fails",
         "dhrystone7000",
+        "webapp",
+        "usr_type/webapp_double_usr_set",
+        "password/webapp_password_leak",
     ]
 
 class frtos(AllTests):
