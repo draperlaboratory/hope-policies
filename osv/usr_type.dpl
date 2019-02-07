@@ -1,0 +1,97 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.usr_type:
+
+/*
+ * The Simple Test policy provides very little security in a simple way.
+ * It is used to check that the very basics of policy compilation and
+ * execution are still working.
+ *
+ * It does enforce marginally more security than the "none" policy in that
+ * it requires all instructions to be tagged with opgroups.  It will
+ * therefore prevent attacks that write code and attempt to execute it.
+ * This is the minimum level of security it is possible to provide
+ * without use of the __NO_CHECKS escape hatch.
+ */
+
+import:
+      osv.riscv
+
+metadata:
+        Nothing
+	Assignment
+	Assigned
+
+policy:
+        // a policy that allows anything and contributes no results
+    usrTypePol =
+
+            // do not overwrite assignment
+            storeGrp(mem == [+Assigned] -> fail "Attempt to re-assign user permissions denied" )
+
+	    // mark mem as assigned
+            ^ storeGrp(code == [Assignment] -> mem = {Assigned})
+
+	    // allow everything else
+            ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+            ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+            ^ jumpGrp(code == _, env == _ -> return = {})
+            ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+            ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+            ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+            ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+            ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ privGrp(code == _, env == _ -> env = env)
+            ^ systemGrp(code == _, env == _ -> env = env)
+            ^ floatGrp(code == _, env == _ -> env = env)
+            ^ atomicGrp(code == _, env == _ -> env = env)
+
+require:
+    init ISA.RISCV.Reg.Env                   {Nothing}
+    init ISA.RISCV.Reg.Default               {Nothing}
+    init ISA.RISCV.Reg.RZero                 {Nothing}
+    init ISA.RISCV.CSR.Default               {Nothing}
+    init ISA.RISCV.CSR.MTVec                 {Nothing}
+
+    init Tools.Link.MemoryMap.Default        {Nothing}
+    init Tools.Link.MemoryMap.UserHeap       {Nothing}
+    init Tools.Link.MemoryMap.UserStack      {Nothing}
+
+    init SOC.IO.UART_0                       {Nothing}
+    init SOC.Memory.Flash_0                  {Nothing}
+    init SOC.Memory.Ram_0                    {Nothing}
+
+    init SOC.IO.TEST                         {Nothing}
+
+    init Tools.Elf.Section.SHF_ALLOC         {Nothing}
+    init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
+    init Tools.Elf.Section.SHF_WRITE         {Nothing}
+
+    init webapp.usr_type.assignment          {Assignment}

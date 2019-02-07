@@ -27,6 +27,7 @@ TestDatabase(void)
   }
 
   user2 = UserCreate("user2", "toor", "User", "Two", "123 Main St.");
+  UserSetPatient(user2);
   if(user2 == NULL) {
     printf("Failed to create user2\n");
     return false;
