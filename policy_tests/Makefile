@@ -22,7 +22,7 @@ webapp_SIM = qemu
 webapp_TESTS = webapp,usr_type/webapp_double_usr_set,password/webapp_password_leak
 webapp_RUNTIME = hifive
 webapp_MODULE = osv.hifive.main
-webapp_POLICIES = none,usr_type,password
+webapp_POLICIES = none,usr_type,password,ppac
 webapp_XDIST = -n $(JOBS) # run in parallel
 webapp: CONFIG=webapp
 webapp: all

@@ -74,24 +74,24 @@ policy:
             ^ atomicGrp(code == _, env == _ -> env = env)
 
 require:
-    init ISA.RISCV.Reg.Env                   {Nothing}
-    init ISA.RISCV.Reg.Default               {Nothing}
-    init ISA.RISCV.Reg.RZero                 {Nothing}
-    init ISA.RISCV.CSR.Default               {Nothing}
-    init ISA.RISCV.CSR.MTVec                 {Nothing}
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
 
-    init Tools.Link.MemoryMap.Default        {Nothing}
-    init Tools.Link.MemoryMap.UserHeap       {Nothing}
-    init Tools.Link.MemoryMap.UserStack      {Nothing}
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.IO.UART_0                       {Nothing}
-    init SOC.Memory.Flash_0                  {Nothing}
-    init SOC.Memory.Ram_0                    {Nothing}
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.TEST                         {Nothing}
+    init SOC.IO.TEST                         {}
 
-    init Tools.Elf.Section.SHF_ALLOC         {Nothing}
-    init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
-    init Tools.Elf.Section.SHF_WRITE         {Nothing}
+    init Tools.Elf.Section.SHF_ALLOC         {}
+    init Tools.Elf.Section.SHF_EXECINSTR     {}
+    init Tools.Elf.Section.SHF_WRITE         {}
 
     init webapp.usr_type.assignment          {Assignment}

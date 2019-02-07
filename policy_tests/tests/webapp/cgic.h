@@ -238,4 +238,3 @@ cgiFormResultType cgiValueEscapeData(const char *data, int len);
 #endif /* __cplusplus */
 
 #endif /* CGI_C */
-

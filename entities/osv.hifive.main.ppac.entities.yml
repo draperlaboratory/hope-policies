@@ -1,0 +1,18 @@
+-
+  name: webapp.ppac.p_init
+  elf_name: MedicalSetPatient
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: webapp.ppac.d_init
+  elf_name: MedicalSetDoctor
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: webapp.ppac.active
+  elf_name: current_auth_user_type
+  tag_all: true
+  kind: symbol
+  optional: true
