@@ -33,15 +33,15 @@ type:
   data Color = Int (20)
 
 metadata:
-  Cell Color        // Color applied to memory cell
-  Pointer Color     // Color applied to a pointer value
-  RawHeap           // Unallocated heap memory
-  ApplyColor        // Function for applying colors
-  RemoveColor       // Function for removing colors
-  NewColor          // Special memory cell used with ApplyColor
-  DelColor          // Special memory cell used with RemoveColor
-  ModColor          // Special value used to modify heap cells
-  AntiPointer       // Special Value that eliminates color from pointers
+  Cell Color,        // Color applied to memory cell
+  Pointer Color,     // Color applied to a pointer value
+  RawHeap,           // Unallocated heap memory
+  ApplyColor,        // Function for applying colors
+  RemoveColor,       // Function for removing colors
+  NewColor,          // Special memory cell used with ApplyColor
+  DelColor,          // Special memory cell used with RemoveColor
+  ModColor,          // Special value used to modify heap cells
+  AntiPointer,       // Special Value that eliminates color from pointers
   SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
   
 policy:
