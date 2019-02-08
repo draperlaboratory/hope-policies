@@ -39,6 +39,7 @@ metadata:
   ApplyColor,        // Function for applying colors
   RemoveColor,       // Function for removing colors
   NewColor,          // Special memory cell used with ApplyColor
+  KeepColor,
   DelColor,          // Special memory cell used with RemoveColor
   ModColor,          // Special value used to modify heap cells
   AntiPointer,       // Special Value that eliminates color from pointers
@@ -77,6 +78,8 @@ policy:
 // Create new colors
    ^ storeGrp(   code == [ApplyColor], mem == [+NewColor], env == _
               -> mem = mem[(Pointer new)], env = env )
+   ^ storeGrp(   code == [ApplyColor], mem == [+KeepColor], val == [+(Pointer color)], env == _
+              -> mem = mem[(Pointer color)], env = env )
    ^ storeGrp(   code == [RemoveColor], mem == [+DelColor], env == _
               -> mem = mem, env = env )
    ^ loadGrp(   code == [ApplyColor], mem == [+NewColor], env == _
@@ -88,6 +91,8 @@ policy:
    ^ storeGrp(   code == _, mem == [+NewColor], env == _
               -> mem = mem, env = env )
    ^ storeGrp(   code == _, mem == [+DelColor], env == _
+              -> mem = mem, env = env )
+   ^ storeGrp(   code == _, mem == [+KeepColor], env == _
               -> mem = mem, env = env )
    ^ storeGrp(   code == _, mem == [+ModColor], env == _
               -> mem = mem, env = env )
@@ -143,9 +148,10 @@ require:
 
     init dover.Kernel.Code.ApplyTag.pvPortMalloc        {}
     init dover.Kernel.Code.ApplyTag.dover_tag           {ApplyColor}
+    init dover.Kernel.Code.ApplyTag.dover_mark_free     {ApplyColor}
     init dover.Kernel.Code.ApplyTag.dover_untag         {RemoveColor}
     init dover.Kernel.Code.ApplyTag.dover_remove_tag    {RemoveColor}
     init dover.Kernel.Code.ApplyTag.dover_ptr_tag       {NewColor}
     init dover.Kernel.Code.ApplyTag.dover_ptr_untag     {DelColor}
+    init dover.Kernel.Code.ApplyTag.dover_ptr_free_list {KeepColor}
     init dover.Tools.RTL._vfprintf_r                    {SpecialCaseVFPRINTF}
-    

@@ -20,6 +20,11 @@
     kind: symbol
     tag_all: true
 -
+    name: dover.Kernel.Code.ApplyTag.dover_mark_free
+    elf_name: dover_mark_free
+    kind: symbol
+    tag_all: true
+-
     name: dover.Kernel.Code.ApplyTag.dover_untag
     elf_name: dover_untag
     kind: symbol
@@ -37,6 +42,11 @@
 -
     name: dover.Kernel.Code.ApplyTag.dover_ptr_untag
     elf_name: dover_ptr_untag
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.dover_ptr_free_list
+    elf_name: dover_ptr_free_list
     kind: symbol
     tag_all: true
 -
