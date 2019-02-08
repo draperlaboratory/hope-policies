@@ -5,8 +5,8 @@ import:
   osv.riscv
 
 metadata:
-  Taint // is data tainted
-  Clean // can tainted data be written here?
+  Taint, // is data tainted
+  Clean  // can tainted data be written here?
 
 policy:
   taintPol =
