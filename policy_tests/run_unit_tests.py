@@ -29,7 +29,7 @@ def xfailReason(test):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, output_subdir=None):
+def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
     incompatible = incompatibleReason(test, policy)
     if incompatible:
         pytest.skip(incompatible)
@@ -43,6 +43,9 @@ def test_new(test, runtime, policy, sim, rule_cache, output_subdir=None):
         output_dir = os.path.join(output_dir, output_subdir)
 
     policy_dir = os.path.abspath(os.path.join("kernels", policy))
+    if debug is True:
+        policy_dir = "-".join([policy_dir, "debug"])
+
     test_path = os.path.abspath(os.path.join("build", runtime, test))
 
     runTest(test_path, runtime, policy_dir, sim, rule_cache, output_dir)

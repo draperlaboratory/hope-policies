@@ -13,8 +13,9 @@ def test_install_kernel(policy, debug):
     if not policy:
         pytest.fail("No policy specified");
     
-    # TODO: don't hardcode path?
     install_path = os.path.join("kernels", policy)
+    if debug is True:
+        install_path = "-".join([install_path, "debug"])
     if not os.path.isdir(install_path):
         os.makedirs(install_path)
     

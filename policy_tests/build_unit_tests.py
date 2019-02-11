@@ -12,8 +12,6 @@ import re
 
 from helper_fns import *
 
-# TODO: don't explicitly list these tests
-
 # True when test has its own Makefile
 def isMakefileTest(test):
     if os.path.isdir(os.path.join("tests", test)):
@@ -51,10 +49,6 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
     output_subdir = os.path.join(output_dir, os.path.dirname(test))
     if not os.path.isdir(output_subdir):
         os.mkdir(output_subdir)
-
-    output_file = os.path.join(output_dir, test)
-    if os.path.isfile(output_file):
-        pytest.skip("Using previously compiled test")
 
     make_args = ["make", "-C", test_dir, "-f", makefile]
     if extra_args is not None:
