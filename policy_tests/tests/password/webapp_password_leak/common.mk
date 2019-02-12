@@ -10,7 +10,7 @@ SOURCES += ../../test_status.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 
-TARGET := $(OUTPUT_DIR)/webapp_password_leak
+TARGET := $(OUTPUT_DIR)/password/webapp_password_leak
 
 all: $(TARGET)
 

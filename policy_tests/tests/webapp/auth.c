@@ -17,7 +17,7 @@ AuthClearCurrentUserType(void)
 {
 }
 
-void
+void __attribute__ ((noinline))
 AuthSetCurrentUserType(user_t *user)
 {
   current_auth_user_type = user->type;

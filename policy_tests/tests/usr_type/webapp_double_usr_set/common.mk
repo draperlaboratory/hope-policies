@@ -10,7 +10,7 @@ SOURCES += ../../test_status.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 
-TARGET := $(OUTPUT_DIR)/webapp_double_usr_set
+TARGET := $(OUTPUT_DIR)/usr_type/webapp_double_usr_set
 
 all: $(TARGET)
 

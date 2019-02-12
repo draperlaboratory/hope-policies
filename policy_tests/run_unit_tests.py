@@ -19,9 +19,12 @@ def incompatibleReason(test, policy):
         return "incorrect policy to detect violation in negative test"
     return None
 
-def xfailReason(test):
+def xfailReason(test, policy):
     if "longjump" in test:
         return "longjump test known to be broken"
+    if policy in ["osv.hifive.main.ppac", "osv.frtos.main.ppac"]:
+        return "PPAC policy cannot run standalone"
+
     return None
 
 # test function found automatically by pytest. Pytest calls
@@ -34,7 +37,7 @@ def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test)
+    xfail = xfailReason(test, policy)
     if xfail:
         pytest.xfail(xfail)
 
@@ -53,6 +56,9 @@ def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
     if rule_cache != "":
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache[0], rule_cache[1])
+
+    if debug is True:
+        test_output_dir = "-".join([test_output_dir, "debug"])
 
     testResult(test_output_dir)
 
