@@ -9,7 +9,25 @@ import:
   osv.none
   osv.testSimple
   osv.testComplex
+
+  osv.usr_type
+  osv.password
+  osv.ppac
+
 policy:
+  password = passwordPol
+
+  usr_type = usrTypePol
+
+  password-ppac = passwordPol & ppacPol
+  password-usr_type = passwordPol & usrTypePol
+  ppac-usr_type = ppacPol & usrTypePol
+
+  password-ppac-usr_type = passwordPol & usrTypePol & ppacPol
+  heap-ppac-usr_type = heapPol & usrTypePol & ppacPol
+
+  ppac = ppacPol
+
   cfi = cfiPol
   rwx = rwxPol
   stack = stackPol

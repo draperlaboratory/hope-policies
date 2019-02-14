@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "medical.h"
+#include "test.h"
 
 bool
 MedicalDoctorCertified(doctor_t *doctor, char *condition)
@@ -81,12 +82,9 @@ MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
 
   doctor = MedicalGetDoctor(doctor_user);
   patient = MedicalGetPatient(patient_user);
+
   if(patient == NULL || doctor == NULL) {
     return MEDICAL_INVALID_USER;
-  }
-
-  if(MedicalDoctorCertified(doctor, condition) == false) {
-    return MEDICAL_NOT_CERTIFIED;
   }
 
   if(patient->record_count == MEDICAL_MAX_RECORDS) {

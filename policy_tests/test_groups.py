@@ -36,7 +36,7 @@ class AllTests:
         "taint/tainted_print_fails",
         "dhrystone7000",
         "doctor_user_works",
-        "ppac-usr_type/patient_user_fails",
+        "heap-ppac-usr_type/patient_user_fails",
         "usr_type/webapp_double_usr_set",
         "password/webapp_password_leak",
     ]

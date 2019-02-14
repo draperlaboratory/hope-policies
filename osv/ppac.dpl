@@ -4,6 +4,7 @@ import:
 
   osv.riscv
   osv.usr_type
+  osv.heap
 
 metadata:
 
@@ -25,39 +26,43 @@ metadata:
   // Protect routines
   DoctorOnly
 
+  // Protect patient data
+  PatientData
+
 policy:
 
   ppacPol =
 
-    // explicit failures
-    allGrp(code == [+DoctorOnly], env == [-Doctor] -> fail "non doctor executing doctor only routines")
+    // Explicit failure for writing to Patient data without Doctor privileges
+    storeGrp(mem == [+PatientData], code == [-SettingP], env == [-Doctor] -> fail "non doctor writing to patient data")
 
-    // to set the behavior, we track the call site of UserSetType and piggyback usr_type policy
+    // Apply and remove tags on patient memory
+    ^ storeGrp(code == [+ApplyColor], val == [ModColor], env == [+SettingP] -> mem = {PatientData}, env = env)
+    ^ storeGrp(code == [+RemoveColor], mem == [+PatientData], val == [ModColor], env == [+SettingP] -> mem = mem[-PatientData], env = env)
 
-        // make sure env has SettingP within set_patient function
-        ^ allGrp( code == [+SettingP,+Return-Instr], env == [+SettingP] -> env = env[-SettingP] )
-        ^ allGrp( code == [+SettingP], env == [-SettingP] -> env = env[+SettingP] )
-
-	// mark mem as patient
-        ^ storeGrp( code == [+Assignment], env == [+SettingP] -> mem = {Patient} )
-
-	// propogate patient tag
+    // Tag patient memory, relying on User Type policy
+    // 1. apply SettingP to PC to track call site inside Assignment code
+    // 2. mark mem as patient
+    // 3. propogate patient tag
+    ^ allGrp( code == [+SettingP,+Return-Instr], env == [+SettingP] -> env = env[-SettingP] )
+    ^ allGrp( code == [+SettingP], env == [-SettingP] -> env = env[+SettingP] )
+    ^ storeGrp( code == [+Assignment], env == [+SettingP] -> mem = {Patient} )
    	^ loadGrp(mem == [+Patient], addr == _, env == _ -> env = env, res = mem ) 
 
-        // same for doctor	
-        ^ allGrp( code == [+SettingD,+Return-Instr], env == [+SettingD] -> env = env[-SettingD] )
-        ^ allGrp( code == [+SettingD], env == [-SettingD] -> env = env[+SettingD] )
-        ^ storeGrp( code == [+Assignment], env == [+SettingD] -> mem = {Doctor} )
+    // Same for doctor
+    ^ allGrp( code == [+SettingD,+Return-Instr], env == [+SettingD] -> env = env[-SettingD] )
+    ^ allGrp( code == [+SettingD], env == [-SettingD] -> env = env[+SettingD] )
+    ^ storeGrp( code == [+Assignment], env == [+SettingD] -> mem = {Doctor} )
+    ^ loadGrp(mem == [+Doctor], addr == _, env == _ -> env = env, res = mem )
 
-    // set the current permission in env when new user authenticated
+    // Set the current permission in env when new user authenticated
     ^ storeGrp(mem == [+ActiveUser], val == [+Patient] -> env = env[+Patient], mem = mem)
     ^ storeGrp(mem == [+ActiveUser], val == [+Doctor] -> env = env[+Doctor], mem = mem)
 
-    // default: active user badge keeps its active user tag
+    // Default: active user badge keeps its active user tag
     ^ storeGrp(mem == [+ActiveUser], val == _ -> env = env, mem = mem) 
 
-    // all else allowed
-    ^ retGrp(code == _, env == _ -> )
+    // All else allowed
     ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
     ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
     ^ jumpGrp(code == _, env == _ -> return = {})
@@ -93,6 +98,6 @@ require:
   init webapp.ppac.active                  {ActiveUser}
 
   init webapp.ppac.rm_treatment            {DoctorOnly}
-  init webapp.ppac.add_treatment 	   {DoctorOnly}
+  init webapp.ppac.add_treatment 	         {DoctorOnly}
   init webapp.ppac.rm_record               {DoctorOnly}
-  init webapp.ppac.add_record    	   {DoctorOnly}
+  init webapp.ppac.add_record    	         {DoctorOnly}

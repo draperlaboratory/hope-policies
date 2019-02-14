@@ -27,15 +27,9 @@
 module osv.usr_type:
 
 /*
- * The Simple Test policy provides very little security in a simple way.
- * It is used to check that the very basics of policy compilation and
- * execution are still working.
- *
- * It does enforce marginally more security than the "none" policy in that
- * it requires all instructions to be tagged with opgroups.  It will
- * therefore prevent attacks that write code and attempt to execute it.
- * This is the minimum level of security it is possible to provide
- * without use of the __NO_CHECKS escape hatch.
+ * The User Type policy enforces a write-once rule on any data modified by
+ * code tagged as Assignment. This policy is designed to prevent users from
+ * escalating their privileges by overwriting their own privilege values.
  */
 
 import:
@@ -47,16 +41,15 @@ metadata:
 	Assigned
 
 policy:
-        // a policy that allows anything and contributes no results
     usrTypePol =
 
             // do not overwrite assignment
             storeGrp(mem == [+Assigned] -> fail "Attempt to re-assign user permissions denied" )
 
-	    // mark mem as assigned
+            // mark mem as assigned
             ^ storeGrp(code == [Assignment] -> mem = {Assigned})
 
-	    // allow everything else
+            // allow everything else
             ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
             ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
             ^ jumpGrp(code == _, env == _ -> return = {})
