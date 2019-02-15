@@ -22,8 +22,9 @@ def incompatibleReason(test, policy):
 def xfailReason(test, policy):
     if "longjump" in test:
         return "longjump test known to be broken"
-    if policy in ["osv.hifive.main.ppac", "osv.frtos.main.ppac"]:
-        return "PPAC policy cannot run standalone"
+    if "ppac" in policy and policy not in ["osv.hifive.main.heap-ppac-usr_type",
+                                           "osv.frtos.main.heap-ppac-usr_type"]:
+        return "PPAC policy must run with heap and usr_type policies"
 
     return None
 

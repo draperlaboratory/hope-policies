@@ -26,6 +26,8 @@ policy:
   password-ppac-usr_type = passwordPol & usrTypePol & ppacPol
   heap-ppac-usr_type = heapPol & usrTypePol & ppacPol
 
+  heap-password-ppac-usr_type = heapPol & passwordPol & usrTypePol & ppacPol
+
   ppac = ppacPol
 
   cfi = cfiPol

@@ -6,6 +6,20 @@
 
 #define USER_FULL_NAME_LENGTH (USER_NAME_LENGTH * 2 + 3)
 
+uintptr_t isp_tag_password_char = 0xa;
+
+static void __attribute__ ((noinline)) 
+UserTagPassword(user_t *user)
+{
+  size_t i;
+
+  for (i = 0; i < USER_PASSWORD_LENGTH/(sizeof(uintptr_t)); i+=sizeof(uintptr_t)) {
+    *(uintptr_t*)(&(user->password[i])) = isp_tag_password_char;
+  }
+
+  return;
+}
+
 user_t *
 UserCreate(char *username, char *password, char *first_name, char *last_name,
            char *address)
@@ -17,9 +31,10 @@ UserCreate(char *username, char *password, char *first_name, char *last_name,
     return NULL;
   }
   memset(user, 0, sizeof(user_t));
+  
+  user->password[0] = 'h';
+  UserTagPassword(user);
 
-  // user type is write-once
-  //  UserSetType(user, USER_UNKNOWN);
   user->data = NULL;
 
   snprintf(user->username, sizeof(user->username) + 1, "%s", username);
