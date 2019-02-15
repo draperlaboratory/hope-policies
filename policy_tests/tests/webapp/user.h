@@ -28,11 +28,8 @@ user_t *UserCreate(char *user_name, char *password,
                    char *first_name, char *last_name,
                    char *address);
 void UserDestroy(user_t *user);
-
 char *UserFullName(user_t *user);
-
 void UserSetType(user_t *user, user_type_t type);
-
 void UserUpdateAddress(user_t *user, char *address);
 
 #endif // USER_H

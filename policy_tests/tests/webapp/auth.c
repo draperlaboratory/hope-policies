@@ -11,16 +11,21 @@
 static hash_table_t active_session_table;
 
 volatile int current_auth_user_type;
+volatile int current_auth_patient_data;
 
-void
+void __attribute__ ((noinline))
 AuthClearCurrentUserType(void)
 {
+  current_auth_user_type = 0;
+  current_auth_patient_data = 0;
 }
 
 void __attribute__ ((noinline))
 AuthSetCurrentUserType(user_t *user)
 {
+  AuthClearCurrentUserType();
   current_auth_user_type = user->type;
+  current_auth_patient_data = (int)user->data;
 }
 
 static char *

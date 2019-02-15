@@ -12,17 +12,18 @@ TEST_OUTPUT_DIR := output
 # default for unadorned `make`
 CONFIG ?= qemu
 JOBS   ?= 1
-all: install-runtime build-tests build-kernels run-tests
+all: build-tests build-kernels run-tests
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
 #   minimum variables (probably) needed: SIM, TESTS, RUNTIME, POLICIES
 
+# config for webapp tests and policies
 webapp_SIM = qemu
-webapp_TESTS = webapp_doctor_user_works,heap-ppac-usr_type/webapp_patient_user_fails,usr_type/webapp_double_usr_set,password/webapp_password_leak
+webapp_TESTS = webapp
 webapp_RUNTIME = hifive
 webapp_MODULE = osv.hifive.main
-webapp_POLICIES = none,usr_type,password,ppac,heap
+webapp_POLICIES = none,userType,password,ppac,heap
 webapp_XDIST = -n $(JOBS) # run in parallel
 webapp: CONFIG=webapp
 webapp: all

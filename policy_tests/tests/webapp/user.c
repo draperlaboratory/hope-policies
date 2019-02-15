@@ -87,3 +87,9 @@ UserUpdateAddress(user_t *user, char *address)
 {
   snprintf(user->address, sizeof(user->address) + 1, "%s", address);
 }
+
+void __attribute__ ((noinline))
+UserSetAdmin(user_t *user)
+{
+  UserSetType(user, USER_ADMINISTRATOR);
+}

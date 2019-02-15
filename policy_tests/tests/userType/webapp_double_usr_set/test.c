@@ -15,13 +15,13 @@ TestPrivilegeEscalation(void)
   user = UserCreate("user", "toor", "User", "Two", "123 Main St.");
   MedicalSetPatient(user);
   if(user == NULL) {
-    printf("Failed to create user\n");
+    t_printf("Failed to create user\n");
   }
 
   // illegal attempt tp escalate privilege
-  printf("trying to set user to doctor\n");
+  t_printf("trying to set user to doctor\n");
   MedicalSetDoctor(user);
-  printf("success\n");
+  t_printf("success\n");
 }
 
 int test_main() {

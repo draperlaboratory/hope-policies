@@ -17,14 +17,14 @@ def incompatibleReason(test, policy):
     # skip negative tests that are not matched to the correct policy
     if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy):
         return "incorrect policy to detect violation in negative test"
+    if "ppac" in policy and policy not in ["osv.hifive.main.heap-ppac-userType",
+                                           "osv.frtos.main.heap-ppac-userType"]:
+        return "PPAC policy must run with heap and userType policies"
     return None
 
 def xfailReason(test, policy):
     if "longjump" in test:
         return "longjump test known to be broken"
-    if "ppac" in policy and policy not in ["osv.hifive.main.heap-ppac-usr_type",
-                                           "osv.frtos.main.heap-ppac-usr_type"]:
-        return "PPAC policy must run with heap and usr_type policies"
 
     return None
 

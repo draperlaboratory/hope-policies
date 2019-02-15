@@ -36,10 +36,25 @@ class AllTests:
         "taint/tainted_print_fails",
         "dhrystone7000",
         "webapp_doctor_user_works",
-        "heap-ppac-usr_type/webapp_patient_user_fails",
-        "usr_type/webapp_double_usr_set",
+        "webapp_admin_user_works",
+        "webapp_patient_read_works",
+        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
+        "heap-ppac-userType/webapp_patient_info_leak_fails",
+        "userType/webapp_double_usr_set",
         "password/webapp_password_leak",
     ]
+
+class webapp(AllTests):
+    tests = [
+        "webapp_doctor_user_works",
+        "webapp_admin_user_works",
+        "webapp_patient_read_works",
+        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
+        "heap-ppac-userType/webapp_patient_info_leak_fails",
+        "userType/webapp_double_usr_set",
+        "password/webapp_password_leak",
+    ]
+
 
 class frtos(AllTests):
     tests = [test for test in AllTests.tests
@@ -48,6 +63,7 @@ class frtos(AllTests):
                                   "coremark",
                                  ]
                                  )]
+
 
 class hifive(AllTests):
     tests = [test for test in AllTests.tests
@@ -58,7 +74,8 @@ class hifive(AllTests):
                                  )]
 
 test_groups = {'all' : AllTests,
-           'frtos' : frtos,
-           'hifive' : hifive
+               'frtos' : frtos,
+               'hifive' : hifive,
+               'webapp' : webapp
 }
 

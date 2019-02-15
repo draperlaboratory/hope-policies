@@ -10,10 +10,11 @@
 #include "test.h"
 #include "test_status.h"
 
-void TestDoctorAddRecord(void)
+void TestAdminModifyRecord(void)
 {
   user_t *user;
-  user_t *doctor_user;
+  user_t *admin_user;
+  patient_t *patient_data;
 
   user = UserCreate("patient_user", "password123", "Pat", "Ient", "123 Main St.");
   if(user == NULL) {
@@ -21,19 +22,21 @@ void TestDoctorAddRecord(void)
     return;
   }                                                                         
 
-  doctor_user = UserCreate("doctor_user", "password123", "Pat", "Ient", "123 Main St.");
-  if(doctor_user == NULL) {
+  admin_user = UserCreate("admin_user", "password123", "Pat", "Ient", "123 Main St.");
+  if(admin_user == NULL) {
     t_printf("Failed to create user\n");
     return;
   }
 
   MedicalSetPatient(user);
-  MedicalSetDoctor(doctor_user);
+  UserSetAdmin(admin_user);
 
-  AuthSetCurrentUserType(doctor_user);
+  AuthSetCurrentUserType(admin_user);
   
-  // should not fail, since doctor is active
-  MedicalAddRecord(doctor_user, user, "Fractured Authentication", "The doctor is not logged in");
+  patient_data = MedicalGetPatient(user);
+  
+  // should not fail, since admin is active
+  patient_data->record_count = 42;
 }
 
 int test_main()
@@ -41,7 +44,7 @@ int test_main()
   test_positive();
   test_begin();
 
-  TestDoctorAddRecord();
+  TestAdminModifyRecord();
 
   return test_done();
 }

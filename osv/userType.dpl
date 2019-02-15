@@ -23,12 +23,13 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-module osv.password:
 
-/* Password protection policy
- * - Prevents the leakage of passwords stored in memory
- * - Tracks taint of password memory
- * - Fails if data tainted by password memory reaches the UART
+module osv.userType:
+
+/*
+ * The User Type policy enforces a write-once rule on any data modified by
+ * code tagged as Assignment. This policy is designed to prevent users from
+ * escalating their privileges by overwriting their own privilege values.
  */
 
 import:
@@ -36,31 +37,18 @@ import:
 
 
 metadata:
-  Password
-  Public
+  Assignment
+  Assigned
 
 
 policy:
-  passwordPol =
-  
-    // Explicit failure for writing password out
-    storeGrp( mem == [+Public], addr == _, val == [+Password], env == _
-            -> fail "Password tried to escape server" )
+  userTypePol =
 
-    // Public memory is always public
-    ^ storeGrp(   mem == [+Public], addr == _, val == _, env == _ -> env = env, mem = mem)
+    // Do not overwrite assignment
+    storeGrp(mem == [+Assigned] -> fail "Attempt to re-assign user permissions denied" )
 
-    // Set password protection
-    ^ storeGrp(mem == _, addr == _, val == [+Password], env == _ -> env = env, mem = val)
-
-    // Propogate password protection
-    ^ arithGrp(env == _, op1 == [+Password], op2 == _ -> env = env, res = op1)
-    ^ arithGrp(env == _, op1 == _, op2 == [+Password] -> env = env, res = op2)
-    ^ mulDivRemGrp(code == _, env == _, op1 == [+Password], op2 == _ -> env = env, res = op1)
-    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == [+Password] -> env = env, res = op2)
-    ^ immArithGrp(env == _, op1 == [+Password] -> env = env, res = op1)
-    ^ loadGrp(mem == [+Password], addr == _, env == _ -> env = env, res = mem )
-    ^ storeGrp(mem == [+Password], addr == _, val == _, env == _ -> env = env, mem = mem ) 
+    // Mark memory as assigned
+    ^ storeGrp(code == [Assignment] -> mem = {Assigned})
 
     // Allow everything else
     ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
@@ -79,7 +67,6 @@ policy:
     ^ floatGrp(code == _, env == _ -> env = env)
     ^ atomicGrp(code == _, env == _ -> env = env)
 
-
 require:
   init ISA.RISCV.Reg.Env                   {}
   init ISA.RISCV.Reg.Default               {}
@@ -91,7 +78,7 @@ require:
   init Tools.Link.MemoryMap.UserHeap       {}
   init Tools.Link.MemoryMap.UserStack      {}
 
-  init SOC.IO.UART_0                       {Public}
+  init SOC.IO.UART_0                       {}
   init SOC.Memory.Flash_0                  {}
   init SOC.Memory.Ram_0                    {}
 
@@ -101,4 +88,4 @@ require:
   init Tools.Elf.Section.SHF_EXECINSTR     {}
   init Tools.Elf.Section.SHF_WRITE         {}
 
-  init webapp.var.pw_byte                  {Password}
+  init webapp.userType.assignment          {Assignment}
