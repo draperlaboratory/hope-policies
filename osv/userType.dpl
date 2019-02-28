@@ -1,0 +1,91 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.userType:
+
+/*
+ * The User Type policy enforces a write-once rule on any data modified by
+ * code tagged as Assignment. This policy is designed to prevent users from
+ * escalating their privileges by overwriting their own privilege values.
+ */
+
+import:
+  osv.riscv
+
+
+metadata:
+  Assignment
+  Assigned
+
+
+policy:
+  userTypePol =
+
+    // Do not overwrite assignment
+    storeGrp(mem == [+Assigned] -> fail "Attempt to re-assign user permissions denied" )
+
+    // Mark memory as assigned
+    ^ storeGrp(code == [Assignment] -> mem = {Assigned})
+
+    // Allow everything else
+    ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+    ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+    ^ jumpGrp(code == _, env == _ -> return = {})
+    ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+    ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+    ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+    ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+    ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+    ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+    ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+    ^ privGrp(code == _, env == _ -> env = env)
+    ^ systemGrp(code == _, env == _ -> env = env)
+    ^ floatGrp(code == _, env == _ -> env = env)
+    ^ atomicGrp(code == _, env == _ -> env = env)
+
+require:
+  init ISA.RISCV.Reg.Env                   {}
+  init ISA.RISCV.Reg.Default               {}
+  init ISA.RISCV.Reg.RZero                 {}
+  init ISA.RISCV.CSR.Default               {}
+  init ISA.RISCV.CSR.MTVec                 {}
+
+  init Tools.Link.MemoryMap.Default        {}
+  init Tools.Link.MemoryMap.UserHeap       {}
+  init Tools.Link.MemoryMap.UserStack      {}
+
+  init SOC.IO.UART_0                       {}
+  init SOC.Memory.Flash_0                  {}
+  init SOC.Memory.Ram_0                    {}
+
+  init SOC.IO.TEST                         {}
+
+  init Tools.Elf.Section.SHF_ALLOC         {}
+  init Tools.Elf.Section.SHF_EXECINSTR     {}
+  init Tools.Elf.Section.SHF_WRITE         {}
+
+  init webapp.userType.assignment          {Assignment}

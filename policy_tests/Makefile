@@ -18,6 +18,16 @@ all: build-tests build-kernels run-tests
 #   variable format: {config_name}_{VAR}
 #   minimum variables (probably) needed: SIM, TESTS, RUNTIME, POLICIES
 
+# config for webapp tests and policies
+webapp_SIM = qemu
+webapp_TESTS = webapp
+webapp_RUNTIME = hifive
+webapp_MODULE = osv.hifive.main
+webapp_POLICIES = none,userType,password,ppac,heap
+webapp_XDIST = -n $(JOBS) # run in parallel
+webapp: CONFIG=webapp
+webapp: all
+
 # simple qemu build
 qemu_SIM = qemu
 qemu_TESTS = hifive
@@ -127,7 +137,8 @@ run-tests: build-tests build-kernels
 
 clean: clean-kernels
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
-		tests/isp-runtime-frtos* tests/isp-runtime-hifive* tests/*.o
+		tests/isp-runtime-frtos* tests/isp-runtime-hifive*
+	find tests/ -type f -name '*.o' -delete
 
 clean-kernels:
 	rm -rf kernels/

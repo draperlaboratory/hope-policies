@@ -1,0 +1,8 @@
+warning: Entity SOC.IO.CLINT has no binding
+warning: Entity SOC.IO.Debug has no binding
+warning: Entity SOC.IO.ITIM has no binding
+warning: Entity SOC.IO.PLIC has no binding
+warning: Entity SOC.Memory.Ram_0 has no binding
+warning: Entity dover.Tools.GCC.Epilogue has no binding
+warning: Entity dover.Tools.GCC.Prologue has no binding
+warning: Entity dover.Tools.RTL.longjmp has no binding

@@ -3,7 +3,7 @@ import operator
 
 runtime = "hifive"
 module = "osv."
-policies = ["cfi", "rwx", "stack", "taint", "heap", "threeClass", "none", "testSimple", "testComplex"]
+policies = ["cfi", "rwx", "stack", "taint", "heap", "threeClass", "none", "testSimple", "testComplex", "password", "ppac", "userType"]
 
 print("module " + module + runtime + ".main:")
 
