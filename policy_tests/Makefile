@@ -134,6 +134,8 @@ build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $(XDIST) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
 
+kernels: clean-kernels build-kernels
+
 # run tests
 run-tests: SIM ?= $($(CONFIG)_SIM)
 run-tests: TESTS ?= $($(CONFIG)_TESTS)
