@@ -37,23 +37,23 @@ import:
 
 metadata:
   //3 cfi classes: targets
-  Call-Tgt
-  Return-Tgt
-  Branch-Tgt
+  Call-Tgt,
+  Return-Tgt,
+  Branch-Tgt,
 
   //3 cfi classes: instr that sets state, state checked at target
-  Call-Instr
-  Return-Instr
-  Branch-Instr
+  Call-Instr,
+  Return-Instr,
+  Branch-Instr,
 
 	//State for the 3 cfi classes
-  Jumping-Call
-  Jumping-Return
-  Jumping-Branch
+  Jumping-Call,
+  Jumping-Return,
+  Jumping-Branch,
 
   //get out of jail free
-  NoCFI
-  Jumping-NoCFI
+  NoCFI,
+  Jumping-NoCFI,
   None
 
 policy:

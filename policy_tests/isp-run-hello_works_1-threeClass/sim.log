@@ -1,0 +1,6 @@
+QEMU 2.12.92 monitor - type 'help' for more information
+(qemu) set policy dir: /home/jmerrill/.local/kernels/osv.hifive.main.threeClass
+set taginfo file: /home/jmerrill/policies/policy_tests/isp-run-hello_works_1-threeClass/bininfo/hello_works_1.taginfo
+set soc cfg file: /home/jmerrill/.local/kernels/osv.hifive.main.threeClass/soc_cfg/hifive_e_cfg.yml
+setting callbacks
+violation address: 0x20400070

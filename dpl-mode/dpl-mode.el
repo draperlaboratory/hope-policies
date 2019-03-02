@@ -14,7 +14,7 @@
             ;; define several category of keywords
             (x-keywords '("module" "import" "group" "metadata" "policy" "require" "type" "data"))
             (x-constants '("code" "mem" "env" "op1" "op2" "res" "target" "addr" "val" "return" "csr"))
-            (x-functions '("init"))
+            (x-functions '("init" "grp"))
 
             (x-keywords-regexp (regexp-opt x-keywords 'words))
             (x-constants-regexp (regexp-opt x-constants 'words))

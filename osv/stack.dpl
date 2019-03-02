@@ -36,9 +36,9 @@ import:
  */
 
 metadata:
-    Frame
-    Prologue
-    Epilogue
+    Frame,
+    Prologue,
+    Epilogue,
     ClearAuthority
 
 policy:

@@ -17,11 +17,15 @@ def incompatibleReason(test, policy):
     # skip negative tests that are not matched to the correct policy
     if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy):
         return "incorrect policy to detect violation in negative test"
+    if "ppac" in policy and policy not in ["osv.hifive.main.heap-ppac-userType",
+                                           "osv.frtos.main.heap-ppac-userType"]:
+        return "PPAC policy must run with heap and userType policies"
     return None
 
-def xfailReason(test):
+def xfailReason(test, policy):
     if "longjump" in test:
         return "longjump test known to be broken"
+
     return None
 
 # test function found automatically by pytest. Pytest calls
@@ -29,12 +33,12 @@ def xfailReason(test):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, output_subdir=None):
+def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
     incompatible = incompatibleReason(test, policy)
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test)
+    xfail = xfailReason(test, policy)
     if xfail:
         pytest.xfail(xfail)
 
@@ -43,6 +47,9 @@ def test_new(test, runtime, policy, sim, rule_cache, output_subdir=None):
         output_dir = os.path.join(output_dir, output_subdir)
 
     policy_dir = os.path.abspath(os.path.join("kernels", policy))
+    if debug is True:
+        policy_dir = "-".join([policy_dir, "debug"])
+
     test_path = os.path.abspath(os.path.join("build", runtime, test))
 
     runTest(test_path, runtime, policy_dir, sim, rule_cache, output_dir)
@@ -50,6 +57,9 @@ def test_new(test, runtime, policy, sim, rule_cache, output_subdir=None):
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
     if rule_cache != "":
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache[0], rule_cache[1])
+
+    if debug is True:
+        test_output_dir = "-".join([test_output_dir, "debug"])
 
     testResult(test_output_dir)
 
