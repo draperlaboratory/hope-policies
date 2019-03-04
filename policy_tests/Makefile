@@ -10,7 +10,7 @@ TEST_BUILD_DIR := build
 TEST_OUTPUT_DIR := output
 
 # default for unadorned `make`
-CONFIG ?= qemu
+CONFIG ?= bare
 JOBS   ?= 1
 all: build-tests build-kernels run-tests
 
@@ -28,26 +28,26 @@ webapp_XDIST = -n $(JOBS) # run in parallel
 webapp: CONFIG=webapp
 webapp: all
 
-# simple qemu build
-qemu_SIM = qemu
-qemu_TESTS = hifive
-qemu_RUNTIME = hifive
-qemu_MODULE = osv.hifive.main
-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
-qemu_XDIST = -n $(JOBS) # run in parallel
-qemu: CONFIG=qemu
-qemu: all
+# config for bare-metal
+bare_SIM = qemu
+bare_TESTS = hifive
+bare_RUNTIME = hifive
+bare_MODULE = osv.hifive.main
+bare_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
+bare_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+bare_XDIST = -n $(JOBS) # run in parallel
+bare: CONFIG=bare
+bare: all
 
-# simple renode build
-renode_SIM = renode
-renode_TESTS = frtos
-renode_RUNTIME = frtos
-renode_MODULE = osv.frtos.main
-renode_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
-renode_XDIST=
-renode: CONFIG=renode
-renode: all
+# config for FreeRTOS
+frtos_SIM = qemu
+frtos_TESTS = frtos
+frtos_RUNTIME = frtos
+frtos_MODULE = osv.frtos.main
+frtos_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
+frtos_XDIST=
+frtos: CONFIG=frtos
+frtos: all
 
 # default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
