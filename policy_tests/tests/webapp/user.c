@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "user.h"
+#include "mem.h"
 
 #define USER_FULL_NAME_LENGTH (USER_NAME_LENGTH * 2 + 3)
 
@@ -69,15 +70,14 @@ UserSetType(user_t *user, user_type_t type)
 char *
 UserFullName(user_t *user)
 {
-  char buffer[USER_FULL_NAME_LENGTH];
   char *result;
 
-  snprintf(buffer, sizeof(buffer), "%s, %s", user->last_name, user->first_name);
-
-  result = strdup(buffer);
+  result = malloc(USER_FULL_NAME_LENGTH + 1);
   if(result == NULL) {
     return NULL;
   }
+
+  snprintf(result, USER_FULL_NAME_LENGTH, "%s, %s", user->last_name, user->first_name);
 
   return result;
 }
