@@ -72,6 +72,7 @@ build-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-ripe: install-runtime $(RIPE_CONFIGS)
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe/ripe.py
 
 run-ripe: SIM ?= $($(CONFIG)_SIM)
@@ -112,6 +113,7 @@ build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: install-runtime 
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 # build PEX kernels
