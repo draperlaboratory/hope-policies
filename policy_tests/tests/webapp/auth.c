@@ -5,6 +5,7 @@
 #include "auth.h"
 #include "hashtable.h"
 #include "database.h"
+#include "mem.h"
 
 #define AUTH_TABLE_CAPACITY 0x10
 

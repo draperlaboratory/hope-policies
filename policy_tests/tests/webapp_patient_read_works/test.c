@@ -43,7 +43,7 @@ void TestPatientRead(void)
   MedicalAddRecord(doctor_user, patient_user1, "Sample Condition", "sample notes");
 
   AuthSetCurrentUserType(patient_user2);
-  
+
   patient_data = MedicalGetPatient(patient_user2);
 
   // PPAC policy should not violate since patient 2 is the active user
