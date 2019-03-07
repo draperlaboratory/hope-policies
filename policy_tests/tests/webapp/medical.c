@@ -5,6 +5,7 @@
 
 #include "medical.h"
 #include "test.h"
+#include "mem.h"
 
 bool
 MedicalDoctorCertified(doctor_t *doctor, char *condition)
@@ -96,7 +97,9 @@ MedicalAddRecord(user_t *doctor_user, user_t *patient_user,
 
   patient->records[patient->record_count].doctor_user = doctor_user;
 
-  patient->records[patient->record_count].notes = strdup(notes);
+  patient->records[patient->record_count].notes = malloc(strlen(notes) + 1);
+  snprintf(patient->records[patient->record_count].notes, strlen(notes), "%s", notes);
+
   if(patient->records[patient->record_count].notes == NULL) {
     return MEDICAL_FAILURE;
   }

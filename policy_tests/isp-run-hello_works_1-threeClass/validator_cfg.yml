@@ -1,4 +1,0 @@
----
-   policy_dir: /home/jmerrill/.local/kernels/osv.hifive.main.threeClass
-   tags_file: /home/jmerrill/policies/policy_tests/isp-run-hello_works_1-threeClass/bininfo/hello_works_1.taginfo
-   soc_cfg_path: /home/jmerrill/.local/kernels/osv.hifive.main.threeClass/soc_cfg/hifive_e_cfg.yml

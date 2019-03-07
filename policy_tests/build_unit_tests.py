@@ -59,8 +59,10 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
         env['TEST'] = test
     if extra_env is not None:
         env.update(extra_env)
+
+    log_basename = os.path.basename(test) + ".log"
+    log_file = open(os.path.join(output_dir, "log", log_basename), 'w')
     
-    devnull = open(os.devnull, 'w')
-    result = subprocess.Popen(make_args, env=env, stdout=devnull, stderr=subprocess.STDOUT).wait()
+    result = subprocess.Popen(make_args, env=env, stdout=log_file, stderr=subprocess.STDOUT).wait()
     if result is not 0:
         pytest.fail("Build failed. Command: OUTPUT_DIR={} extra_env={} {}".format(output_dir, extra_env, make_args))
