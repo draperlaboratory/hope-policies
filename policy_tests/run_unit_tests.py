@@ -33,7 +33,7 @@ def xfailReason(test, policy):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
+def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, output_subdir=None):
     incompatible = incompatibleReason(test, policy)
     if incompatible:
         pytest.skip(incompatible)
@@ -52,11 +52,11 @@ def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
 
     test_path = os.path.abspath(os.path.join("build", runtime, test))
 
-    runTest(test_path, runtime, policy_dir, sim, rule_cache, output_dir)
+    runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size, output_dir)
     
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
     if rule_cache != "":
-        test_output_dir = test_output_dir + "-{}-{}".format(rule_cache[0], rule_cache[1])
+        test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
 
     if debug is True:
         test_output_dir = "-".join([test_output_dir, "debug"])
@@ -64,13 +64,15 @@ def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
     testResult(test_output_dir)
 
 
-def runTest(test, runtime, policy, sim, rule_cache, output_dir):
+def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir):
     run_cmd = "isp_run_app"
     run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
-        run_args += ["-C", rule_cache[0], "-c", rule_cache[1]]
+        run_args += ["-C", rule_cache, "-c", rule_cache_size]
     
     devnull = open(os.devnull, 'w')
+    print("Rule cache: {}".format(rule_cache))
+    print("Run args: {}".format(run_args))
     subprocess.Popen([run_cmd] + run_args, stdout=devnull, stderr=subprocess.STDOUT).wait()
 
 def testResult(test_output_dir):
