@@ -70,10 +70,11 @@ def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir)
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
     
-    devnull = open(os.devnull, 'w')
-    print("Rule cache: {}".format(rule_cache))
-    print("Run args: {}".format(run_args))
-    subprocess.Popen([run_cmd] + run_args, stdout=devnull, stderr=subprocess.STDOUT).wait()
+    process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    run_output,run_error = process.communicate()
+    if process.returncode != 0:
+        pytest.fail("Runtime failed with error: \n{}".format(run_error))
+
 
 def testResult(test_output_dir):
     uart_log_file = os.path.join(test_output_dir, "uart.log")   
@@ -81,10 +82,6 @@ def testResult(test_output_dir):
 
     if not os.path.isdir(test_output_dir):
         pytest.fail("No test output directory {}".format(test_output_dir))
-        return
-
-    if not os.path.isfile(uart_log_file):
-        pytest.fail("Simulator did not produce UART log file")
         return
 
     if not os.path.isfile(uart_log_file):
