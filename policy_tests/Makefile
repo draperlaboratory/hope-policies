@@ -104,6 +104,9 @@ install-runtime:
 	isp_install_runtime hifive -b tests
 
 # build the tests 
+clean-tests:
+	rm -rf $(TEST_BUILD_DIR)
+
 build-tests: SIM ?= $($(CONFIG)_SIM)
 build-tests: TESTS ?= $($(CONFIG)_TESTS)
 build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -116,7 +119,12 @@ build-tests: install-runtime
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
-# build PEX kernels
+tests: clean-tests build-tests
+
+# PEX kernels
+clean-kernels:
+	rm -rf kernels/
+
 build-kernels: SIM ?= $($(CONFIG)_SIM)
 build-kernels: TESTS ?= $($(CONFIG)_TESTS)
 build-kernels: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -125,6 +133,8 @@ build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
+
+kernels: clean-kernels build-kernels
 
 # run tests
 run-tests: SIM ?= $($(CONFIG)_SIM)
@@ -137,10 +147,7 @@ run-tests: build-tests build-kernels
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
-clean: clean-kernels
-	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
+clean: clean-kernels clean-tests
+	rm -rf $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
 		tests/isp-runtime-frtos* tests/isp-runtime-hifive*
 	find tests/ -type f -name '*.o' -delete
-
-clean-kernels:
-	rm -rf kernels/
