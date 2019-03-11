@@ -44,3 +44,8 @@
     elf_name: _svfprintf_r
     kind: symbol
     tag_all: true
+-
+    name: alert.debugger
+    elf_name: ALERT
+    kind: symbol
+    tag_all: true
