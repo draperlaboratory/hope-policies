@@ -48,7 +48,7 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
     output_dir = os.path.join(os.path.abspath("build"), runtime)
     output_subdir = os.path.join(output_dir, os.path.dirname(test))
     if not os.path.isdir(output_subdir):
-        os.mkdir(output_subdir)
+        os.makedirs(output_subdir, exist_ok=True)
 
     make_args = ["make", "-C", test_dir, "-f", makefile]
     if extra_args is not None:
