@@ -35,12 +35,6 @@
 // include malloc wrappers
 #include "mem.h"
 
-volatile int ALERT;
-
-int bleh(int stackvar) {
-  printf("stackvar addr = 0x%x\n", &stackvar);
-}
-
 /*
  * Test to allocate memory and check that we can 
  * catch out of bounds accesses.
@@ -50,33 +44,20 @@ int test_main(void)
     uintptr_t *ptr, *write_ptr, *read_ptr;
     volatile uintptr_t dummy;
 
-    int stackvar = 9;
-
-    bleh(stackvar);
-    printf("stackvar = 0x%x\n", &stackvar);
-    
-    printf("addr of read_ptr = 0x%x\n", &read_ptr);
-    
     test_negative(); // identify test as negative (should not complete)
 
     ptr = malloc(8 * sizeof(uintptr_t));
-    ALERT = 3;
     write_ptr = ptr;
 
-    printf("malloced ptr = 0x%x\n", ptr);
-    
     for(int i =0; i < 8;i++){
       *write_ptr = i;
       write_ptr++;
     }
-
-    ALERT = 2;
+	
     read_ptr = ptr -1;
 
     test_begin();
 
-    ALERT = 1;
-    
     dummy = *read_ptr;  // this should fail
 
     // None of the following code should execute

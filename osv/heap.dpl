@@ -42,15 +42,13 @@ metadata:
   DelColor,          // Special memory cell used with RemoveColor
   ModColor,          // Special value used to modify heap cells
   AntiPointer,       // Special Value that eliminates color from pointers
-  SpecialCaseVFPRINTF,  // Mark vprinter code to enable special case hack
-  alert 
+  SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
+
 
 policy:
   heapPol =
 // Special case to avoid hacking printf %x
     andiGrp(code == [SpecialCaseVFPRINTF], env == _, op1 == _ -> env = env, res = {})
-
-    ^ storeGrp(mem == [alert], addr == _, code == _, val == _, env == _ -> mem = {alert})
 
 // Handle generic pointer arithmetic
    ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
@@ -140,8 +138,6 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
-
-    init alert.debugger {alert}
 
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
