@@ -63,7 +63,7 @@ policy:
 // Allow arithmetic on same colored ptrs
    ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [+(Pointer color)] -> env = env, res = op1)
    ^ arithGrp(env == _, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
-   ^ immArithGrp(env == _, op1 == [-(Pointer _)] -> env = env, res = {})
+   ^ immArithGrp(env == _, op1 == [-(Pointer _)] -> env = env, res = op1)
    ^ immArithGrp(env == _, op1 == [+(Pointer color)] -> env = env, res = op1)
 
 // Apply and remove color from heap allocations
