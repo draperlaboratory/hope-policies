@@ -33,7 +33,7 @@ def xfailReason(test, policy):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
+def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, output_subdir=None):
     incompatible = incompatibleReason(test, policy)
     if incompatible:
         pytest.skip(incompatible)
@@ -52,11 +52,11 @@ def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
 
     test_path = os.path.abspath(os.path.join("build", runtime, test))
 
-    runTest(test_path, runtime, policy_dir, sim, rule_cache, output_dir)
+    runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size, output_dir)
     
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
     if rule_cache != "":
-        test_output_dir = test_output_dir + "-{}-{}".format(rule_cache[0], rule_cache[1])
+        test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
 
     if debug is True:
         test_output_dir = "-".join([test_output_dir, "debug"])
@@ -64,14 +64,17 @@ def test_new(test, runtime, policy, sim, rule_cache, debug, output_subdir=None):
     testResult(test_output_dir)
 
 
-def runTest(test, runtime, policy, sim, rule_cache, output_dir):
+def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir):
     run_cmd = "isp_run_app"
     run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
-        run_args += ["-C", rule_cache[0], "-c", rule_cache[1]]
+        run_args += ["-C", rule_cache, "-c", rule_cache_size]
     
-    devnull = open(os.devnull, 'w')
-    subprocess.Popen([run_cmd] + run_args, stdout=devnull, stderr=subprocess.STDOUT).wait()
+    process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    run_output,run_error = process.communicate()
+    if process.returncode != 0:
+        pytest.fail("Runtime failed with error: \n{}".format(run_error))
+
 
 def testResult(test_output_dir):
     uart_log_file = os.path.join(test_output_dir, "uart.log")   
@@ -79,10 +82,6 @@ def testResult(test_output_dir):
 
     if not os.path.isdir(test_output_dir):
         pytest.fail("No test output directory {}".format(test_output_dir))
-        return
-
-    if not os.path.isfile(uart_log_file):
-        pytest.fail("Simulator did not produce UART log file")
         return
 
     if not os.path.isfile(uart_log_file):
