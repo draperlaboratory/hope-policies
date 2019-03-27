@@ -71,11 +71,10 @@ require:
     init ISA.RISCV.CSR.Default               {}
     init ISA.RISCV.CSR.MTVec                 {}
 
-    init llvm.CFI_Call-Tgt 			       {Target}
-    init llvm.CFI_Branch-Tgt			       {Target}
-    init llvm.CFI_Return-Tgt			       {Target}
-
-    init dover.Tools.GCC.NoCFI                         {NoCFI}
+    init llvm.CFI_Call-Tgt                   {Target}
+    init llvm.CFI_Branch-Tgt                 {Target}
+    init llvm.CFI_Return-Tgt                 {Target}
+    init llvm.NoCFI                          {NoCFI}
     
     init dover.Kernel.MemoryMap.Default       {}
     init dover.riscv.Mach.PC                           {}
