@@ -36,10 +36,10 @@ import:
     osv.riscv
 
 metadata:
-	Target
-        None 
-	Jumping
-	NoCFI
+  Target,
+  None,
+  Jumping,
+  NoCFI
 
 policy:
     cfiPol =

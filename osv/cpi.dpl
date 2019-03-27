@@ -38,9 +38,9 @@ import:
     osv.riscv
 
 metadata:
-  FPtrStore
-  FPtrCreate
-  FPtrMem
+  FPtrStore,
+  FPtrCreate,
+  FPtrMem,
   Return-Instr
 
 policy:

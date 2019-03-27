@@ -1,0 +1,3 @@
+include ../isp-runtime-hifive.mk
+include test.mk
+include ../webapp/common.mk

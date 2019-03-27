@@ -39,12 +39,11 @@
  *     call printf
  */
 int test_main(void)
-  {
+{
     test_positive(); // identify test as positive (will complete)
 
     coremark_main();
     
     test_pass();
     return test_done();
-  }
-
+}

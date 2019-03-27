@@ -37,8 +37,8 @@ import:
       osv.riscv
 
 metadata:
-	Rd
-	Wr
+	Rd,
+	Wr,
 	Ex
 
 

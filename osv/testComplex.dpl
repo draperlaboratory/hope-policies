@@ -42,13 +42,12 @@ import:
     osv.riscv
 
 metadata:
-
-    AllowCode
-    AllowReg
-    AllowMem
-    AllowRom
-    AllowEnv
-    AllowCSR
+    AllowCode,
+    AllowReg,
+    AllowMem,
+    AllowRom,
+    AllowEnv,
+    AllowCSR,
     AllowIO
 
 policy:           // Allow most ops involving regular registers, memory & csrs
