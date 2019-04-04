@@ -34,17 +34,67 @@
 // include malloc wrappers
 #include "mem.h"
 
+int adone, bdone;
+
+void procA_main(void *arg) {
+
+  int a, i, j;
+
+  for ( j = 0; j < 2; j++ ) { 
+    t_printf("Proc A in loop\n");
+
+    for ( a = i = 0; i < 2; i++ )
+      a = i + i;
+    
+    vTaskDelay(0);
+  }
+
+  adone = 1;
+  while ( 1 )
+    vTaskDelay(0);
+}
+
+void procB_main(void *a) {
+
+  int b, i, j;
+
+  for ( j = 0; j < 2; j++ ) {
+    t_printf("Proc B in loop\n");
+    
+    for ( b = i = 0; i < 2; i++ )
+      b = i + i;
+    
+    vTaskDelay(0);
+  }
+
+  bdone = 1;
+}
+
 /*
  * Hello world sanity test to check we can execute code i.e. main and 
  *     call printf
  */
 int test_main(void)
   {
+
+    int i;
+    
+    t_printf("hello doing context test\n");
+    
+    xTaskCreate(procB_main, "procB", 1000, NULL, 1, NULL);
+
+    t_printf("before scheduler inovkation\n");
+    
+    procA_main(0x0);
+
+    t_printf("after scheduler inovkation\n");
+
     test_positive(); // identify test as positive (will complete)
 
     t_printf("Hello Test\n");
     
     test_pass();
+    
     return test_done();
   }
 

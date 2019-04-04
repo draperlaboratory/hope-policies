@@ -12,8 +12,10 @@ import:
   osv.password
   osv.ppac
   osv.userType
+  osv.testContext
 
 policy:
+  testContext = testContextPol
   cfi = cfiPol
   rwx = rwxPol
   stack = stackPol

@@ -1,0 +1,72 @@
+module osv.testContext:
+
+import:
+      osv.riscv
+
+metadata:
+      initA,
+      procA,
+      initB,
+      procB,
+      codeProcA,
+      codeProcB,
+      saving
+
+policy:
+
+    testContextPol =
+
+            // after init time, procA code should have procA env
+	      allGrp(code == [codeProcA], env == [initA,-procA] -> fail "proc A code executing without proc A context")
+	    ^ allGrp(code == [codeProcB], env == [initB,-procB] -> fail "proc B code executing without proc B context")
+
+            // first time context tags
+            ^ allGrp(code == [codeProcA], env == [-initA] -> env = env[+initA,+procA])
+	    ^ allGrp(code == [codeProcB], env == [-initB] -> env = env[+initB,+procB])
+
+            // remove context tags on switch
+	    ^ allGrp(code == [codeProcB], env == [procA] -> env = env[-procA])
+	    ^ allGrp(code == [codeProcA], env == [procB] -> env = env[-procB])
+
+            // all else pass
+            ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+            ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+            ^ jumpGrp(code == _, env == _ -> return = {})
+            ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+            ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+            ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+            ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+            ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+            ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+            ^ privGrp(code == _, env == _ -> env = env)
+            ^ systemGrp(code == _, env == _ -> env = env)
+            ^ floatGrp(code == _, env == _ -> env = env)
+            ^ atomicGrp(code == _, env == _ -> env = env)
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.TEST                         {}
+
+    init Tools.Elf.Section.SHF_ALLOC         {}
+    init Tools.Elf.Section.SHF_EXECINSTR     {}
+    init Tools.Elf.Section.SHF_WRITE         {}
+
+    init testContext.mainProcA               {codeProcA}
+    init testContext.mainProcB               {codeProcB}
+
+    init testConstext.saving                 {saving}
