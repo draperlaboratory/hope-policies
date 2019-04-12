@@ -138,6 +138,7 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
+    init SOC.IO.GEM0                         {}
 
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
