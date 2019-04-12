@@ -103,7 +103,7 @@ policy:
    ^ loadGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], env == _
              -> res = mem, env = env )
    ^ storeGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], val == _, env == _
-              -> mem = val, env = env )
+              -> mem = val[-ModColor], env = env )
 
 // non-memory operations
    ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
