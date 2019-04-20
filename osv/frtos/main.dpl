@@ -12,7 +12,6 @@ import:
   osv.password
   osv.ppac
   osv.userType
-
 policy:
   cfi = cfiPol
   rwx = rwxPol

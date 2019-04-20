@@ -40,29 +40,29 @@ import:
 
 
 metadata:
-  Return-Instr
+  Return-Instr,
 
   // Access control levels / user types
-  Patient
-  Doctor
-  Admin
+  Patient,
+  Doctor,
+  Admin,
 
   // Code tags for user type initialization
-  SetPatient
-  SetDoctor
-  SetAdmin
+  SetPatient,
+  SetDoctor,
+  SetAdmin,
 
   // Memory tag for the current type of active user
-  ActiveUser
+  ActiveUser,
   
   // Memory tag for the patient data accessible to the active user
-  ActivePatient
+  ActivePatient,
 
   // Code tag for clearing the active user
-  ClearActive
+  ClearActive,
 
   // Memory tag for patient data
-  PatientData Color
+  PatientData Color,
 
   // Colored tag for pointer to patient data
   PatientPointer Color

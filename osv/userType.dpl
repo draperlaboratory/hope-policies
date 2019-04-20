@@ -37,7 +37,8 @@ import:
 
 
 metadata:
-  Assignment
+  TypeAssigner,
+  Assignment,
   Assigned
 
 
@@ -48,7 +49,11 @@ policy:
     storeGrp(mem == [+Assigned] -> fail "Attempt to re-assign user permissions denied" )
 
     // Mark memory as assigned
-    ^ storeGrp(code == [Assignment] -> mem = {Assigned})
+    ^ storeGrp(code == [Assignment], val == [+TypeAssigner], env == _, mem == _ -> mem = mem[Assigned], env = env)
+
+    // keep typeassigner tag
+    ^ storeGrp(mem == [+TypeAssigner], env == _ -> mem = mem, env = env)
+    ^ loadGrp(mem == [+TypeAssigner], env == _ -> res = mem, env = env)
 
     // Allow everything else
     ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
@@ -89,3 +94,4 @@ require:
   init Tools.Elf.Section.SHF_WRITE         {}
 
   init webapp.userType.assignment          {Assignment}
+  init webapp.userType.typeassigner        {TypeAssigner}

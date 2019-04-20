@@ -60,7 +60,7 @@ policy:
    ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [+(Pointer color)] -> env = env, res = op2)
 // Allow arithmetic on same colored ptrs
    ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [+(Pointer color)] -> env = env, res = op1)
-   ^ arithGrp(env == _, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
+//   ^ arithGrp(env == _, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
    ^ immArithGrp(env == _, op1 == [-(Pointer _)] -> env = env, res = op1)
    ^ immArithGrp(env == _, op1 == [+(Pointer color)] -> env = env, res = op1)
 
@@ -104,6 +104,10 @@ policy:
              -> res = mem, env = env )
    ^ storeGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], val == _, env == _
               -> mem = val[-ModColor], env = env )
+
+// catchall allow
+   ^ loadGrp( mem == _, addr == _, env == _ -> res = {}, env = env )
+   ^ storeGrp(mem == _, addr == _, env == _ -> mem = {}, env = env )
 
 // non-memory operations
    ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
