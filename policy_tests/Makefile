@@ -70,6 +70,15 @@ stock_frtos_XDIST= -n $(JOBS) # run in parallel
 stock_frtos: CONFIG=stock_frtos
 stock_frtos: stock_all
 
+dhrystone_SIM = qemu
+dhrystone_TESTS = dhrystone
+dhrystone_RUNTIME = bare
+dhrystone_MODULE = osv.bare.main
+dhrystone_POLICIES = heap,rwx,stack,none,testSimple
+dhrystone_XDIST = -n $(JOBS) # run in parallel
+dhrystone: CONFIG=dhrystone
+dhrystone: all
+
 # default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
@@ -132,7 +141,6 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: build-dirs
 build-tests: build-kernels
-build-tests: install-runtime
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
