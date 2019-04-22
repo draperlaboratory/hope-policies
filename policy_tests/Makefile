@@ -102,7 +102,7 @@ run-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
 run-ripe: MODULE ?= $($(CONFIG)_MODULE)
 run-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-run-ripe: 
+run-ripe:
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
 
@@ -131,6 +131,8 @@ build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: build-dirs
+build-tests: build-kernels
+build-tests: install-runtime
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
@@ -171,7 +173,7 @@ run-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
 run-tests: MODULE ?= $($(CONFIG)_MODULE)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-run-tests: build-tests build-kernels
+run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
