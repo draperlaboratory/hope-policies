@@ -100,20 +100,20 @@ policy:
     ^ allGrp(code == [+SetPatient,+Return-Instr], env == [+SetPatient] -> env = env[-SetPatient])
     ^ allGrp(code == [+SetPatient], env == [-SetPatient] -> env = env[+SetPatient])
     // Mark memory as Patient
-    ^ storeGrp(code == [+Assignment], env == [+SetPatient] -> mem = {Patient})
+    ^ storeGrp(code == [+Assignment], env == [+SetPatient] -> mem = {Patient}, env = env)
     // Propogate Patient tag
    	^ loadGrp(mem == [+Patient], addr == _, env == _ -> env = env, res = mem) 
 
     // Same for doctor
     ^ allGrp(code == [+SetDoctor,+Return-Instr], env == [+SetDoctor] -> env = env[-SetDoctor])
     ^ allGrp(code == [+SetDoctor], env == [-SetDoctor] -> env = env[+SetDoctor])
-    ^ storeGrp(code == [+Assignment], env == [+SetDoctor] -> mem = {Doctor})
+    ^ storeGrp(code == [+Assignment], env == [+SetDoctor] -> mem = {Doctor}, env = env)
     ^ loadGrp(mem == [+Doctor], addr == _, env == _ -> env = env, res = mem)
 
     // Same for admin
     ^ allGrp(code == [+SetAdmin,+Return-Instr], env == [+SetAdmin] -> env = env[-SetAdmin])
     ^ allGrp(code == [+SetAdmin], env == [-SetAdmin] -> env = env[+SetAdmin])
-    ^ storeGrp(code == [+Assignment], env == [+SetAdmin] -> mem = {Admin})
+    ^ storeGrp(code == [+Assignment], env == [+SetAdmin] -> mem = {Admin}, env = env)
     ^ loadGrp(mem == [+Admin], addr == _, env == _ -> env = env, res = mem)
 
     // Set the current permission in env when new user authenticated
@@ -136,7 +136,7 @@ policy:
     // All else allowed
     ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
     ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
-    ^ jumpGrp(code == _, env == _ -> return = {})
+    ^ jumpGrp(code == _, env == _ -> return = {}, env = env)
     ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
     ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
     ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
