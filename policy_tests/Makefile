@@ -12,7 +12,7 @@ TEST_OUTPUT_DIR := output
 # default for unadorned `make`
 CONFIG ?= bare
 JOBS   ?= 1
-all: run-tests
+all: build-dirs run-tests
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
@@ -51,6 +51,15 @@ frtos_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos_XDIST= -n $(JOBS) # run in parallel
 frtos: CONFIG=frtos
 frtos: all
+
+dhrystone_SIM = qemu
+dhrystone_TESTS = dhrystone
+dhrystone_RUNTIME = bare
+dhrystone_MODULE = osv.bare.main
+dhrystone_POLICIES = heap,rwx,stack,none,testSimple
+dhrystone_XDIST = -n $(JOBS) # run in parallel
+dhrystone: CONFIG=dhrystone
+dhrystone: all
 
 # default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
@@ -117,7 +126,6 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: build-dirs
 build-tests: build-kernels
-build-tests: install-runtime
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
