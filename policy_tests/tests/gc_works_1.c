@@ -34,63 +34,45 @@
 // include malloc wrappers
 #include "mem.h"
 
-// FreeRTOS stuff
-#include "FreeRTOS.h"
-#include "task.h"
-
 volatile void *old_ptr = NULL;
-volatile void *ptr;
+volatile void *old_ptr_copy = NULL;
 
-static void mutator_task(void *p) {
-  (void)p;
+static const size_t NUM_COLORS = 20;
 
-  t_printf("Address of old_ptr is %p\n", &old_ptr);
-  t_printf("Address of ptr is %p\n", &ptr);
-
-  for (int i = 0;; i++) {
-    for (int allocs = 0; allocs < 5; allocs++) {
-      ptr = malloc(12);
-
-      // if (old_ptr != NULL) {
-      //   t_printf("TRYING TO ACCESS STUFF!! %d\n", ((uint32_t *)old_ptr)[0]);
-      //   t_printf("THIS SHOULD NOT HAVE BEEN PRINTED!!!\n");
-      // }
-
-      free(ptr);
-      old_ptr = ptr;
-    }
-
-    if (i == 2) {
-      t_printf("DONE!!\n");
-      test_done();
-    }
-
-    vTaskDelay(3);
-  }
-}
-
-static void collector_task(void *p) {
-  (void)p;
-
-  for (int i = 0;; i++) {
-    t_printf("Collecting\n");
-
-    vTaskDelay(2);
-  }
-}
+#define SAVE_TO_REG(var) asm("mv t2, %0" : : "r"(var) : "t2")
+#define LOAD_FROM_REG(var) asm("mv %0, t2" : "=r"(var)::)
 
 int test_main(void) {
   test_positive(); // identify test as positive (will complete)
   test_begin();
 
-  t_printf("GC Test\n");
+  // Allocate a buffer with color X and immediately free it.
+  // Try to save a copy of the pointer into a register.
+  old_ptr = malloc(12);
+  free(old_ptr);
+  old_ptr_copy = old_ptr;
+  SAVE_TO_REG(old_ptr_copy);
 
-  xTaskCreate(mutator_task, "Mutator", 1000, NULL, 1, NULL);
-  xTaskCreate(collector_task, "Collector", 1000, NULL, 1, NULL);
-
-  TickType_t last_wake_time;
-  last_wake_time = xTaskGetTickCount();
-  for (;;) {
-    vTaskDelayUntil(&last_wake_time, 2);
+  // Burn through the rest of the colors, so that next time we allocate we get
+  // the color X again.
+  for (int allocs = 0; allocs < NUM_COLORS - 1; allocs++) {
+    // Temporarily saves the registered copy into memory because free scans
+    // registers.
+    // Hope that memory scanning doesn't use this window to zero out the memory
+    // copy.
+    LOAD_FROM_REG(old_ptr_copy);
+    free(malloc(12));
+    SAVE_TO_REG(old_ptr_copy);
   }
+
+  // Allocate a new buffer. The new buffer should also have the same color X.
+  malloc(12);
+
+  // Try to access the new buffer via the old pointer. This should fail.
+  LOAD_FROM_REG(old_ptr_copy);
+  uint32_t access = ((uint32_t *)old_ptr_copy)[0];
+  t_printf("THIS SHOULD NOT HAVE BEEN PRINTED!!! %d\n", access);
+
+  // Allocate a new buffer, which should occupy the same address as the old
+  test_done();
 }
