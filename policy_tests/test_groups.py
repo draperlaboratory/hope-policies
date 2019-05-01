@@ -34,7 +34,7 @@ class AllTests:
         "threeClass/jump_data_fails_1",
         "threeClass/call_fails_1",
         "taint/tainted_print_fails",
-        "dhrystone7000",
+        "dhrystone/dhrystone-baremetal",
         "webapp_doctor_user_works",
         "webapp_admin_user_works",
         "webapp_patient_read_works",
@@ -74,7 +74,6 @@ class frtos(AllTests):
                                   "malloc_prof_1",
                                   "malloc_prof_2",
                                   "taint/tainted_print_fails",
-                                  "dhrystone7000",
                                   "webapp_doctor_user_works",
                                   "webapp_admin_user_works",
                                   "webapp_patient_read_works",
@@ -90,8 +89,7 @@ class frtos(AllTests):
 class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
-                                 ["ping_pong_works_1",
-                                  "dhrystone7000",
+                                 ["ping_pong_works_1"
                                  ]
                                  )]
 
