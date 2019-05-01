@@ -53,6 +53,8 @@
 #include "test.h"
 #include "mem.h"
 
+extern uint32_t uiPortGetWallTimestampUs(void);
+
 /* Accuracy of timings and human fatigue controlled by next two lines */
 #ifndef DHRY_LOOPS
 #define DHRY_LOOPS	50000		/* Use this for slow or 16 bit machines */
@@ -307,12 +309,12 @@ void dhry_proc0(void)
 	uint32_t		nulltime;
 	uint32_t		endtime;
 
-	starttime = sys_GetWallTimestampUs();
+	starttime = uiPortGetWallTimestampUs();
 	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
             asm volatile("nop");
 	}
-	endtime = sys_GetWallTimestampUs();
+	endtime = uiPortGetWallTimestampUs();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
 
 	t_printf("Start Time: %u (us)\n", starttime);
@@ -333,8 +335,8 @@ void dhry_proc0(void)
 	/*****************
 	-- Start Timer --
 	*****************/
-	starttime = sys_GetWallTimestampUs();
 	t_printf("Starting Timer for %lu Loops\n", (long)DHRY_LOOPS);
+	starttime = uiPortGetWallTimestampUs();
 	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
 
@@ -361,7 +363,7 @@ void dhry_proc0(void)
 		IntLoc2 = 7 * (IntLoc3 - IntLoc2) - IntLoc1;
 		Proc2(&IntLoc1);
 	}
-	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
+	benchtime_us = uiPortGetWallTimestampUs() - starttime - nulltime;
 
 	t_printf("===================================================\n");
 	t_printf("Passes: %u\n", DHRY_LOOPS);
