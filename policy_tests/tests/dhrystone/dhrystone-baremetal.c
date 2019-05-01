@@ -21,7 +21,7 @@
  *			The time(2) function is library dependant; Most
  *			return the time in seconds, but beware of some, like
  *			Aztec C, which return other units.
- *			The LOOPS define is initially set for 50000 loops.
+ *			The DHRY_LOOPS define is initially set for 50000 loops.
  *			If you have a machine with large integers and is
  *			very fast, please change this number to 500000 to
  *			get better accuracy.  Please select the way to
@@ -54,7 +54,9 @@
 #include "mem.h"
 
 /* Accuracy of timings and human fatigue controlled by next two lines */
-#define LOOPS	50000		/* Use this for slow or 16 bit machines */
+#ifndef DHRY_LOOPS
+#define DHRY_LOOPS	50000		/* Use this for slow or 16 bit machines */
+#endif
 
 #define US_IN_SEC 1000000
 #define	structassign(d, s)	d = s
@@ -306,7 +308,7 @@ void dhry_proc0(void)
 	uint32_t		endtime;
 
 	starttime = sys_GetWallTimestampUs();
-	for (i = 0; i < LOOPS; ++i)
+	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
             asm volatile("nop");
 	}
@@ -331,9 +333,9 @@ void dhry_proc0(void)
 	/*****************
 	-- Start Timer --
 	*****************/
-	t_printf("Starting Timer for %lu Loops\n", (long)LOOPS);
 	starttime = sys_GetWallTimestampUs();
-	for (i = 0; i < LOOPS; ++i)
+	t_printf("Starting Timer for %lu Loops\n", (long)DHRY_LOOPS);
+	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
 
 		Proc5();
@@ -362,10 +364,10 @@ void dhry_proc0(void)
 	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
 
 	t_printf("===================================================\n");
-	t_printf("Passes: %u\n", LOOPS);
+	t_printf("Passes: %u\n", DHRY_LOOPS);
 	t_printf("Benchtime (us): %u\n", benchtime_us);
 	t_printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
-	t_printf("Dhrystones:     %u dhrystones/second\n", LOOPS/(benchtime_us/US_IN_SEC));
+	t_printf("Dhrystones:     %u dhrystones/second\n", DHRY_LOOPS/(benchtime_us/US_IN_SEC));
 
 }
 
