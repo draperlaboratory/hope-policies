@@ -18,18 +18,18 @@ Run `make` to kick off a test run using a default configuration.
 
 Internally, 'make' runs 3 different targets:
 
-- build  - compiles the test program(s) to be run
-- kernel - runs the policy tool to build the policy(s) to be run
-- run    - runs the test program(s) with the policy(s) in the simulator
+- build-tests   - compiles the test program(s) to be run
+- build-kernels - runs the policy tool to build the policy(s) to be run
+- run-tests     - runs the test program(s) with the policy(s) in the simulator
 
 There are several options that can be chosen to customize what policies and
 programs are built and run during the test. These can be specified on the
 command line:
 
-    make TESTS=foo.c,bar.c // runs only foo.c and bar.c
+    make POLICIES=heap // runs only heap policy tests
 
 or common configurations can be defined in the Makefile. You will typically
-need to define at least SIM, TESTS, RUNTIME, and POLICIES to specify enough
+need to define at least SIM, TESTS, RUNTIME, MODULE, and POLICIES to specify enough
 to create a full run of tests without errors. The common configuration should
 be given a name, variables should be named `name_VAR`. With this done, setting
 CONFIG=name will invoke the tests with the specified variables. This can be
