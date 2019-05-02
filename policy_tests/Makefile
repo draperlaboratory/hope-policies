@@ -124,7 +124,7 @@ build-kernels: MODULE ?= $($(CONFIG)_MODULE)
 build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $(XDIST) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
 
 # run tests
 run-tests: SIM ?= $($(CONFIG)_SIM)
