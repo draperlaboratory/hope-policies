@@ -224,6 +224,19 @@ can then use it for whatever task-specific operations it needs.
   +        ptarg.insert(0, "-d")
   ```
 
+# Running Individual Tests
+
+An `isp_run_app` helper script is provided to make running individual test/policy
+scenarios easier.  For example the data execute fails test with the RWX policy,
+can be run with:
+
+```
+mkdir test-output
+isp_run_app build/hifive/rwx/data_exe_fails_1 -p rwx -r hifive -o ./test-output
+```
+
+See the commands help output for further information.
+
 # RIPE tests
 
 There is another target included in the Makefile to run RIPE tests. RIPE (the
@@ -283,65 +296,59 @@ Watchpoints halt simulation when metadata changes
    csr-mw a - set watch on csr metadata at addr a
    mem-mw a - set watch on mem metadata at addr a
 
-The GDB init script also advances the simulation to a breakpoint at main(), like this:
+## Debugging Helpers
 
-0x80000240 in _mstart ()
-Breakpoint 1 at 0x80013f9c: file /home/andrew/dover-repos/policies/policy_tests/debug/osv.frtos.main.rwx-rwx_code_write_fails_1.c-O2/frtos.c, line 25.
-Starting emulation...
-No Policy Violation
+An `isp_debug` helper script is provided to simplify debugging.  To use
+it simply append the debug port option to the `isp_run_app` command invocation
+and invoke the `isp_debug` command from a separate terminal with appropriate
+arguments.
 
-Breakpoint 1, main ()
-    at /home/andrew/dover-repos/policies/policy_tests/debug/osv.frtos.main.rwx-rwx_code_write_fails_1.c-O2/frtos.c:25
-25	  xTaskCreate(main_task, "Main task", 1000, NULL, 1, NULL);
+```
+isp_run_app ... -g 3333
+isp_debug build/hifive/rwx/data_exe_fails_1 3333
+```
 
-Edit .gdbinit if you need to debug startup code.
+See the commands help output for further information.
 
-Now you can run your code. Here is what happens when you get a policy violation:
+## Example - Register Watchpoints
 
+This example demonstrates setting a register watchpoint by monitoring the
+register that the tainted global variable is loaded into.
+
+```
+mkdir -p test-output
+isp_run_app build/hifive/taint/tainted_print_fails -p taint -r hifive -o test-output/ -g 3333
+isp_debug build/hifive/taint/tainted_print_fails 3333
+(gdb) reg-m 11
+ {} 
+(gdb) reg-mw 11
+(gdb) c
+(gdb) reg-m 11
+ {Taint} 
+```
+
+## Example - Memory Watchpoints
+
+This example demonstrates setting a memory watchpoint by monitoring the
+heap region that is used to allocate a 32-byte object.
+
+```
+mkdir -p test-output
+isp_run_app build/hifive/heap/malloc_fails_1 -p heap -r hifive -o test-output/ -g 3333
+isp_debug build/hifive/heap/malloc_fails_1 3333
+(gdb) p/x ((((int)(&ucHeap) + 0x0000001F) >> 5) << 5)
+(gdb) $21 = 0x80000a20
+(gdb) mem-m 0x80000a20
+ {RawHeap}
+(gdb) mem-mw 0x80000a20
 (gdb) c
 Continuing.
 
 Program received signal SIGTRAP, Trace/breakpoint trap.
-Policy Violation:
-    PC = 80008324    MEM = 800082e4
-Metadata:
-    Env   : {}
-    Code  : {storeGrp, allGrp, Rd, Ex}
-    Op1   : {}
-    Op2   : {}
-    Op3   : -0-
-    Mem   : {immArithGrp, allGrp, notMemGrp, Rd, Ex}
-Explicit Failure: write violation
-
-0x80008328 in test_main ()
-    at /home/andrew/dover-repos/policies/policy_tests/debug/osv.frtos.main.rwx-rwx_code_write_fails_1.c-O2/test.c:55
-55	    *foo_ptr = foo;
-
-This example is an attempted write to modify code, which is why code tags show up on Mem.
-
-# Try It
-
-andrew@drone:~/dover-repos/policies/policy_tests$ make clean-kernels 
-rm -rf /home/andrew/dover-install/kernels/*
-
-andrew@drone:~/dover-repos/policies/policy_tests$ make install-kernels
-install_kernels.py::test_simple[osv.frtos.main.nop] PASSED
-install_kernels.py::test_simple[osv.frtos.main.rwx] PASSED
-install_kernels.py::test_simple[osv.frtos.main.nop-rwx] PASSED
-
-andrew@drone:~/dover-repos/policies/policy_tests$ make clean
-rm -rf fail debug prof broken __pycache__ *.pyc assets report.html prof_results.log .cache
-
-andrew@drone:~/dover-repos/policies/policy_tests$ make debug-osv.frtos.main.rwx-rwx_code_write_fails_1.c-O2
-run_unit_tests.py::test_debug[osv.frtos.main.rwx-rwx_code_write_fails_1.c-O2] PASSED
-
-cd debug/osv.frtos.main.rwx-rwx_code_write_fails_1.c-O2/
-
-run each command in one of 3 new shells:
-
-make renode-console
-make gdb
-make socat
-
-
-
+ No Policy Violation 
+dover_tag (ptr=<optimized out>, bytes=<optimized out>)
+    at isp-runtime-hifive/bsp/libwrap/stdlib/malloc.c:159
+159	    p++;
+(gdb) mem-m 0x80000a20
+ {Cell 0x0}
+```
