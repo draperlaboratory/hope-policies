@@ -39,7 +39,6 @@
 #include "task.h"
 #include "timers.h"
 #include "queue.h"
-#include "utils.h"
 
 /*
  * Ping Pong tests makes sure that task switching works
@@ -47,11 +46,13 @@
 
 #define TICK_INTERVAL 2
 #define MSG_MAX 6
-#define TIMER_INTERVAL (TICK_INTERVAL * configTICK_CLOCK_HZ / configTICK_RATE_HZ)
+#define TIMER_INTERVAL (TICK_INTERVAL * configCPU_CLOCK_HZ / configTICK_RATE_HZ)
 
 #define PREEMPTIVE
 
-extern uint64_t xPortRawTime( void );
+uint64_t xPortRawTime(void) {
+  return get_timer_value();
+}
 
 bool pong;
 int msg_count = 0;
@@ -68,7 +69,7 @@ static void done_task(void *p) {
             test_done();
         }
         else {
-            printf_uart("Check if done: %d < %d\r\n",msg_count, MSG_MAX);
+            t_printf("Check if done: %d < %d\r\n",msg_count, MSG_MAX);
         }
 #ifdef PREEMPTIVE  
         vTaskDelayUntil(&last_wake_time, TICK_INTERVAL);
@@ -89,7 +90,7 @@ static void ping_task(void *p) {
           uint64_t raw = xPortRawTime();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
-          printf_uart("ping %x %x\r\n", high, low);
+          t_printf("ping %x %x\r\n", high, low);
           pong = true;
       }
 #ifdef PREEMPTIVE  
@@ -111,7 +112,7 @@ static void pong_task(void *p) {
           uint64_t raw = xPortRawTime();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
-          printf_uart("pong %x %x\r\n", high, low);
+          t_printf("pong %x %x\r\n", high, low);
           pong = false;
           msg_count++;
       }
@@ -130,15 +131,15 @@ int test_main( void )
     test_begin();
     
   /* no need to init uart */
-  printf_uart("main: create ping task\r\n");
+  t_printf("main: create ping task\r\n");
   xTaskCreate(ping_task, "Ping task", 1000, NULL, 1, NULL);
-  printf_uart("main: create pong task\r\n");
+  t_printf("main: create pong task\r\n");
   xTaskCreate(pong_task, "Pong task", 1000, NULL, 1, NULL);
 
-  printf_uart("main: create done task\r\n");
+  t_printf("main: create done task\r\n");
   xTaskCreate(done_task, "Done task", 1000, NULL, 1, NULL);
 
-  printf_uart("timer ticks: 0x%x\r\n", TIMER_INTERVAL);
+  t_printf("timer ticks: 0x%x\r\n", TIMER_INTERVAL);
 
   // scheduler is already running so just wait
   TickType_t last_wake_time;

@@ -34,14 +34,14 @@ class AllTests:
         "threeClass/jump_data_fails_1",
         "threeClass/call_fails_1",
         "taint/tainted_print_fails",
-        "dhrystone7000",
-        "webapp_doctor_user_works",
-        "webapp_admin_user_works",
-        "webapp_patient_read_works",
-        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
-        "heap-ppac-userType/webapp_patient_info_leak_fails",
-        "userType/webapp_double_usr_set",
-        "password/webapp_password_leak",
+#        "dhrystone7000",
+#        "webapp_doctor_user_works",
+#        "webapp_admin_user_works",
+#        "webapp_patient_read_works",
+#        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
+#        "heap-ppac-userType/webapp_patient_info_leak_fails",
+#        "userType/webapp_double_usr_set",
+#        "password/webapp_password_leak",
     ]
 
 class webapp(AllTests):
