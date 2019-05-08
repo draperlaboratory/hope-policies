@@ -1,4 +1,4 @@
-module osv.hifive.main:
+module osv.bare.main:
 import:
   osv.cfi
   osv.rwx

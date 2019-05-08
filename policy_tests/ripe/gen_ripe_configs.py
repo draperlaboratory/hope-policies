@@ -140,11 +140,11 @@ def main():
     global pointers
 
     policies = [
-        RIPEPolicy('osv.hifive.main.heap', violatesHeapPolicy),
-        RIPEPolicy('osv.hifive.main.stack', violatesStackPolicy),
-        RIPEPolicy('osv.hifive.main.threeClass', violatesThreeClassPolicy),
-        RIPEPolicy('osv.hifive.main.rwx', violatesRwxPolicy),
-        RIPEPolicy('osv.hifive.main.heap-rwx-stack-threeClass', violatesCompositePolicy),
+        RIPEPolicy('osv.bare.main.heap', violatesHeapPolicy),
+        RIPEPolicy('osv.bare.main.stack', violatesStackPolicy),
+        RIPEPolicy('osv.bare.main.threeClass', violatesThreeClassPolicy),
+        RIPEPolicy('osv.bare.main.rwx', violatesRwxPolicy),
+        RIPEPolicy('osv.bare.main.heap-rwx-stack-threeClass', violatesCompositePolicy),
     ]
 
     configs = generate_ripe_policy_configs(techniques, attacks, locations, pointers, ['memcpy'], policies)

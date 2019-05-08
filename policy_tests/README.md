@@ -38,9 +38,9 @@ See the example below to clarify this process:
 
     # simple qemu build
     qemu_SIM = qemu
-    qemu_TESTS = hifive
-    qemu_RUNTIME = hifive
-    qemu_MODULE = osv.hifive.main
+    qemu_TESTS = bare
+    qemu_RUNTIME = bare
+    qemu_MODULE = osv.bare.main
     qemu_POLICIES = heap,none,rwx,stack,threeClass
     qemu_XDIST = -n 25 # run in parallel
     qemu: CONFIG=qemu
@@ -73,8 +73,8 @@ See the example below to clarify this process:
 ### Test program build knobs
 
 - RUNTIME: what runtime environment to compile against? Supported examples:
-   - hifive - bare-metal runtime for hifive board
-   - frtos  - FreeRTOS
+   - bare - bare-metal runtime
+   - frtos - FreeRTOS runtime
 
 - TESTS: what test programs to run
    - note: Positive tests should be listed in the 'tests' directory. The name

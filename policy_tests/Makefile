@@ -21,8 +21,8 @@ all: build-tests build-kernels run-tests
 # config for webapp tests and policies
 webapp_SIM = qemu
 webapp_TESTS = webapp
-webapp_RUNTIME = hifive
-webapp_MODULE = osv.hifive.main
+webapp_RUNTIME = bare
+webapp_MODULE = osv.bare.main
 webapp_POLICIES = none,userType,password,ppac,heap
 webapp_XDIST = -n $(JOBS) # run in parallel
 webapp: CONFIG=webapp
@@ -30,9 +30,9 @@ webapp: all
 
 # config for bare-metal
 bare_SIM = qemu
-bare_TESTS = hifive
-bare_RUNTIME = hifive
-bare_MODULE = osv.hifive.main
+bare_TESTS = bare
+bare_RUNTIME = bare
+bare_MODULE = osv.bare.main
 bare_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 bare_XDIST = -n $(JOBS) # run in parallel
@@ -101,7 +101,7 @@ list-build: build-tests
 
 install-runtime:
 	isp_install_runtime frtos -b tests
-	isp_install_runtime hifive -b tests
+	isp_install_runtime bare -b tests
 
 # Tests
 clean-tests:
@@ -147,5 +147,5 @@ run-tests: build-tests build-kernels
 
 clean: clean-kernels clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
-		tests/isp-runtime-frtos* tests/isp-runtime-hifive*
+		tests/isp-runtime-frtos* tests/isp-runtime-bare*
 	find tests/ -type f -name '*.o' -delete

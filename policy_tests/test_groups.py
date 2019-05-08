@@ -65,7 +65,7 @@ class frtos(AllTests):
                                  )]
 
 
-class hifive(AllTests):
+class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1",
@@ -75,7 +75,7 @@ class hifive(AllTests):
 
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
-               'hifive' : hifive,
+               'bare' : bare,
                'webapp' : webapp
 }
 
