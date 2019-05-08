@@ -82,3 +82,4 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
+    init SOC.IO.GEM0                         {}

@@ -71,7 +71,8 @@ require:
     init SOC.IO.CLINT                        {Rd, Wr}
     init SOC.IO.ITIM                         {Rd, Wr, Ex}
     init SOC.IO.PLIC                         {Rd, Wr}
-    
+    init SOC.IO.GEM0                         {Rd, Wr}
+
     init elf.Section.SHF_ALLOC         {Rd}
     init elf.Section.SHF_EXECINSTR     {Ex}
     init elf.Section.SHF_WRITE         {Rd, Wr}

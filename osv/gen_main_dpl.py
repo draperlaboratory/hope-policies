@@ -1,7 +1,7 @@
 import itertools
 import operator
 
-runtime = "hifive"
+runtime = "frtos"
 module = "osv."
 policies = ["cfi", "rwx", "stack", "taint", "heap", "threeClass", "none", "testSimple", "testComplex", "password", "ppac", "userType"]
 
