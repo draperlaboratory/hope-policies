@@ -51,7 +51,7 @@ policy:
     ^ allGrp    (code == [+NoCFI], env == _ -> env = env )
          // cases for landing on a jump (bounce)
     ^ branchGrp (code == [Target], env == [Jumping] -> env = {Jumping})
-    ^ jumpGrp   (code == [Target], env == [Jumping] -> env = {Jumping})
+    ^ jumpGrp   (code == [Target], env == [Jumping] -> env = {Jumping}, return = {})
         // cases for a jump to target
     ^ branchGrp (code == [-Target], env == [-Jumping], op1 == _, op2 == _ -> env = env[Jumping])
     ^ jumpRegGrp   (code == [-Target], env == [-Jumping], target == _ -> return = {}, env = env[Jumping])
