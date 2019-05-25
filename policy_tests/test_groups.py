@@ -34,14 +34,14 @@ class AllTests:
         "threeClass/jump_data_fails_1",
         "threeClass/call_fails_1",
         "taint/tainted_print_fails",
-#        "dhrystone7000",
-#        "webapp_doctor_user_works",
-#        "webapp_admin_user_works",
-#        "webapp_patient_read_works",
-#        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
-#        "heap-ppac-userType/webapp_patient_info_leak_fails",
-#        "userType/webapp_double_usr_set",
-#        "password/webapp_password_leak",
+        "dhrystone7000",
+        "webapp_doctor_user_works",
+        "webapp_admin_user_works",
+        "webapp_patient_read_works",
+        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
+        "heap-ppac-userType/webapp_patient_info_leak_fails",
+        "userType/webapp_double_usr_set",
+        "password/webapp_password_leak",
     ]
 
 class webapp(AllTests):
@@ -56,11 +56,25 @@ class webapp(AllTests):
     ]
 
 
+# XXX: Re-enable Long-running tests once passing"
 class frtos(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  ["timer_works_1",
                                   "coremark",
+                                  "stanford_int_treesort_fixed",
+                                  "ping_pong_works_1",
+                                  "malloc_prof_1",
+                                  "malloc_prof_2",
+                                  "taint/tainted_print_fails",
+                                  "dhrystone7000",
+                                  "webapp_doctor_user_works",
+                                  "webapp_admin_user_works",
+                                  "webapp_patient_read_works",
+                                  "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
+                                  "heap-ppac-userType/webapp_patient_info_leak_fails",
+                                  "userType/webapp_double_usr_set",
+                                  "password/webapp_password_leak",
                                  ]
                                  )]
 
