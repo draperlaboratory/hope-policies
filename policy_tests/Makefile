@@ -69,7 +69,7 @@ build-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-ripe: MODULE ?= $($(CONFIG)_MODULE)
 build-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 build-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-build-ripe: install-runtime $(RIPE_CONFIGS)
+build-ripe: build-runtime $(RIPE_CONFIGS)
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
@@ -103,6 +103,10 @@ install-runtime:
 	isp_install_runtime frtos -b tests
 	isp_install_runtime bare -b tests
 
+build-runtime: install-runtime
+	make -C tests -f Makefile.bare isp-runtime-common
+	make -C tests -f Makefile.frtos isp-runtime-common
+
 # Tests
 clean-tests:
 	rm -rf build/
@@ -113,7 +117,7 @@ build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-build-tests: install-runtime 
+build-tests: build-runtime
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
