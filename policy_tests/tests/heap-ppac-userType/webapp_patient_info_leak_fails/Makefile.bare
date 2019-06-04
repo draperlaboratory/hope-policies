@@ -1,3 +1,3 @@
-include ../../isp-runtime-bare.mk
+include ../isp-runtime-bare.mk
 include test.mk
-include ../../webapp/common.mk
+include ../webapp/common.mk

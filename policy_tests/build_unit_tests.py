@@ -25,6 +25,41 @@ def isRipeTest(test):
     return False
 
 
+def copyBuildDir(test, runtime, output_dir):
+    if len(os.path.dirname(test)) != 0:
+        output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
+
+        if os.path.isdir(output_test_parent_dir):
+            shutil.rmtree(output_test_parent_dir)
+
+        os.mkdir(output_test_parent_dir)
+
+    output_test_dir = os.path.join(output_dir, test)
+
+    if os.path.isdir(output_test_dir):
+        shutil.rmtree(output_test_dir)
+
+    os.mkdir(output_test_dir)
+
+    shutil.copy(os.path.join("tests", "test.h"), output_test_dir)
+    shutil.copy(os.path.join("tests", "sifive_test.h"), output_test_dir)
+    shutil.copy(os.path.join("tests", "test_status.h"), output_test_dir)
+    shutil.copy(os.path.join("tests", "test_status.c"), output_test_dir)
+
+    if isMakefileTest(test):
+        shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
+        if "webapp" in test:
+            shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
+    else:
+        shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
+        shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
+        shutil.copy(os.path.join("tests", test + ".c"), output_test_dir)
+
+    subprocess.Popen(["isp_install_runtime", runtime, "-b", output_test_dir]).wait()
+
+    return output_test_dir
+
+
 # function automatically found by pytest
 def test_build(test, runtime, extra_args=None, extra_env=None):
     if not runtime:
@@ -50,13 +85,21 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
     if not os.path.isdir(output_subdir):
         os.makedirs(output_subdir, exist_ok=True)
 
-    make_args = ["make", "-C", test_dir, "-f", makefile]
+    output_src_dir = os.path.join(output_dir, "src")
+    if not os.path.isdir(output_src_dir):
+        os.mkdir(output_src_dir)
+
+    output_test_dir = copyBuildDir(test, runtime, output_src_dir)
+    if isMakefileTest(test):
+        output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
+
+    make_args = ["make", "-C", output_test_dir, "-f", makefile]
     if extra_args is not None:
         make_args += extra_args
 
     env = dict(os.environ, OUTPUT_DIR=output_dir)
     if not isMakefileTest(test):
-        env['TEST'] = test
+        env['TEST'] = os.path.basename(test)
     if extra_env is not None:
         env.update(extra_env)
 
