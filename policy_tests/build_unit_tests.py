@@ -29,10 +29,8 @@ def copyBuildDir(test, runtime, output_dir):
     if len(os.path.dirname(test)) != 0:
         output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
 
-        if os.path.isdir(output_test_parent_dir):
-            shutil.rmtree(output_test_parent_dir)
-
-        os.mkdir(output_test_parent_dir)
+        if not os.path.isdir(output_test_parent_dir):
+            os.mkdir(output_test_parent_dir)
 
     output_test_dir = os.path.join(output_dir, test)
 
