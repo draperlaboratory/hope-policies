@@ -25,6 +25,47 @@ def isRipeTest(test):
     return False
 
 
+def test_copy_build_dir(test, runtime):
+    if not runtime:
+        pytest.fail("No target runtime provided")
+
+    if not test:
+        pytest.fail("No test provided to build")
+
+    output_dir = os.path.join(os.path.abspath("build"), runtime, "src")
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
+
+    if len(os.path.dirname(test)) != 0:
+        output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
+
+        if not os.path.isdir(output_test_parent_dir):
+            os.mkdir(output_test_parent_dir)
+
+    output_test_dir = os.path.join(output_dir, test)
+
+    if os.path.isdir(output_test_dir):
+        pytest.skip("Using previously copied build directory")
+
+    os.mkdir(output_test_dir)
+
+    shutil.copy(os.path.join("tests", "test.h"), output_test_dir)
+    shutil.copy(os.path.join("tests", "sifive_test.h"), output_test_dir)
+    shutil.copy(os.path.join("tests", "test_status.h"), output_test_dir)
+    shutil.copy(os.path.join("tests", "test_status.c"), output_test_dir)
+
+    if isMakefileTest(test):
+        shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
+        if "webapp" in test:
+            shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
+    else:
+        shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
+        shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
+        shutil.copy(os.path.join("tests", test + ".c"), output_test_dir)
+
+    subprocess.Popen(["isp_install_runtime", runtime, "-b", output_test_dir]).wait()
+
+
 # function automatically found by pytest
 def test_build(test, runtime, extra_args=None, extra_env=None):
     if not runtime:
@@ -50,7 +91,11 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
     if not os.path.isdir(output_subdir):
         os.makedirs(output_subdir, exist_ok=True)
 
-    make_args = ["make", "-C", test_dir, "-f", makefile]
+    output_test_dir = os.path.join(output_dir, "src", test)
+    if isMakefileTest(test):
+        output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
+
+    make_args = ["make", "-C", output_test_dir, "-f", makefile]
     if extra_args is not None:
         make_args += extra_args
 
