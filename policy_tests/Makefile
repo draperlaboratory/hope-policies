@@ -109,11 +109,22 @@ build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-build-tests:
+build-tests: build-dirs
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
+
+build-dirs: SIM ?= $($(CONFIG)_SIM)
+build-dirs: TESTS ?= $($(CONFIG)_TESTS)
+build-dirs: RUNTIME ?= $($(CONFIG)_RUNTIME)
+build-dirs: MODULE ?= $($(CONFIG)_MODULE)
+build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
+build-dirs:
+	mkdir -p $(TEST_BUILD_DIR)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
 

@@ -25,7 +25,17 @@ def isRipeTest(test):
     return False
 
 
-def copyBuildDir(test, runtime, output_dir):
+def test_copy_build_dir(test, runtime):
+    if not runtime:
+        pytest.fail("No target runtime provided")
+
+    if not test:
+        pytest.fail("No test provided to build")
+
+    output_dir = os.path.join(os.path.abspath("build"), runtime, "src")
+    if not os.path.isdir(output_dir):
+        os.mkdir(output_dir)
+
     if len(os.path.dirname(test)) != 0:
         output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
 
@@ -55,8 +65,6 @@ def copyBuildDir(test, runtime, output_dir):
 
     subprocess.Popen(["isp_install_runtime", runtime, "-b", output_test_dir]).wait()
 
-    return output_test_dir
-
 
 # function automatically found by pytest
 def test_build(test, runtime, extra_args=None, extra_env=None):
@@ -83,11 +91,7 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
     if not os.path.isdir(output_subdir):
         os.makedirs(output_subdir, exist_ok=True)
 
-    output_src_dir = os.path.join(output_dir, "src")
-    if not os.path.isdir(output_src_dir):
-        os.mkdir(output_src_dir)
-
-    output_test_dir = copyBuildDir(test, runtime, output_src_dir)
+    output_test_dir = os.path.join(output_dir, "src", test)
     if isMakefileTest(test):
         output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
 
