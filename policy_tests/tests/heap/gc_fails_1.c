@@ -43,7 +43,7 @@ static const size_t NUM_COLORS = 20;
 #define LOAD_FROM_REG(var) asm("mv %0, t2" : "=r"(var)::)
 
 int test_main(void) {
-  test_positive(); // identify test as positive (will complete)
+  test_negative();
   test_begin();
 
   // Allocate a buffer with color X and immediately free it.
@@ -72,6 +72,8 @@ int test_main(void) {
   LOAD_FROM_REG(old_ptr_copy);
   uint32_t access = ((uint32_t *)old_ptr_copy)[0];
   t_printf("THIS SHOULD NOT HAVE BEEN PRINTED!!! %d\n", access);
+
+  test_error("gc_works_1: Error this should not execute\n");
 
   // Allocate a new buffer, which should occupy the same address as the old
   test_done();
