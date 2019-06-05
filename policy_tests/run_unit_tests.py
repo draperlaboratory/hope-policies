@@ -96,5 +96,7 @@ def testResult(test_output_dir):
             if "Policy Violation:" in open(pex_log_file, 'r').read():
                 return
             pytest.fail("No policy violation in negative test")
-        else:
+        elif "MSG: Positive test." in uart_data:
             pytest.fail("Positive test failed")
+        else:
+            pytest.fail("Invalid output in uart file{}".format(uart_data))
