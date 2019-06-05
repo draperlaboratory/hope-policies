@@ -45,7 +45,7 @@ def test_copy_build_dir(test, runtime):
     output_test_dir = os.path.join(output_dir, test)
 
     if os.path.isdir(output_test_dir):
-        shutil.rmtree(output_test_dir)
+        pytest.skip("Using previously copied build directory")
 
     os.mkdir(output_test_dir)
 
@@ -101,7 +101,7 @@ def test_build(test, runtime, extra_args=None, extra_env=None):
 
     env = dict(os.environ, OUTPUT_DIR=output_dir)
     if not isMakefileTest(test):
-        env['TEST'] = os.path.basename(test)
+        env['TEST'] = test
     if extra_env is not None:
         env.update(extra_env)
 
