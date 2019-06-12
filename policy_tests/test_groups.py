@@ -42,9 +42,7 @@ class AllTests:
         "heap-ppac-userType/webapp_patient_info_leak_fails",
         "userType/webapp_double_usr_set",
         "password/webapp_password_leak",
-        "adpcm_decode",
-        "adpcm_encode",
-        "aes",
+        "bitcount",
     ]
 
 class webapp(AllTests):
@@ -78,6 +76,7 @@ class frtos(AllTests):
                                   "heap-ppac-userType/webapp_patient_info_leak_fails",
                                   "userType/webapp_double_usr_set",
                                   "password/webapp_password_leak",
+                                  "bitcount",
                                  ]
                                  )]
 
