@@ -62,6 +62,11 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, out
     if rule_cache != "":
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
 
+    # add policy-specific directory test source is in to output dir
+    exe_dir = os.path.basename(os.path.dirname(test_path))
+    if exe_dir is not "tests":
+        test_output_dir = test_output_dir + "-" + exe_dir
+
     testResult(test_output_dir)
 
 
@@ -70,7 +75,12 @@ def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir)
     run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
-    
+
+    # add policy-specific directory test source is in to output dir
+    exe_dir = os.path.basename(os.path.dirname(test))
+    if exe_dir is not "tests":
+        run_args += ["-S", exe_dir]
+
     process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_output,run_error = process.communicate()
     if process.returncode != 0:
