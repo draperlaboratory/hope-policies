@@ -43,6 +43,7 @@ class AllTests:
         "userType/webapp_double_usr_set",
         "password/webapp_password_leak",
         "bitcount",
+        "adpcm_decode",
     ]
 
 class webapp(AllTests):
