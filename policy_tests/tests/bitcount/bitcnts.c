@@ -6,26 +6,31 @@
 **  public domain by Bob Stout & Auke Reitsma
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include "conio.h"
 #include <limits.h>
-#include <time.h>
-#include <float.h>
 #include "bitops.h"
-#include "../bareBench.h"
+
+extern uint32_t uiPortGetWallTimestampUs(void);
+
+#define US_PER_SEC 1000000
+
+#include "test_status.h"
+#include "test.h"
 
 #define FUNCS  7
 
 static int CDECL bit_shifter(long int x);
 
-int main(void)
+int test_main(void)
 {
-  clock_t start, stop;
-  double ct, cmin = DBL_MAX, cmax = 0;
+  uint32_t start, stop;
+  uint32_t ct, cmin = LONG_MAX, cmax = 0, ct_sec, ct_frac;
   int i, cminix, cmaxix;
   long j, n, seed;
-  int iterations;
+  // Reduced iterations from 1152000 to
+  // run within test framework time limit
+  int iterations=100;
   static int (* CDECL pBitCntFunc[FUNCS])(long) = {
     bit_count,
     bitcount,
@@ -47,18 +52,20 @@ int main(void)
     "Shift and count bits"
   };
 
-  iterations=1125000;
+  test_positive();
+  test_begin();
+  test_start_timer();
   
-  puts("Bit counter algorithm benchmark\n");
+  t_printf("Bit counter algorithm benchmark\n");
   
   for (i = 0; i < FUNCS; i++) {
-    start = clock();
+    start = uiPortGetWallTimestampUs();
     
     for (j = n = 0, seed = rand(); j < iterations; j++, seed += 13)
 	 n += pBitCntFunc[i](seed);
     
-    stop = clock();
-    ct = (stop - start) / (double)CLOCKS_PER_SEC;
+    stop = uiPortGetWallTimestampUs();
+    ct = (stop - start);
     if (ct < cmin) {
 	 cmin = ct;
 	 cminix = i;
@@ -68,11 +75,16 @@ int main(void)
 	 cmaxix = i;
     }
     
-    printf("%-38s> Time: %7.3f sec.; Bits: %ld\n", text[i], ct, n);
+    ct_sec = ct / US_PER_SEC;
+    ct_frac = ct % US_PER_SEC;
+
+    t_printf("%-38s> Time: %d.%06d s.; Bits: %ld\n", text[i], ct_sec, ct_frac, n);
   }
-  printf("\nBest  > %s\n", text[cminix]);
-  printf("Worst > %s\n", text[cmaxix]);
-  return 0;
+  t_printf("\nBest  > %s\n", text[cminix]);
+  t_printf("Worst > %s\n", text[cmaxix]);
+
+  test_print_total_time();
+  return test_done();
 }
 
 static int CDECL bit_shifter(long int x)
