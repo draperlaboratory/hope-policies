@@ -43,6 +43,7 @@ class AllTests:
         "userType/webapp_double_usr_set",
         "password/webapp_password_leak",
         "adpcm_decode",
+        "adpcm_encode",
         "aes",
     ]
 
