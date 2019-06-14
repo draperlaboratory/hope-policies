@@ -27,7 +27,7 @@ int test_main(void)
   uint32_t start, stop;
   uint32_t ct, cmin = LONG_MAX, cmax = 0, ct_sec, ct_frac;
   int i, cminix, cmaxix;
-  long j, n, seed;
+  long j, n;
   // Reduced iterations from 1152000 to
   // run within test framework time limit
   int iterations=100;
@@ -61,8 +61,11 @@ int test_main(void)
   for (i = 0; i < FUNCS; i++) {
     start = uiPortGetWallTimestampUs();
     
-    for (j = n = 0, seed = rand(); j < iterations; j++, seed += 13)
-	 n += pBitCntFunc[i](seed);
+    // Reseed rand() every time to ensure the
+    // same sequence of numbers for all tests
+    srand(155025597);
+    for (j = n = 0; j < iterations; j++)
+	 n += pBitCntFunc[i](rand());
     
     stop = uiPortGetWallTimestampUs();
     ct = (stop - start);
