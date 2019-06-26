@@ -12,36 +12,41 @@
  * notice must not be changed or removed and no warranty is either
  * expressed or implied by its publication or distribution.
  **********************************************************************/
-#include "../bareBench.h"
 #include <stdio.h>
 #include <string.h>
 
 #include "crc.h"
 
+#include "test_status.h"
+#include "test.h"
 
-int
-main(void)
+int test_main(void)
 {
 	unsigned char  test[] = "123456789";
 
 
+	test_positive();
+	test_begin();
+	test_start_timer();
+
 	/*
 	 * Print the check value for the selected CRC algorithm.
 	 */
-	printf("The check value for the %s standard is 0x%X\n", CRC_NAME, CHECK_VALUE);
+	t_printf("The check value for the %s standard is 0x%X\n", CRC_NAME, CHECK_VALUE);
 	
 	/*
 	 * Compute the CRC of the test message, slowly.
 	 */
-	printf("The crcSlow() of \"123456789\" is 0x%X\n", crcSlow(test, strlen(test)));
+	t_printf("The crcSlow() of \"123456789\" is 0x%X\n", crcSlow(test, strlen(test)));
   crcSlow(test,9);
 	
 	/*
 	 * Compute the CRC of the test message, more efficiently.
 	 */
 	crcInit();
-	printf("The crcFast() of \"123456789\" is 0x%X\n", crcFast(test, strlen(test)));
+	t_printf("The crcFast() of \"123456789\" is 0x%X\n", crcFast(test, strlen(test)));
   crcFast(test,9);
 
-  return 0;
+	test_print_total_time();
+	return test_done();
 }   /* main() */
