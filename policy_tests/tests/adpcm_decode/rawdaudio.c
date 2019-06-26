@@ -7,6 +7,13 @@
 #include "test_status.h"
 #include "test.h"
 
+// Fraction of the input.h array to be included
+// 1 includes the whole array
+// A higher number means a smaller input
+#ifndef INPUT_FRAC
+#define INPUT_FRAC 1
+#endif
+
 #define NSAMPLES 1000
 #define NINC  (NSAMPLES / 2)
 
@@ -20,7 +27,7 @@ int test_main() {
     struct adpcm_state state = {};
     int n = 0;
     const unsigned char * currentN = test_data;
-    int maxN = sizeof(test_data);
+    int maxN = sizeof(test_data) / INPUT_FRAC;
     
     t_printf("Initial valprev=%d, index=%d\n", state.valprev, state.index);
     
