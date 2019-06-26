@@ -45,6 +45,7 @@ class AllTests:
         "bitcount",
         "adpcm_decode",
         "adpcm_encode",
+        "aes",
     ]
 
 class webapp(AllTests):
