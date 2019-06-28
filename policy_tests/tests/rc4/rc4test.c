@@ -3,6 +3,8 @@
 //-------------------------------------------------------------------
 
 #include "testdata.h"
+#include "test_status.h"
+#include "test.h"
 
 unsigned char edata[TESTDATALEN];
 unsigned char udata[TESTDATALEN];
@@ -98,7 +100,7 @@ void arcfour_encrypt(ArcfourContext *ctx, unsigned char *dest, const unsigned ch
 
 
 
-int run_tea_test ( void )
+int test_main ( void )
 {
     unsigned int errors;
     int ra;
@@ -114,6 +116,10 @@ int run_tea_test ( void )
     ArcfourContext mycontext;
 
     errors=0;
+
+    test_positive();
+    test_begin();
+    test_start_timer();
 
     /* Initialize the algoritm */
     arcfour_init(&mycontext, mykey, 16);
@@ -139,9 +145,14 @@ int run_tea_test ( void )
     }
     if(errors)
     {
-        return(1);
+        test_error("%d errors found\n", errors);
+    }
+    else
+    {
+        t_printf("0 errors found\n");
+        test_print_total_time();
     }
 
-    return(0);
+    return test_done();
 }
 
