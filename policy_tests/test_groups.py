@@ -46,7 +46,8 @@ class AllTests:
         "crc",
         "fft",
         "limits",
-        "randmath"
+        "randmath",
+        "rc4",
     ]
 
 class webapp(AllTests):
