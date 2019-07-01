@@ -1,9 +1,16 @@
-#include "../bareBench.h"
+#include "test_status.h"
+#include "test.h"
 
-unsigned int abcmath ( void );
+extern unsigned int abcmath ( void );
 
-int main ( void )
+int test_main ( void )
 {
-    ee_printf("abcmath result: %u\n", abcmath());
-    return(0);
+    test_positive();
+    test_begin();
+    test_start_timer();
+
+    t_printf("abcmath result: %u\n", abcmath());
+
+    test_print_total_time();
+    return test_done();
 }
