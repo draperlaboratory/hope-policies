@@ -1,3 +1,6 @@
+#ifndef BLOWFISH_H
+#define BLOWFISH_H
+
 /*
 blowfish.h:  Header file for blowfish.c
 
@@ -29,5 +32,4 @@ void Blowfish_Init(BLOWFISH_CTX *ctx, unsigned char *key, int keyLen);
 void Blowfish_Encrypt(BLOWFISH_CTX *ctx, unsigned long *xl, unsigned long *xr);
 void Blowfish_Decrypt(BLOWFISH_CTX *ctx, unsigned long *xl, unsigned long *xr);
 
-
-
+#endif
