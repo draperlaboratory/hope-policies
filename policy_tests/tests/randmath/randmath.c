@@ -56,13 +56,15 @@ int main ( void )
     fprintf(fpout,"\n");
     fprintf(fpout,"unsigned int abcmath ( void )\n");
     fprintf(fpout,"{\n");
-    for(;ra<16;ra++) fprintf(fpout,"unsigned int %c;\n",'a'+ra);
+    for(;ra<16;ra++) fprintf(fpout,"    unsigned int %c;\n",'a'+ra);
     fprintf(fpout,"\n");
-    fprintf(fpout,"prand=0xABC;\n");
+    fprintf(fpout,"    prand=0xABC;\n");
     for(ra=0;ra<16;ra++)
     {
-        fprintf(fpout,"prand=prand32(prand); %c=prand;\n",'a'+ra);
+        fprintf(fpout,"    prand=prand32(prand);\n");
+        fprintf(fpout,"    %c=prand;\n",'a'+ra);
     }
+    fprintf(fpout,"\n");
     for(ra=0;ra<2000;ra++)
     {
         prand=prand32(prand);
@@ -94,31 +96,48 @@ int main ( void )
         prand=prand32(prand);
         switch((prand>>24)&15)
         {
-            case  0: fprintf(fpout,"%c = %c + %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  1: fprintf(fpout,"%c = %c - %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  2: fprintf(fpout,"%c = %c * %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  3: fprintf(fpout,"%c = %c ^ %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  4: fprintf(fpout,"%c = %c & %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  5: fprintf(fpout,"%c = %c | %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  6: fprintf(fpout,"%c = %c + %c;\n",rb+'a',rc+'a',rd+'a'); break;
-            case  7: fprintf(fpout,"prand=prand32(prand); %c = prand;\n",rb+'a'); break;
-
-            case  8: fprintf(fpout,"if(%c>%c) { prand=prand32(prand); %c = prand; }\n",rb+'a',rc+'a',rd+'a'); break;
-            case  9: fprintf(fpout,"if(%c<%c) { prand=prand32(prand); %c = prand; }\n",rb+'a',rc+'a',rd+'a'); break;
-            case 10: fprintf(fpout,"if(%c==%c) { prand=prand32(prand); %c = prand; }\n",rb+'a',rc+'a',rd+'a'); break;
-            case 11: fprintf(fpout,"if(%c>=%c) { prand=prand32(prand); %c = prand; }\n",rb+'a',rc+'a',rd+'a'); break;
-            case 12: fprintf(fpout,"if(%c<=%c) { prand=prand32(prand); %c = prand; }\n",rb+'a',rc+'a',rd+'a'); break;
-            default:
-                fprintf(fpout,"%c = %c | %c;\n",rb+'a',rc+'a',rd+'a'); break;
-                break;
+            case  0: fprintf(fpout,"    %c = %c + %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  1: fprintf(fpout,"    %c = %c - %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  2: fprintf(fpout,"    %c = %c * %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  3: fprintf(fpout,"    %c = %c ^ %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  4: fprintf(fpout,"    %c = %c & %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  5: fprintf(fpout,"    %c = %c | %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  6: fprintf(fpout,"    %c = %c + %c;\n",rb+'a',rc+'a',rd+'a'); break;
+            case  7: fprintf(fpout,"    prand=prand32(prand); %c = prand;\n",rb+'a'); break;
+            case  8: fprintf(fpout,"    if(%c>%c)\n"
+                                   "    {\n"
+                                   "        prand=prand32(prand);\n"
+                                   "        %c = prand;\n"
+                                   "    }\n",rb+'a',rc+'a',rd+'a'); break;
+            case  9: fprintf(fpout,"    if(%c<%c)\n"
+                                   "    {\n"
+                                   "        prand=prand32(prand);\n"
+                                   "        %c = prand;\n"
+                                   "    }\n",rb+'a',rc+'a',rd+'a'); break;
+            case 10: fprintf(fpout,"    if(%c==%c)\n"
+                                   "    {\n"
+                                   "        prand=prand32(prand);\n"
+                                   "        %c = prand;\n"
+                                   "    }\n",rb+'a',rc+'a',rd+'a'); break;
+            case 11: fprintf(fpout,"    if(%c>=%c)\n"
+                                   "    {\n"
+                                   "        prand=prand32(prand);\n"
+                                   "        %c = prand;\n"
+                                   "    }\n",rb+'a',rc+'a',rd+'a'); break;
+            case 12: fprintf(fpout,"    if(%c<=%c)\n"
+                                   "    {\n"
+                                   "        prand=prand32(prand);\n"
+                                   "        %c = prand;\n"
+                                   "    }\n",rb+'a',rc+'a',rd+'a'); break;
+            default: fprintf(fpout,"    %c = %c | %c;\n",rb+'a',rc+'a',rd+'a'); break;
         }
     }
 
     for(ra=1;ra<16;ra++)
     {
-        fprintf(fpout,"a += %c;\n",'a'+ra);
+        fprintf(fpout,"    a += %c;\n",'a'+ra);
     }
-    fprintf(fpout,"return(a);\n");
+    fprintf(fpout,"    return(a);\n");
 
 
     fprintf(fpout,"}\n");
