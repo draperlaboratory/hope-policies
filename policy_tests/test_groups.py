@@ -46,6 +46,7 @@ class AllTests:
         "crc",
         "fft",
         "limits",
+        "randmath"
     ]
 
 class webapp(AllTests):
@@ -97,4 +98,3 @@ test_groups = {'all' : AllTests,
                'bare' : bare,
                'webapp' : webapp
 }
-
