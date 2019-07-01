@@ -51,6 +51,7 @@ class AllTests:
         "rsa",
         "dijkstra",
         "sha",
+        "qsort",
     ]
 
 class webapp(AllTests):
