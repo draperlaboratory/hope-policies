@@ -48,6 +48,7 @@ class AllTests:
         "limits",
         "randmath",
         "rc4",
+        "qsort",
     ]
 
 class webapp(AllTests):
