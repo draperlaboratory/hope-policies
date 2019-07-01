@@ -53,6 +53,7 @@ class AllTests:
         "dijkstra",
         "sha",
         "qsort",
+        "randmath",
     ]
 
 class webapp(AllTests):
