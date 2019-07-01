@@ -46,6 +46,7 @@ class AllTests:
         "adpcm_decode",
         "adpcm_encode",
         "aes",
+        "rc4",
     ]
 
 class webapp(AllTests):
