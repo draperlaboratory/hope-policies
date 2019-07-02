@@ -34,7 +34,6 @@ int test_main(void)
     test_print_time_interval();
     if (test_encrypt_ecb()) { test_error("Failed decrypt ECB mode"); }
     test_print_time_interval();
-    test_encrypt_ecb_verbose();
 
     test_print_total_time();
     return test_done();
