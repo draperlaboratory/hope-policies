@@ -57,6 +57,7 @@ class AllTests:
         "lzfx",
 	"stringsearch",
 	"blowfish",
+	"limits",
     ]
 
 class webapp(AllTests):
@@ -90,6 +91,7 @@ class frtos(AllTests):
                                   "heap-ppac-userType/webapp_patient_info_leak_fails",
                                   "userType/webapp_double_usr_set",
                                   "password/webapp_password_leak",
+                                  "bitcount",
                                  ]
                                  )]
 
