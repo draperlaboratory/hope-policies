@@ -62,6 +62,18 @@ class webapp(AllTests):
         "password/webapp_password_leak",
     ]
 
+class rhealstone(AllTests):
+    tests = [
+        "rhealstone_switching",
+        "rhealstone_deadlk_base",
+        "rhealstone_deadlk_test",
+        "rhealstone_interrupt",
+        "rhealstone_intertask",
+        "rhealstone_preempt",
+        "rhealstone_sem_base",
+        "rhealstone_sem_test",
+    ]
+
 
 # XXX: Re-enable Long-running tests once passing"
 class frtos(AllTests):
@@ -81,7 +93,8 @@ class frtos(AllTests):
                                   "heap-ppac-userType/webapp_patient_info_leak_fails",
                                   "userType/webapp_double_usr_set",
                                   "password/webapp_password_leak",
-                                  "bitcount"
+                                  "bitcount",
+                                  "rhealstone"
                                  ]
                                  )]
 
@@ -126,8 +139,12 @@ test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
                'webapp' : webapp,
+<<<<<<< variant A
                'mibench' : Mibench,
                'mibenchfrtos' : MibenchFrtos,
                'stock_frtos' : stock_frtos,
                'stock_bare' : stock_bare
+>>>>>>> variant B
+               'rhealstone_group' : rhealstone
+======= end
 }
