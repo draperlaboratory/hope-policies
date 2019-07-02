@@ -1,0 +1,2 @@
+include ../rhealstone/libfreertos.mk
+include common.mk

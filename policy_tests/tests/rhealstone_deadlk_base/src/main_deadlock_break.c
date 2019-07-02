@@ -1,175 +1,176 @@
-/*-----------------------------------------------------------
-  Author: Timothy J Boger
-  Date: 4/29/13
-  Deadlock Break-Time Benchmark
-  OS:FreeRTOS
-  Platform: ZC702 Evaluation Board
-  References: - “FreeRTOS Port for Xilinx Zynq Devices” FreeRTOS Ltd. February 12, 2013.
-  - R. Kar.. "Implementing the Rhealstone Real-Time Benchmark". 1990.
-  - Cory Nakaji. "MIO, EMIO and AXI GPIO LEDS for ZC702". 2013.
-/*-----------------------------------------------------------*/
-// Includes
+/****************************************************************************/
+/* Author: Jesse Millwood                                                   */
+/* Date: 4/25/19                                                            */
+/* Deadlock Break Benchmark                                                 */
+/* OS: FreeRTOS                                                             */
+/* Plaform: RISC-V SiFIVE QEMU 3.14 Model                                   */
+/* Comments:                                                                */
+/* This is a mix between Timohty Boger's Master's Thesis Implementation for */
+/* the ZC702 and Daniel Ramirez's RTEMS implementation                      */
+/****************************************************************************/
+
 #include "FreeRTOS.h"
+#include "rhealstone_utils.h"
 #include "task.h"
 #include "queue.h"
 #include "timers.h"
-#include "xil_printf.h"
 #include "stdio.h"
-#include "xparameters.h"
-#include "xgpio.h"
-#include "xgpiops.h"
 #include "semphr.h"
-//**************************
-//AXI Variables
-static XGpioPs emio_pmod2;
-#define EMIO_54 54
-#define EMIO_55 55
-#define EMIO_56 56
-#define EMIO_57 57
-//**************************
+
 //Benchmark Variables
-#define MAX_LOOPS 10000 //Max loops for simulation 10000
-#define ONE_TICK 480000 //Number dependent on CPU. Must be longer than sleep period.
-//The amount of for loop iterations per one interrupt tick
-#define ONE_TICK_AVERAGE 475620
-unsigned long count1 = 0, count2 = 0, count3 = 0;
-unsigned long i, j;
-unsigned long dead_brk; // 1= Yes 0 = No
+// #define BENCHMARK_LOOPS 10000 //Max loops for simulation 10000
+// This has been reduced so that it will run inside the time constraints of the test framework
+#define BENCHMARK_LOOPS 5
+#define ONE_TICK 256100 //Number dependent on CPU. Must be longer than sleep period.
+
+uint32_t count1 = 0;
+uint32_t count2 = 0;
+uint32_t count3 = 0;
+uint32_t i;
+uint32_t j;
+
+uint32_t task1_init = 0;
+
+#ifdef BENCH_USE_DEADLOCKING
+uint32_t dead_brk = 1; //Run tasks with/without deadlocking 0 = without, 1 = with
+char test_variant[20] = "with_deadlock";
+#else
+uint32_t dead_brk = 0;
+char test_variant[20] = "without_deadlock";
+#endif
+
+
 //*********************************************************
 // Priorities at which the tasks are created
-#define mainFIRST_TASK_PRIORITY   ( tskIDLE_PRIORITY + 2 )
-#define mainSECOND_TASK_PRIORITY  ( tskIDLE_PRIORITY + 3 )
-#define mainTHIRD_TASK_PRIORITY   ( tskIDLE_PRIORITY + 4 )
-#define mainFOURTH_TASK_PRIORITY  ( tskIDLE_PRIORITY + 5 )
+#define mainFIRST_TASK_PRIORITY ( tskIDLE_PRIORITY + 2 )
+#define mainSECOND_TASK_PRIORITY ( tskIDLE_PRIORITY + 3 )
+#define mainTHIRD_TASK_PRIORITY ( tskIDLE_PRIORITY + 4 )
+#define mainREPORT_TASK_PRIORITY ( tskIDLE_PRIORITY + 5 )
 //*********************************************************
 //Associate Functions with Tasks
 static void prvFirst( void *pvParameters );
 static void prvSecond( void *pvParameters );
 static void prvThird( void *pvParameters );
-static void prvFourth( void *pvParameters );
+static void prvReport( void *pvParameters );
 //*********************************************************
 //Task Handle
 xTaskHandle xHandleFirst;
 xTaskHandle xHandleSecond;
 xTaskHandle xHandleThird;
-xTaskHandle xHandleFourth;
+xTaskHandle xHandleReport;
 xSemaphoreHandle xMutex;
+extern xTaskHandle xIspTask;
 //*********************************************************
+
+mTaskSwitchTickRecord_t test_record;
+
 //Main
-int main( void )
+int test_main( void )
 {
-    prvInitializeExceptions();
-//*******************************************************
-//AXI Setup
-    XGpioPs_Config *ConfigPtrPS;
-    ConfigPtrPS = XGpioPs_LookupConfig(0);
-    XGpioPs_CfgInitialize(&emio_pmod2, ConfigPtrPS,
-                          ConfigPtrPS->BaseAddr);
-//*******************************************************
-//Setup PMOD 2 pins
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_54, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_54, 1);
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_55, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_55, 1);
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_56, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_56, 1);
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_57, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_57, 1);
-//*******************************************************
-//Setup PMOD 2 outputs to zero
-    XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x0);
-    XGpioPs_WritePin(&emio_pmod2, EMIO_55, 0x0);
-    XGpioPs_WritePin(&emio_pmod2, EMIO_56, 0x0);
-    XGpioPs_WritePin(&emio_pmod2, EMIO_57, 0x0);
-//*******************************************************
-//Start Benchmark
-    xil_printf("Start of Deadlock Break-Time Benchmark\n\r");
-    xil_printf("Each task runs %D times\r\n", MAX_LOOPS);
-/*****************************************************************
-Execution Time Measurement Without Deadlocks
-Create four tasks.
-Task 1 Lowest Priority
-Task 2 Medium Priority. Only uses CPU time and sleeps periodically.
-Task 3 Highest Priority. Potential deadlock when it tries to gain control
-of the "region" resource, because low-priority task holds region mostly.
-Task 4 controls the start and finish of the program and sets the GPIO pin
-Note: when dead_brk = 0;
-/*****************************************************************
-Deadlock Resolution Measurement
-Create four tasks.
-Task 1 Lowest Priority
-Task 2 Medium Priority. Only uses CPU time and sleeps periodically.
-Task 3 Highest Priority. Potential deadlock when it tries to gain control
-of the "region" resource, because low-priority task holds region mostly.
-Task 4 controls the start and finish of the program and sets the GPIO pin
-Measure the time between the High and Low GPIO output
-Note: when dead_brk = 1;
-/**********************************************************************/
-//SET DESIRED BENHCMARK VALUE HERE:
-    dead_brk = 1; //Run tasks with/without deadlocking 0 = without, 1 = with
-    count1 = count2 = count3 = 0; //Initialize counts
-//Create Semaphore
+    vTaskPrioritySet(&xIspTask, tskIDLE_PRIORITY + 6);
+    test_positive();
+    test_begin();
+
+
+    //Start Benchmark
+    t_printf("Start of Deadlock Break-Time Benchmark\n\r");
+    t_printf("Each task runs %u times\r\n", BENCHMARK_LOOPS);
+
+    /* For determining cpu ticks per timer ticks
+    uint32_t before = get_timer_value();
+    vTaskDelay(1);
+    uint32_t after = get_timer_value();
+    t_printf("Number of ticks for one delay: %u \n", after-before);
+    */
+
+
+    /*****************************************************************
+    Execution Time Measurement Without Deadlocks
+    Create four tasks.
+    Task 1 Lowest Priority
+    Task 2 Medium Priority. Only uses CPU time and sleeps periodically.
+    Task 3 Highest Priority. Potential deadlock when it tries to gain control
+    of the "region" resource, because low-priority task holds region mostly.
+    Task 4 controls the start and finish of the program and sets the GPIO pin
+    Note: when dead_brk = 0;
+    /*****************************************************************
+    Deadlock Resolution Measurement
+    Create four tasks.
+    Task 1 Lowest Priority
+    Task 2 Medium Priority. Only uses CPU time and sleeps periodically.
+    Task 3 Highest Priority. Potential deadlock when it tries to gain control
+    of the "region" resource, because low-priority task holds region mostly.
+    Task 4 controls the start and finish of the program and sets the GPIO pin
+    Measure the time between the High and Low GPIO output
+    Note: when dead_brk = 1;
+    /**********************************************************************/
+
+    //Create Semaphore
     xMutex = xSemaphoreCreateMutex();
-    if (dead_brk == 0)
-    {
-        xil_printf("Start Execution Time Measurement Without Deadlocks\r\n");
-    }
-    else
-    {
-        xil_printf("Start Deadlock Resolution Measurement\r\n");
-    }
-//Create four tasks
-    xTaskCreate( prvFirst, ( signed char * ) "FI",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainFIRST_TASK_PRIORITY, &xHandleFirst );
-    xTaskCreate( prvSecond, ( signed char * ) "S",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainSECOND_TASK_PRIORITY, &xHandleSecond );
-    xTaskCreate( prvThird, ( signed char * ) "T",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainTHIRD_TASK_PRIORITY, &xHandleThird );
-    xTaskCreate( prvFourth, ( signed char * ) "FO",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainFOURTH_TASK_PRIORITY, &xHandleFourth );
-    vTaskStartScheduler();
-/* If all is well, the scheduler will now be running, and the following line
-   will never be reached. If the following line does execute, then there was
-   insufficient FreeRTOS heap memory available for the idle and/or timer tasks
-   to be created. See the memory management section on the FreeRTOS web site
-   for more details. */
-    for( ;; );
+    vTaskSuspendAll();
+    xTaskCreate( prvFirst, "Task 1", configMINIMAL_STACK_SIZE, NULL, mainFIRST_TASK_PRIORITY, &xHandleFirst );
+    xTaskCreate( prvSecond, "Task 2", configMINIMAL_STACK_SIZE, NULL, mainSECOND_TASK_PRIORITY, &xHandleSecond );
+    xTaskCreate( prvThird, "Task Deadlock", configMINIMAL_STACK_SIZE, NULL, mainTHIRD_TASK_PRIORITY, &xHandleThird );
+    xTaskCreate( prvReport, "Report", configMINIMAL_STACK_SIZE, NULL, mainREPORT_TASK_PRIORITY, &xHandleReport );
+    vTaskSuspend( xHandleSecond);
+    vTaskSuspend( xHandleThird);
+    vTaskSuspend( xHandleReport);
+    xTaskResumeAll();
+    t_printf("Done with Setup\n");
+    vTaskPrioritySet(&xIspTask, tskIDLE_PRIORITY + 2);
+
+
 }
 //*********************************************************************
 //Task 4
-static void prvFourth( void *pvParameters )
+static void prvReport( void *pvParameters )
 {
-    for( ;; )
-    {
-//Runs First due to having highest priority
-        XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x1); //Set GPIO HIGH
-        vTaskPrioritySet(xHandleFourth, tskIDLE_PRIORITY + 1);
-//reduce priority below Task 1 and 2
-//-------------------------- Task will yield here. Returns when Task 1, 2, and 3 delete themselves
-        XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x0); //Set GPIO LOW
-        xil_printf("Measurement Done\r\n");
-        vTaskDelete(xHandleFourth); //Delete Task 4
-    }
+    uint32_t measured_ticks;
+    uint32_t measured_time_usecs;
+    uint32_t timer_freq;
+
+    vTaskDelete(xHandleFirst); //Delete Task 1
+
+    timer_freq = get_timer_freq();
+    measured_ticks = (test_record.measured_work_end_ticks - test_record.measured_work_begin_ticks)/BENCHMARK_LOOPS;
+    measured_time_usecs = ticks_to_usecs(measured_ticks);
+
+    print_results_json("deadlock_break", &test_variant, measured_ticks, timer_freq, measured_time_usecs);
+
+    vTaskResume(xIspTask);
+    test_pass();
+    test_done();
 }
 //*********************************************************************
 //Task 1
 // Lower Priority task.
 static void prvFirst( void *pvParameters )
 {
+    /* Allow to initially take the semaphore and be preempted by task 2 */
+    xSemaphoreTake(xMutex, portMAX_DELAY); //Take control
+    // This flag is to mark that the semaphore has been taken during
+    // the task initialization. This is so that the task 1 has the semaphore
+    // before task 3 starts. In the loop, however, the semaphore take can not
+    // be called again otherwise this task will block itself
+    task1_init = 1;
+    vTaskResume(xHandleSecond);
+
     for( ;; )
     {
-        if (count1 == MAX_LOOPS)
+        if (count1 == BENCHMARK_LOOPS)
         {
-            vTaskDelete(xHandleFirst); //Delete Task 1
+            // task is done
+            vTaskResume(xHandleReport);
         }
-        xSemaphoreTake(xMutex, portMAX_DELAY); //Take control
+
+        if (task1_init == 0)
+        {
+            xSemaphoreTake(xMutex, portMAX_DELAY); //Take control
+        }
+        task1_init = 0;
         for (i = 0; i < ONE_TICK; i++) //delay loop
         {
-//Do Nothing
+            //Do Nothing
         }
         xSemaphoreGive(xMutex); //Release control
         count1++;
@@ -178,24 +179,24 @@ static void prvFirst( void *pvParameters )
 //*********************************************************************
 //Task 2
 // Medium priority task. Only uses CPU time and sleep periodically.
+
 static void prvSecond( void *pvParameters )
 {
+    /* Allow to initialize self and suspend for highest task */
+    vTaskResume(xHandleThird);
     for( ;; )
     {
-        for( ;; )
+        if (count2 == BENCHMARK_LOOPS)
         {
-            if (count2 == MAX_LOOPS)
-            {
-                vTaskDelete(xHandleSecond); //Delete Task 2
-            }
-            for (j = 0; j < ONE_TICK/4; j++)
-            {
-//Do Nothing
-            }
-            vTaskDelay(1); //Delay a single tick
-            count2++;
+            // Task is done
+            vTaskDelete(xHandleSecond);
         }
-//delay loop
+        for (j = 0; j < ONE_TICK/4; j++) //delay loop
+        {
+            //Do Nothing
+        }
+        vTaskDelay(1); //Delay a single tick, allow preemption after for loop work?
+        count2++;
     }
 }
 //*********************************************************************
@@ -204,13 +205,20 @@ static void prvSecond( void *pvParameters )
 // of the "region" resource, because low-priority task holds region mostly.
 static void prvThird( void *pvParameters )
 {
+
+    /* All testing tasks are ready by now, and task 1 has semaphore */
+    t_printf("Starting Test\n");
+    vTaskSuspend( xIspTask );
+    test_record.measured_work_begin_ticks = get_timer_value();
     for( ;; )
     {
-        if (count3 == MAX_LOOPS)
-        {
-            vTaskDelete(xHandleThird); //Delete Task 3
+        if (count3 == BENCHMARK_LOOPS)
+	{
+            // Task is done
+            test_record.measured_work_end_ticks = get_timer_value();
+            vTaskDelete(xHandleThird);
         }
-        vTaskDelay(1); //Delay a single tick
+        vTaskDelay(3); //Delay a single tick
         i = ONE_TICK; //Reset Task 1
         if (dead_brk == 1)
         {
@@ -219,39 +227,4 @@ static void prvThird( void *pvParameters )
         }
         count3++;
     }
-}
-//*********************************************************************
-void vApplicationMallocFailedHook( void )
-{
-/* vApplicationMallocFailedHook() will only be called if
-   configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h. It is a hook
-   function that will get called if a call to pvPortMalloc() fails.
-   pvPortMalloc() is called internally by the kernel whenever a task, queue or
-   semaphore is created. It is also called by various parts of the demo
-   application. If heap_1.c or heap_2.c are used, then the size of the heap
-   available to pvPortMalloc() is defined by configTOTAL_HEAP_SIZE in
-   FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
-   to query the size of free heap space that remains (although it does not
-   provide information on how the remaining heap might be fragmented). */
-    taskDISABLE_INTERRUPTS();
-    for( ;; );
-}
-//*********************************************************************
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )
-{
-    ( void ) pcTaskName;
-    ( void ) pxTask;
-/* vApplicationStackOverflowHook() will only be called if
-   configCHECK_FOR_STACK_OVERFLOW is set to either 1 or 2. The handle and name
-   of the offending task will be passed into the hook function via its
-   parameters. However, when a stack has overflowed, it is possible that the
-   parameters will have been corrupted, in which case the pxCurrentTCB variable
-   can be inspected directly. */
-    taskDISABLE_INTERRUPTS();
-    for( ;; );
-}
-//*********************************************************************
-void vApplicationSetupHardware( void )
-{
-/* Do nothing */
 }
