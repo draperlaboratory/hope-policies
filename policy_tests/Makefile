@@ -79,6 +79,19 @@ dhrystone_XDIST = -n $(JOBS) # run in parallel
 dhrystone: CONFIG=dhrystone
 dhrystone: all
 
+# config for Rhealstone
+rhealstone_SIM = qemu
+rhealstone_TESTS = rhealstone_group
+rhealstone_RUNTIME = frtos
+rhealstone_MODULE = osv.$(rhealstone_RUNTIME).main
+rhealstone_POLICIES = none,stack,heap,rwx,cfi
+rhealstone_XDIST = -n $(JOBS) # run in parallel
+rhealstone: CONFIG=rhealstone
+rhealstone: all report-rhealstone
+rhealstone-build: CONFIG=rhealstone
+rhealstone-build: build-tests
+
+
 # default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
@@ -211,3 +224,6 @@ clean: clean-kernels clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
 		tests/isp-runtime-frtos* tests/isp-runtime-bare*
 	find tests/ -type f -name '*.o' -delete
+
+report-rhealstone:
+	python3 tests/rhealstone/report_rhealstone.py --policies "$(rhealstone_POLICIES)"
