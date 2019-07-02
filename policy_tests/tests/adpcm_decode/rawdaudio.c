@@ -2,23 +2,27 @@
 
 #include "adpcm.h"
 #include <stdio.h>
-#include "../bareBench.h"
 #include "input.h"
 
-
+#include "test_status.h"
+#include "test.h"
 
 #define NSAMPLES 1000
 #define NINC  (NSAMPLES / 2)
 
 short	sbuf[NSAMPLES];
 
-int main() {
+int test_main() {
+    test_positive();
+    test_begin();
+    test_start_timer();
+
     struct adpcm_state state = {};
     int n = 0;
-    unsigned char * currentN = test_data;
+    const unsigned char * currentN = test_data;
     int maxN = sizeof(test_data);
     
-    printf("Initial valprev=%d, index=%d\n", state.valprev, state.index);
+    t_printf("Initial valprev=%d, index=%d\n", state.valprev, state.index);
     
     while(1) {
         int bytesIntoRead = ((unsigned int)currentN) - ((unsigned int)test_data);
@@ -29,9 +33,10 @@ int main() {
 
         adpcm_decoder(currentN, sbuf, n*2, &state);
         currentN = test_data + bytesIntoRead + n;
-        //write(1, sbuf, n*4);
     }
     
-    printf("Final valprev=%d, index=%d\n", state.valprev, state.index);
-    return 0;
+    t_printf("Final valprev=%d, index=%d\n", state.valprev, state.index);
+
+    test_print_total_time();
+    return test_done();
 }
