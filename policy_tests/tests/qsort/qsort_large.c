@@ -39,8 +39,15 @@ int test_main(void)
   t_printf("\nSorting %d vectors based on distance from the origin.\n\n",count);
   qsort(array,count,sizeof(struct my3DVertexStruct),compare);
   
-  for(i=0;i<count;i++)
+  for(i = 0; i < 10; ++i)
+  {
     t_printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
+  }
+  t_printf("...\n");
+  for(i = count - 10; i < count; ++i)
+  {
+    t_printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
+  }
 
   test_print_total_time();
   return test_done();
