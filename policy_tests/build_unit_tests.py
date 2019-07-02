@@ -58,6 +58,8 @@ def test_copy_build_dir(test, runtime):
         shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
         if "webapp" in test:
             shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
+        if "rhealstone" in test:
+            shutil.copytree(os.path.join("tests", "rhealstone"), os.path.join(output_test_dir, "rhealstone"))
     else:
         shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
         shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
