@@ -1,33 +1,35 @@
+/****************************************************************************/
+/* Author: Jesse Millwood                                                   */
+/* Date: 4/25/19                                                            */
+/* Task Intertask Latency Benchmark                                         */
+/* OS: FreeRTOS                                                             */
+/* Plaform: RISC-V SiFIVE QEMU 3.14 Model                                   */
+/* Comments:                                                                */
+/* This is a mix between Timohty Boger's Master's Thesis Implementation for */
+/* the ZC702 and Daniel Ramirez's RTEMS implementation                      */
+/****************************************************************************/
 /*-----------------------------------------------------------
-  Author: Timothy J Boger
-  Date: 4/29/13
-  Inter-Task Message Latency Benchmark
-  OS:FreeRTOS
-  Platform: ZC702 Evaluation Board
-  References: - “FreeRTOS Port for Xilinx Zynq Devices” FreeRTOS Ltd. February 12, 2013.
-  - R. Kar.. "Implementing the Rhealstone Real-Time Benchmark". 1990.
-  - Cory Nakaji. "MIO, EMIO and AXI GPIO LEDS for ZC702". 2013.
+Author: Timothy J Boger
+Date: 4/29/13
+Inter-Task Message Latency Benchmark
+OS:FreeRTOS
+Platform: ZC702 Evaluation Board
+References: - “FreeRTOS Port for Xilinx Zynq Devices” FreeRTOS Ltd. February 12, 2013.
+- R. Kar.. "Implementing the Rhealstone Real-Time Benchmark". 1990.
+- Cory Nakaji. "MIO, EMIO and AXI GPIO LEDS for ZC702". 2013.
 /*-----------------------------------------------------------*/
 // Includes
 #include "FreeRTOS.h"
+#include "rhealstone_utils.h"
 #include "task.h"
 #include "queue.h"
 #include "timers.h"
-#include "xil_printf.h"
 #include "stdio.h"
-#include "xparameters.h"
-#include "xgpio.h"
-#include "xgpiops.h"
-//**************************
-//AXI Variables
-static XGpioPs emio_pmod2;
-#define EMIO_54 54
-#define EMIO_55 55
-#define EMIO_56 56
-#define EMIO_57 57
-//**************************
+
 //Benchmark Variables
-#define MAX_LOOPS 1000000 //Max loops for simulation
+//Max loops for simulation
+// #define BENCHMARK_LOOPS 1000000
+#define BENCHMARK_LOOPS 100
 char msg_buf[10] = "MESSAGE", recv_buf[10];
 #define Queue_Length 10
 #define Queue_Item_Size sizeof(msg_buf)
@@ -35,117 +37,100 @@ unsigned long count1, count2;
 //*********************************************************
 // Priorities at which the tasks are created
 #define mainFIRST_TASK_PRIORITY ( tskIDLE_PRIORITY + 2 )
-#define mainSECOND_TASK_PRIORITY  ( tskIDLE_PRIORITY + 3 )
-#define mainTHIRD_TASK_PRIORITY   ( tskIDLE_PRIORITY + 4 )
+#define mainSECOND_TASK_PRIORITY ( tskIDLE_PRIORITY + 3 )
+#define mainREPORT_TASK_PRIORITY ( tskIDLE_PRIORITY + 4 )
 //*********************************************************
 //Associate Functions with Tasks
 static void prvFirst( void *pvParameters );
 static void prvSecond( void *pvParameters );
-static void prvThird( void *pvParameters );
+static void prvReport( void *pvParameters );
+
 //*********************************************************
 //Task and Queue Handles
 xTaskHandle xHandleFirst;
 xTaskHandle xHandleSecond;
-xTaskHandle xHandleThird;
+xTaskHandle xHandleReport;
 xQueueHandle xQueue;
+extern xTaskHandle xIspTask;
 //*********************************************************
+
+mTaskSwitchTickRecord_t test_record;
 //Main
-int main( void )
+int test_main ( void )
 {
-    prvInitializeExceptions();
-//*******************************************************
-//AXI Setup
-    XGpioPs_Config *ConfigPtrPS;
-    ConfigPtrPS = XGpioPs_LookupConfig(0);
-    XGpioPs_CfgInitialize(&emio_pmod2, ConfigPtrPS, ConfigPtrPS->BaseAddr);
-//*******************************************************
-//Setup PMOD 2 pins
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_54, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_54, 1);
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_55, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_55, 1);
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_56, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_56, 1);
-    XGpioPs_SetDirectionPin(&emio_pmod2, EMIO_57, 1);
-    XGpioPs_SetOutputEnablePin(&emio_pmod2, EMIO_57, 1);
-//*******************************************************
-//Setup PMOD 2 outputs to zero
-    XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x0);
-    XGpioPs_WritePin(&emio_pmod2, EMIO_55, 0x0);
-    XGpioPs_WritePin(&emio_pmod2, EMIO_56, 0x0);
-    XGpioPs_WritePin(&emio_pmod2, EMIO_57, 0x0);
-//*******************************************************
-//Start Benchmark
-    xil_printf("Start of InterTask Message Latency Benchmark\n\r");
-    xil_printf("Each task runs %D times\r\n", MAX_LOOPS);
-// Create Message Queue
+
+    vTaskPrioritySet(&xIspTask, tskIDLE_PRIORITY + 3);
+    test_positive();
+    test_begin();
+
+    // Create Message Queue
     xQueue = xQueueCreate(Queue_Length, Queue_Item_Size);
     if(xQueue == NULL)
     {
-//The queue could not be created
-        xil_printf("Queue Create Error\n\r");
+        //The queue could not be created
+        t_printf("Queue Create Error\n\r");
     }
-/***********************************************************************
-Serial Execution Measurement Without Messages
-Measure execution time of task1 and task2 when they are executed
-serially (without messages).
-Measure the time between the High and Low GPIO output
-/**********************************************************************/
-    XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x1); //Set GPIO HIGH
-    xil_printf("Start Serial Execution Measurement Without Messages\r\n");
-    for (count1 = 0; count1 < MAX_LOOPS; count1++)
+    /***********************************************************************
+    Serial Execution Measurement Without Messages
+    Measure execution time of task1 and task2 when they are executed
+    serially (without messages).
+    Measure the time between the High and Low GPIO output
+    /**********************************************************************/
+
+    test_record.baseline_begin_ticks = get_timer_value();
+    for (count1 = 0; count1 < BENCHMARK_LOOPS; count1++)
     {
-//Do Nothing
+        //Do Nothing
     }
-    for (count2 = 0; count2 < MAX_LOOPS; count2++)
+    for (count2 = 0; count2 < BENCHMARK_LOOPS; count2++)
     {
-// Do Nothing
+        // Do Nothing
     }
-    XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x0); //Set GPIO LOW
-    xil_printf("Serial Execution Measurement Without Messages Done\r\n");
-/***********************************************************************
-Inter-Task Message Latency Measurement
-Create three tasks. Task 1 and Task 2 will perform the Messaging.
-Task 1 sends messages, Task 2 receives them.
-Task 2 has a higher priority than Task 1 to make sure it receives messages immediately
-Task 3 controls the start and finish of the program and sets the GPIO pin
-Measure the time between the High and Low GPIO output
-***********************************************************************/
-    xil_printf("Start Inter-Task Message Latency Measurement\r\n");
-//Create three tasks
-    xTaskCreate( prvFirst, ( signed char * ) "F",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainFIRST_TASK_PRIORITY, &xHandleFirst );
-    xTaskCreate( prvSecond, ( signed char * ) "S",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainSECOND_TASK_PRIORITY, &xHandleSecond );
-    xTaskCreate( prvThird, ( signed char * ) "T",
-                 configMINIMAL_STACK_SIZE, NULL,
-                 mainTHIRD_TASK_PRIORITY, &xHandleThird );
-    vTaskStartScheduler();
-/* If all is well, the scheduler will now be running, and the following line
-   will never be reached. If the following line does execute, then there was
-   insufficient FreeRTOS heap memory available for the idle and/or timer tasks
-   to be created. See the memory management section on the FreeRTOS web site
-   for more details. */
-    for( ;; );
+    test_record.baseline_end_ticks = get_timer_value();
+    /***********************************************************************
+    Inter-Task Message Latency Measurement
+    Create three tasks. Task 1 and Task 2 will perform the Messaging.
+    Task 1 sends messages, Task 2 receives them.
+    Task 2 has a higher priority than Task 1 to make sure it receives messages immediately
+    Task 3 controls the start and finish of the program and sets the GPIO pin
+    Measure the time between the High and Low GPIO output
+    ***********************************************************************/
+    t_printf("Start Inter-Task Message Latency Measurement\r\n");
+    //Create three tasks
+    xTaskCreate( prvFirst, "Task 1", configMINIMAL_STACK_SIZE, NULL, mainFIRST_TASK_PRIORITY, &xHandleFirst );
+    xTaskCreate( prvSecond, "Task 2", configMINIMAL_STACK_SIZE, NULL, mainSECOND_TASK_PRIORITY, &xHandleSecond );
+    xTaskCreate( prvReport, "Report", configMINIMAL_STACK_SIZE, NULL, mainREPORT_TASK_PRIORITY, &xHandleReport );
+    vTaskSuspend(xHandleReport);
+    taskYIELD();
 }
 //*********************************************************************
 //Task 3
-static void prvThird( void *pvParameters )
+static void prvReport( void *pvParameters )
 {
-    for( ;; )
-    {
-//Runs First due to having highest priority
-        XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x1); //Set GPIO HIGH
-        vTaskPrioritySet(xHandleThird, tskIDLE_PRIORITY + 1); //reduce
-        priority below Task 1 and 2
-//-------------------------- Task will yield here. Returns when Task 1 and 2 delete themselves
-            XGpioPs_WritePin(&emio_pmod2, EMIO_54, 0x0); //Set GPIO LOW
-        xil_printf("Inter-Task Message Latency Measurement Done\r\n");
-        vQueueDelete(xQueue); //Delete Queue
-        vTaskDelete(xHandleThird); //Delete Task 3
-    }
+    uint32_t work_baseline_ticks;
+    uint32_t work_measured_ticks;
+    uint32_t measured_ticks;
+    uint32_t measured_time;
+    uint32_t timer_freq;
+
+    vTaskDelete(xHandleFirst);
+    vTaskDelete(xHandleSecond);
+
+    t_printf("Inter-Task Message Latency Measurement Done\r\n");
+    timer_freq = get_timer_freq();
+    work_measured_ticks = test_record.measured_work_end_ticks - test_record.measured_work_begin_ticks;
+    work_baseline_ticks = test_record.baseline_end_ticks - test_record.baseline_begin_ticks;
+    measured_ticks = (work_measured_ticks - work_baseline_ticks)/BENCHMARK_LOOPS;
+    measured_time = ticks_to_usecs(measured_ticks);
+
+    print_results_json("intertask latency", "base", measured_ticks, timer_freq, measured_time);
+
+    vQueueDelete(xQueue); //Delete Queue
+
+    vTaskResume(xIspTask);
+    test_pass();
+    test_done();
+
 }
 //*********************************************************************
 //Task 1 - Sends Messages
@@ -153,67 +138,38 @@ static void prvFirst( void *pvParameters )
 {
     for( ;; )
     {
-        for (count1 = 0; count1 < MAX_LOOPS; count1++)
+        for (count1 = 0; count1 < BENCHMARK_LOOPS; count1++)
         {
-            if(xQueueSendToBack(xQueue, msg_buf,
-                                portMAX_DELAY)!=pdPASS)
+            if(xQueueSendToBack(xQueue, msg_buf, portMAX_DELAY)!=pdPASS)
             {
-//Nothing could be sent blocking timer expired
-                xil_printf("Sent Blocking Timer Ran Out \r\n");
+                //Nothing could be sent blocking timer expired
+                t_printf("Sent Blocking Timer Ran Out \r\n");
             }
         }
-        vTaskDelete(xHandleFirst); //Delete Task 1
+        vTaskSuspend(xHandleFirst);
     }
+
 }
 //*********************************************************************
 //Task 2
 static void prvSecond( void *pvParameters )
 {
+    // starts first
+    vTaskSuspend( xIspTask );
+    test_record.measured_work_begin_ticks = get_timer_value();
     for( ;; )
     {
-        for (count2 = 0; count2 < MAX_LOOPS; count2++)
+        for (count2 = 0; count2 < BENCHMARK_LOOPS; count2++)
         {
             if(xQueueReceive(xQueue, recv_buf, portMAX_DELAY)!= pdPASS)
             {
-//Nothing Received because blocking timer expired
-                xil_printf("Receive Blocking Timer Ran Out \r\n");
+                //Nothing Received because blocking timer expired
+                t_printf("Receive Blocking Timer Ran Out \r\n");
             }
         }
-        vTaskDelete(xHandleSecond); //Delete Task 2
+        // ends last
+        test_record.measured_work_end_ticks = get_timer_value();
+        vTaskResume(xHandleReport);
+        vTaskSuspend(xHandleSecond);
     }
-}
-//*********************************************************************
-void vApplicationMallocFailedHook( void )
-{
-/* vApplicationMallocFailedHook() will only be called if
-   configUSE_MALLOC_FAILED_HOOK is set to 1 in FreeRTOSConfig.h. It is a hook
-   function that will get called if a call to pvPortMalloc() fails.
-   pvPortMalloc() is called internally by the kernel whenever a task, queue or
-   semaphore is created. It is also called by various parts of the demo
-   application. If heap_1.c or heap_2.c are used, then the size of the heap
-   available to pvPortMalloc() is defined by configTOTAL_HEAP_SIZE in
-   FreeRTOSConfig.h, and the xPortGetFreeHeapSize() API function can be used
-   to query the size of free heap space that remains (although it does not
-   provide information on how the remaining heap might be fragmented). */
-    taskDISABLE_INTERRUPTS();
-    for( ;; );
-}
-//*********************************************************************
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )
-{
-    ( void ) pcTaskName;
-    ( void ) pxTask;
-/* vApplicationStackOverflowHook() will only be called if
-   configCHECK_FOR_STACK_OVERFLOW is set to either 1 or 2. The handle and name
-   of the offending task will be passed into the hook function via its
-   parameters. However, when a stack has overflowed, it is possible that the
-   parameters will have been corrupted, in which case the pxCurrentTCB variable
-   can be inspected directly. */
-    taskDISABLE_INTERRUPTS();
-    for( ;; );
-}
-//*********************************************************************
-void vApplicationSetupHardware( void )
-{
-/* Do nothing */
 }
