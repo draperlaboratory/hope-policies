@@ -5,6 +5,14 @@
 #include "test_status.h"
 #include "test.h"
 
+/*
+ * Determines the fraction of the loop to be executed
+ * A fraction of 1 means the entire loop will be executed
+ */
+#ifndef LOOP_FRAC
+#define LOOP_FRAC 1
+#endif
+
 /* The printf's may be removed to isolate just the math calculations */
 
 int test_main(void)
@@ -49,10 +57,10 @@ int test_main(void)
     t_printf(" %f",x[i]);
   t_printf("\n\r");
   /* Now solve some random equations */
-  for(a1=1;a1<10;a1++) {
-    for(b1=10;b1>0;b1--) {
-      for(c1=5;c1<15;c1+=0.5) {
-	for(d1=-1;d1>-11;d1--) {
+  for(a1=1;a1<10;a1+=LOOP_FRAC) {
+    for(b1=10;b1>0;b1-=LOOP_FRAC) {
+      for(c1=5;c1<15;c1+=0.5*LOOP_FRAC) {
+	for(d1=-1;d1>-11;d1-=LOOP_FRAC) {
 	  SolveCubic(a1, b1, c1, d1, &solutions, x);  
 	  t_printf("Solutions:");
 	  for(i=0;i<solutions;i++)
@@ -82,10 +90,10 @@ int test_main(void)
 
   t_printf("********* ANGLE CONVERSION ***********\n\r");
   /* convert some rads to degrees */
-  for (X = 0.0; X <= 360.0; X += 1.0)
+  for (X = 0.0; X <= 360.0; X += LOOP_FRAC)
     t_printf("%3.0f degrees = %.12f radians\n\r", X, deg2rad(X));
   t_printf("\n\r");
-  for (X = 0.0; X <= (2 * PI + 1e-6); X += (PI / 180))
+  for (X = 0.0; X <= (2 * PI + 1e-6); X += (PI / 180) * LOOP_FRAC)
     t_printf("%.12f radians = %3.0f degrees\n\r", X, rad2deg(X));
   test_print_time_interval();
   
