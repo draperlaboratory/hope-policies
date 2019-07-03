@@ -8,10 +8,15 @@
 int invfft=0;
 unsigned MAXSIZE; // small 4096, 8192 inverse, 512 for memory-limited systems
 unsigned MAXWAVES=4; //large has 8
-static float realin[1024];
-static float imagin[1024];
-static float realout[1024];
-static float imagout[1024];
+
+#ifndef ARRAYSIZE
+#define ARRAYSIZE 1024
+#endif
+
+static float realin[ARRAYSIZE];
+static float imagin[ARRAYSIZE];
+static float realout[ARRAYSIZE];
+static float imagout[ARRAYSIZE];
 static float Coeff[16];
 static float Amp[16];
 
@@ -23,10 +28,10 @@ int test_main() {
     test_begin();
     test_start_timer();
 
-    MAXSIZE = 128;
+    MAXSIZE = ARRAYSIZE / 2;
     old_main();
     invfft = 1;
-    MAXSIZE = 256;
+    MAXSIZE = ARRAYSIZE;
     old_main();
 
     test_print_total_time();
