@@ -1,8 +1,9 @@
-#include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
 #include "fourier.h"
-#include "../bareBench.h"
+
+#include "test_status.h"
+#include "test.h"
 
 int invfft=0;
 unsigned MAXSIZE; // small 4096, 8192 inverse, 512 for memory-limited systems
@@ -17,13 +18,19 @@ static float Amp[16];
 int old_main();
     
 // main for benchmark purposes that does fft and inverse fft
-int main() {
+int test_main() {
+    test_positive();
+    test_begin();
+    test_start_timer();
+
     MAXSIZE = 128;
     old_main();
     invfft = 1;
     MAXSIZE = 256;
     old_main();
-    return 0;
+
+    test_print_total_time();
+    return test_done();
 }
 
 int old_main() {
@@ -82,15 +89,15 @@ int old_main() {
  /* regular*/
  fft_float (MAXSIZE,invfft,RealIn,ImagIn,RealOut,ImagOut);
  
- printf("RealOut:\n");
+ t_printf("RealOut:\n");
  for (i=0;i<MAXSIZE;i++)
-   printf("%f \t", RealOut[i]);
- printf("\n");
+   t_printf("%f \t", RealOut[i]);
+ t_printf("\n");
 
-printf("ImagOut:\n");
+t_printf("ImagOut:\n");
  for (i=0;i<MAXSIZE;i++)
-   printf("%f \t", ImagOut[i]);
-   printf("\n");
+   t_printf("%f \t", ImagOut[i]);
+   t_printf("\n");
 
 /* free(RealIn);
  free(ImagIn);
