@@ -14,6 +14,15 @@ void test_negative(void);
 // Set passing status at start of test
 void test_begin(void);
 
+// Start a timer for benchmark tests
+void test_start_timer(void);
+
+// Print the current time interval
+void test_print_time_interval(void);
+
+// Print the total time elapsed since test_start_timer() call
+void test_print_total_time(void);
+
 // Set passing status
 void test_pass(void);
 

@@ -20,6 +20,11 @@ static bool test_status_negative = false;
 
 extern uint32_t uiPortGetWallTimestampUs(void);
 
+#define US_TO_SEC 1000000
+
+static uint32_t test_start_time = 0;
+static uint32_t test_start_interval = 0;
+
 int isp_main(int argc, char *argv[])
 {
   test_main();
@@ -48,6 +53,25 @@ void test_negative(){
 void test_begin(){
   t_printf("MSG: Begin test.\n");
   test_status_passing = true;
+}
+
+// Start a timer for benchmark tests
+void test_start_timer(){
+  test_start_time = uiPortGetWallTimestampUs();
+  test_start_interval = test_start_time;
+}
+
+// Print the current time interval
+void test_print_time_interval(){
+  uint32_t current_time = uiPortGetWallTimestampUs();
+  t_printf("Current interval: %u\n", (current_time - test_start_interval));
+  test_start_interval = uiPortGetWallTimestampUs();
+}
+
+// Print the total time elapsed since test_start_timer() call
+void test_print_total_time(){
+  uint32_t current_time = uiPortGetWallTimestampUs();
+  t_printf("Total time: %u\n", (current_time - test_start_time));
 }
 
 // Set passing status
