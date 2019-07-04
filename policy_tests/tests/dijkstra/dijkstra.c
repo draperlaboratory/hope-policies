@@ -1,6 +1,9 @@
 #include <stdlib.h>
-#include "../bareBench.h"
+#include <stdio.h>
 #include "input.h"
+
+#include "test_status.h"
+#include "test.h"
 
 #define NUM_NODES                          100
 #define NONE                               9999
@@ -37,7 +40,7 @@ void print_path (NODE *rgnNodes, int chNode)
     {
       print_path(rgnNodes, rgnNodes[chNode].iPrev);
     }
-  //printf (" %d", chNode);
+  //t_printf (" %d", chNode);
   fflush(stdout);
 }
 
@@ -50,7 +53,7 @@ void enqueue (int iNode, int iDist, int iPrev)
   
   if (!qNew) 
     {
-      //printf("Out of memory.\n");
+      test_error("Out of memory.\n");
       exit(1);
     }
   qNew->iNode = iNode;
@@ -105,7 +108,7 @@ int dijkstra(int chStart, int chEnd)
     }
   if (chStart == chEnd) 
     {
-      //printf("Shortest path is 0 in cost. Just stay where you are.\n");
+      //t_printf("Shortest path is 0 in cost. Just stay where you are.\n");
     }
   else
     {
@@ -131,16 +134,21 @@ int dijkstra(int chStart, int chEnd)
 	    }
 	}
       
-      //printf("Shortest path is %d in cost. ", rgnNodes[chEnd].iDist);
-      //printf("Path is: ");
-      //print_path(rgnNodes, chEnd);
-      //printf("\n");
+      //t_printf("Shortest path is %d in cost. ", rgnNodes[chEnd].iDist);
+      //t_printf("Path is: ");
+      //t_print_path(rgnNodes, chEnd);
+      //t_printf("\n");
     }
     return 0;
 }
 
-int main(int argc, char *argv[]) {
+int test_main(void) {
   int i,j;
+
+  test_positive();
+  test_begin();
+  test_start_timer();
+
    /* make a fully connected matrix */
    // see input.h
   /* finds 10 shortest paths between nodes */
@@ -148,5 +156,7 @@ int main(int argc, char *argv[]) {
 			j=j%NUM_NODES;
       dijkstra(i,j);
   }
-  return 0;
+
+  test_print_total_time();
+  return test_done();
 }
