@@ -23,7 +23,7 @@
 int test_main(void)
 {
 	unsigned char  test[] = "123456789";
-
+	crc result;
 
 	test_positive();
 	test_begin();
@@ -37,15 +37,23 @@ int test_main(void)
 	/*
 	 * Compute the CRC of the test message, slowly.
 	 */
-	t_printf("The crcSlow() of \"123456789\" is 0x%X\n", crcSlow(test, strlen(test)));
-  crcSlow(test,9);
+	result = crcSlow(test, strlen(test));
+	t_printf("The crcSlow() of \"123456789\" is 0x%X\n", result);
+	if (result != CHECK_VALUE)
+	{
+		test_error("Incorrect crcSlow result\n");
+	}
 	
 	/*
 	 * Compute the CRC of the test message, more efficiently.
 	 */
 	crcInit();
-	t_printf("The crcFast() of \"123456789\" is 0x%X\n", crcFast(test, strlen(test)));
-  crcFast(test,9);
+	result = crcFast(test, strlen(test));
+	t_printf("The crcFast() of \"123456789\" is 0x%X\n", result);
+	if (result != CHECK_VALUE)
+	{
+		test_error("Incorrect crcFast result\n");
+	}
 
 	test_print_total_time();
 	return test_done();
