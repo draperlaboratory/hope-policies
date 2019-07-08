@@ -49,6 +49,7 @@ class AllTests:
         "rc4",
         "crc",
         "rsa",
+        "dijkstra",
     ]
 
 class webapp(AllTests):
