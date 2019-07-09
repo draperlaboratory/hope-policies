@@ -27,7 +27,7 @@ unsigned char KEY[] = "1234567890abcdeffedcba0987654321";
 
 int test_main(void) {
   unsigned long L = 1, R = 2;
-  BLOWFISH_CTX ctx;
+  static BLOWFISH_CTX ctx;
 
   test_positive();
   test_begin();
