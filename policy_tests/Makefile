@@ -13,6 +13,7 @@ TEST_OUTPUT_DIR := output
 CONFIG ?= bare
 JOBS   ?= 1
 all: build-tests build-kernels run-tests
+stock_all: build-tests run-tests-stock
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
@@ -48,6 +49,26 @@ frtos_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 frtos_XDIST= -n $(JOBS) # run in parallel
 frtos: CONFIG=frtos
 frtos: all
+
+# config for stock bare-metal
+stock_bare_SIM = qemu
+stock_bare_TESTS = stock_bare
+stock_bare_RUNTIME = stock_bare
+stock_bare_MODULE = osv.stock_bare.main
+stock_bare_POLICIES = none
+stock_bare_XDIST = -n $(JOBS) # run in parallel
+stock_bare: CONFIG=stock_bare
+stock_bare: stock_all
+
+# config for Stock FreeRTOS
+stock_frtos_SIM = qemu
+stock_frtos_TESTS = stock_frtos
+stock_frtos_RUNTIME = stock_frtos
+stock_frtos_MODULE = osv.stock_frtos.main
+stock_frtos_POLICIES = none
+stock_frtos_XDIST= -n $(JOBS) # run in parallel
+stock_frtos: CONFIG=stock_frtos
+stock_frtos: stock_all
 
 # default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
@@ -151,6 +172,16 @@ run-tests: MODULE ?= $($(CONFIG)_MODULE)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests build-kernels
+	mkdir -p $(TEST_OUTPUT_DIR)
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+
+run-tests-stock: SIM ?= $($(CONFIG)_SIM)
+run-tests-stock: TESTS ?= $($(CONFIG)_TESTS)
+run-tests-stock: RUNTIME ?= $($(CONFIG)_RUNTIME)
+run-tests-stock: MODULE ?= $($(CONFIG)_MODULE)
+run-tests-stock: POLICIES ?= $($(CONFIG)_POLICIES)
+run-tests-stock: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+run-tests-stock: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
