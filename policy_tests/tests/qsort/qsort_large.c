@@ -1,8 +1,8 @@
 #include <stdlib.h>
-#include <stdio.h>
 #include <math.h>
-#include "../bareBench.h"
 #include "input_large.h"
+#include "test_status.h"
+#include "test.h"
 
 #define UNLIMIT
 
@@ -25,18 +25,23 @@ int compare(const void *elem1, const void *elem2)
   return (distance1 > distance2) ? 1 : ((distance1 == distance2) ? 0 : -1);
 }
 
-
-int
-main(void) {
+int test_main(void)
+{
   int i,count=0;
+
+  test_positive();
+  test_begin();
+  test_start_timer();
 
   for(count = 0; count < sizeof(array)/sizeof(struct my3DVertexStruct); ++count)
 	 array[count].distance = sqrt(pow(array[count].x, 2) + pow(array[count].y, 2) + pow(array[count].z, 2));
   
-  printf("\nSorting %d vectors based on distance from the origin.\n\n",count);
+  t_printf("\nSorting %d vectors based on distance from the origin.\n\n",count);
   qsort(array,count,sizeof(struct my3DVertexStruct),compare);
   
   for(i=0;i<count;i++)
-    printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
-  return 0;
+    t_printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
+
+  test_print_total_time();
+  return test_done();
 }
