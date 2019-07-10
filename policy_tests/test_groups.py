@@ -48,6 +48,7 @@ class AllTests:
         "aes",
         "rc4",
         "crc",
+        "fft",
         "rsa",
         "dijkstra",
         "sha",
