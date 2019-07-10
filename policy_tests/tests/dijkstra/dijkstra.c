@@ -5,7 +5,9 @@
 #include "test_status.h"
 #include "test.h"
 
+#ifndef NUM_NODES
 #define NUM_NODES                          100
+#endif
 #define NONE                               9999
 
 struct _NODE
