@@ -44,6 +44,7 @@ class AllTests:
         "password/webapp_password_leak",
         "bitcount",
         "crc",
+        "fft",
         "limits",
     ]
 
