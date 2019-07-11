@@ -51,7 +51,7 @@ frtos: CONFIG=frtos
 frtos: all
 
 # config for stock bare-metal
-stock_bare_SIM = qemu
+stock_bare_SIM = qemu_stock
 stock_bare_TESTS = stock_bare
 stock_bare_RUNTIME = stock_bare
 stock_bare_MODULE = osv.stock_bare.main
@@ -61,7 +61,7 @@ stock_bare: CONFIG=stock_bare
 stock_bare: stock_all
 
 # config for Stock FreeRTOS
-stock_frtos_SIM = qemu
+stock_frtos_SIM = qemu_stock
 stock_frtos_TESTS = stock_frtos
 stock_frtos_RUNTIME = stock_frtos
 stock_frtos_MODULE = osv.stock_frtos.main
