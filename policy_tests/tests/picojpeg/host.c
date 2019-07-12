@@ -17,7 +17,7 @@ unsigned char pjpeg_need_bytes_callback(unsigned char* pBuf, unsigned char buf_s
 //   uint n;
   // pCallback_data;
 
-    t_printf("callback buf_size %u\n",buf_size);
+    //t_printf("callback buf_size %u\n",buf_size);
 
 //   n = min(g_nInFileSize - g_nInFileOfs, buf_size);
    //if (n && (fread(pBuf, 1, n, g_pInFile) != n))
