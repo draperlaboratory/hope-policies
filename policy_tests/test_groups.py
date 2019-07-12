@@ -60,6 +60,7 @@ class AllTests:
 	"stringsearch",
 	"blowfish",
 	"limits",
+	"picojpeg",
     ]
 
 class webapp(AllTests):
