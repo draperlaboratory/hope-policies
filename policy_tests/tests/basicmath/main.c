@@ -79,8 +79,8 @@ int test_main(void)
       usqrt(i, &q);
 			// remainder differs on some machines
      // t_printf("sqrt(%3d) = %2d, remainder = %2d\n\r",
-     t_printf("sqrt(%3d) = %2d\n\r",
-	     i, q.sqrt);
+     t_printf("sqrt(%3d) = %2d, remainder = %d\n\r",
+	     i, q.sqrt, q.frac);
     }
   usqrt(l, &q);
   //t_printf("\n\rsqrt(%lX) = %X, remainder = %X\n\r", l, q.sqrt, q.frac);

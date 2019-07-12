@@ -10,6 +10,7 @@
 #include <math.h>
 #include "sniptype.h"
 #include "round.h"
+#include <stdint.h>
 
 /*
 **  Callable library functions begin here
@@ -65,8 +66,8 @@ double  deg2rad(double deg);                          /* Rad2Deg.C      */
 */
 
 struct int_sqrt {
-      unsigned sqrt,
-               frac;
+      uint16_t frac;
+      uint16_t sqrt;
 };
 
 void usqrt(unsigned long x, struct int_sqrt *q);
