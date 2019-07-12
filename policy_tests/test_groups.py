@@ -102,6 +102,7 @@ class bare64(bare):
 class mibench(AllTests):
     tests = [
         "bitcount",
+        "basicmath",
         "adpcm_decode",
         "adpcm_encode",
         "aes",
