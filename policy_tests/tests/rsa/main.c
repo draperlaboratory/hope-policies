@@ -24,14 +24,15 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "../bareBench.h"
 #include <math.h>
 // #include <signal.h>
-#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include "rsa.h"
+
+#include "test_status.h"
+#include "test.h"
 
 /*
  * generate a public key and exponent suitable for RSA encryption like this:
@@ -640,7 +641,7 @@ void test_rsa_encrypt(){
     mod_exp(ciphertext, plaintext, e, 1, n, KEYLEN);
 }
 
-int main (void) {
+int test_main (void) {
     /* see above comment about generating these */
     n[0] = 0xab78; n[1] = 0xafba; n[2] = 0x88e7; n[3] = 0x496d;
     e[0] = 0x0001; e[1] = 0x0001; // e = 65537
@@ -651,15 +652,21 @@ int main (void) {
     plaintext[3] = 0x6f73; // os
 
     int cnt;
-    printf("Plaintext:\n\r");
+
+    test_positive();
+    test_begin();
+    test_start_timer();
+
+    t_printf("Plaintext:\n\r");
     for(cnt = 0; cnt < KEYLEN; ++cnt)
-      printf("0x%08X\n\r", plaintext[cnt]);
+      t_printf("0x%08X\n\r", plaintext[cnt]);
 
     test_rsa_encrypt();
 
-    printf("Cipertext:\n\r");
+    t_printf("Ciphertext:\n\r");
     for(cnt = 0; cnt < KEYLEN; ++cnt)
-      printf("0x%08X\n\r", ciphertext[cnt]);
+      t_printf("0x%08X\n\r", ciphertext[cnt]);
 
-    return 11;
+    test_print_total_time();
+    return test_done();
 }
