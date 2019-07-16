@@ -95,8 +95,24 @@ class bare(AllTests):
                                  ]
                                  )]
 
+class Mibench(AllTests):
+    tests = [
+        "adpcm_decode",
+        "adpcm_encode",
+        "aes",
+        "bitcount",
+        "crc",
+        "fft",
+        "limits",
+        "qsort",
+        "randmath",
+        "rc4",
+    ]
+
+
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
-               'webapp' : webapp
+               'webapp' : webapp,
+               'mibench' : Mibench,
 }
