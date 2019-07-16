@@ -109,10 +109,17 @@ class Mibench(AllTests):
         "rc4",
     ]
 
+class MibenchFrtos(Mibench):
+    tests = [test for test in Mibench.tests
+                      if not any(test in s for s in
+                                 ["bitcount",
+                                 ]
+                                 )]
 
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
                'webapp' : webapp,
                'mibench' : Mibench,
+               'mibenchfrtos' : MibenchFrtos,
 }
