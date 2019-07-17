@@ -297,6 +297,9 @@ void dhry_proc0(void)
 	volatile uint32_t	benchtime_us;
 	uint32_t		nulltime;
 	uint32_t		endtime;
+        uint32_t                dhrystones_whole;
+        uint32_t                dhrystones_frac;
+
 
 	starttime = uiPortGetWallTimestampUs();
 	for (i = 0; i < DHRY_LOOPS; ++i)
@@ -353,12 +356,14 @@ void dhry_proc0(void)
 		Proc2(&IntLoc1);
 	}
 	benchtime_us = uiPortGetWallTimestampUs() - starttime - nulltime;
+        dhrystones_whole = (DHRY_LOOPS * US_IN_SEC)/benchtime_us;
+        dhrystones_frac  = (DHRY_LOOPS * US_IN_SEC)%benchtime_us;
 
 	t_printf("===================================================\n");
 	t_printf("Passes: %u\n", DHRY_LOOPS);
 	t_printf("Benchtime (us): %u\n", benchtime_us);
-	t_printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
-	t_printf("Dhrystones:     %u dhrystones/second\n", DHRY_LOOPS/(benchtime_us/US_IN_SEC));
+	t_printf("Benchtime (s) : %u.%u\n", (benchtime_us/US_IN_SEC), (benchtime_us%US_IN_SEC));
+	t_printf("Dhrystones:     %u.%u dhrystones/second\n", dhrystones_whole, dhrystones_frac);
 
 }
 
