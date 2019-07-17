@@ -80,7 +80,9 @@ def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir)
     exe_dir = os.path.basename(os.path.dirname(test))
     if exe_dir is not "tests":
         run_args += ["-S", exe_dir]
-
+    with open(os.path.join(output_dir, '{}-{}-run_cmd.sh'.format(test,runtime)), 'w') as run_cmd_sh:
+        run_cmd_sh.write('#!/bin/bash \n')
+        run_cmd_sh.write('{} {}\n'.format(run_cmd, ' '.join(run_args)))
     process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_output,run_error = process.communicate()
     if process.returncode != 0:
