@@ -121,17 +121,6 @@ Array2Dim	Array2Glob;
 RecordPtr	PtrGlb;
 RecordPtr	PtrGlbNext;
 
-static uint8_t malloc_pool[4096];
-static uint64_t malloc_offset = 0;
-static void* malloc(uint64_t size)
-{
-	void* ptr = malloc_pool + malloc_offset;
-	malloc_offset += size;
-	return ptr;
-}
-
-
-
 Enumeration Func1(CapitalLetter CharPar1, CapitalLetter CharPar2)
 {
 	REG CapitalLetter	CharLoc1;
