@@ -13,7 +13,7 @@ TEST_OUTPUT_DIR := output
 CONFIG ?= bare
 JOBS   ?= 1
 all: build-tests build-kernels run-tests
-stock_all: build-tests run-tests-stock
+stock_all: run-tests-stock
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
