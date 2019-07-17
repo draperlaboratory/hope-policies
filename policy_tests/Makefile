@@ -146,6 +146,18 @@ build-tests: build-kernels
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
+build-tests-stock: SIM ?= $($(CONFIG)_SIM)
+build-tests-stock: TESTS ?= $($(CONFIG)_TESTS)
+build-tests-stock: RUNTIME ?= $($(CONFIG)_RUNTIME)
+build-tests-stock: MODULE ?= $($(CONFIG)_MODULE)
+build-tests-stock: POLICIES ?= $($(CONFIG)_POLICIES)
+build-tests-stock: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-tests-stock: build-dirs
+	mkdir -p $(TEST_BUILD_DIR)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
+
 build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
 build-dirs: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -191,7 +203,7 @@ run-tests-stock: RUNTIME ?= $($(CONFIG)_RUNTIME)
 run-tests-stock: MODULE ?= $($(CONFIG)_MODULE)
 run-tests-stock: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests-stock: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-run-tests-stock: build-tests
+run-tests-stock: build-tests-stock
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
