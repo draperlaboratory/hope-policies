@@ -47,6 +47,7 @@ int test_main(void)
     uintptr_t size = 1;
 
     test_positive(); // identify test as positive (will complete)
+    test_start_timer();
 
     for(int count = MALLOC_COUNT; count > 1; count = count >> 1){
       for(int j = 0; j < count; j++){
@@ -88,6 +89,7 @@ int test_main(void)
     ptr = malloc(8);
     ptr[20] = 0;
     */
+    test_print_total_time();
     test_pass();
     return test_done();
   }

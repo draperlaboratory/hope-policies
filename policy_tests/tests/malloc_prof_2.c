@@ -54,6 +54,7 @@ int test_main(void){
     int index;
 
     test_positive(); // identify test as positive (will complete)
+    test_start_timer();
    
     for(int i= 0; i < ITERATIONS;i++){
  
@@ -90,6 +91,7 @@ int test_main(void){
     ptr = malloc(8);
     ptr[20] = 0;
     */
+    test_print_total_time();
     test_pass();
     return test_done();
   }
