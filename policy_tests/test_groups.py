@@ -139,12 +139,9 @@ test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
                'webapp' : webapp,
-<<<<<<< variant A
                'mibench' : Mibench,
                'mibenchfrtos' : MibenchFrtos,
                'stock_frtos' : stock_frtos,
-               'stock_bare' : stock_bare
->>>>>>> variant B
+               'stock_bare' : stock_bare,
                'rhealstone_group' : rhealstone
-======= end
 }
