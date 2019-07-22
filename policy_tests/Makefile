@@ -91,6 +91,17 @@ rhealstone: all report-rhealstone
 rhealstone-build: CONFIG=rhealstone
 rhealstone-build: build-tests
 
+# config for Rhealstone
+rhealstone-stock_SIM = qemu_stock
+rhealstone-stock_TESTS = rhealstone_group
+rhealstone-stock_RUNTIME = stock_frtos
+rhealstone-stock_MODULE = osv.$(rhealstone-stock_RUNTIME).main
+rhealstone-stock_POLICIES = none
+rhealstone-stock_XDIST = -n $(JOBS) # run in parallel
+rhealstone-stock: CONFIG=rhealstone-stock
+rhealstone-stock: rhealstone-stock-build
+rhealstone-stock-build: CONFIG=rhealstone
+rhealstone-stock-build: build-tests-stock
 
 # default test config settings that arn't commonly overwritten
 COMPOSITE ?= simple
