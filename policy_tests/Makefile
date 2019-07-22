@@ -100,7 +100,7 @@ rhealstone-stock_POLICIES = none
 rhealstone-stock_XDIST = -n $(JOBS) # run in parallel
 rhealstone-stock: CONFIG=rhealstone-stock
 rhealstone-stock: rhealstone-stock-build
-rhealstone-stock-build: CONFIG=rhealstone
+rhealstone-stock-build: CONFIG=rhealstone-stock
 rhealstone-stock-build: build-tests-stock
 
 # default test config settings that arn't commonly overwritten
