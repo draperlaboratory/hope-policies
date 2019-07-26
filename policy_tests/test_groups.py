@@ -124,7 +124,7 @@ class Mibench(AllTests):
 class MibenchFrtos(Mibench):
     tests = [test for test in Mibench.tests
                       if not any(test in s for s in
-                                 ["bitcount",
+                                 ["fft",
                                  ]
                                  )]
 
