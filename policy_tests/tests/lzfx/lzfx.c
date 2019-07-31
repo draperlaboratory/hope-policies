@@ -31,14 +31,15 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../bareBench.h"
 #include "twain.h"
 
 #include "lzfx.h"
+
+#include "test_status.h"
+#include "test.h"
 
 #define LZFX_HSIZE (1 << (LZFX_HLOG))
 
@@ -302,60 +303,43 @@ int lzfx_decompress_tiny
 
 FILE *fp;
 
-int main ( void )
+int test_main ( void )
 {
     int ret;
 
     unsigned int ra;
     unsigned int rb;
 
+    test_positive();
+    test_begin();
+    test_start_timer();
+
     def_len=sizeof(def_data);
     ret=lzfx_compress(test_data,TEST_DATA_LEN,def_data,&def_len);
-
-    printf("%d\n",ret);
-    printf("%u\n",def_len);
+    t_printf("%d\n",ret);
+    t_printf("%u\n",def_len);
     if(ret) return(ret);
     inf_len = sizeof(inf_data);
     ret=lzfx_decompress(def_data,def_len,inf_data,&inf_len);
-    printf("%d\n",ret);
-    printf("%u\n",inf_len);
+    t_printf("%d\n",ret);
+    t_printf("%u\n",inf_len);
     if(ret) return(ret);
     if(inf_len!=TEST_DATA_LEN) return(1);
     for(ra=0;ra<TEST_DATA_LEN;ra++) if(inf_data[ra]!=test_data[ra]) break;
     if(ra<TEST_DATA_LEN) return(1);
-    printf("good\n");
+    t_printf("good\n");
 
     ret=lzfx_decompress_tiny(def_data,def_len,inf_data,&inf_len);
-    printf("%d\n",ret);
-    printf("%u\n",inf_len);
+    t_printf("%d\n",ret);
+    t_printf("%u\n",inf_len);
     if(ret) return(ret);
     if(inf_len!=TEST_DATA_LEN) return(1);
     for(ra=0;ra<TEST_DATA_LEN;ra++) if(inf_data[ra]!=test_data[ra]) break;
     if(ra<TEST_DATA_LEN) return(1);
-    printf("good\n");
+    t_printf("good\n");
 
-
-    fp=fopen("def_data.h","wt");
-    if(fp==NULL) return(1);
-    fprintf(fp,"\n");
-    fprintf(fp,"#define DEF_DATA_LEN %u\n",def_len);
-    fprintf(fp,"const unsigned char def_data[DEF_DATA_LEN]=\n");
-    fprintf(fp,"{\n");
-    for(ra=0;ra<def_len;ra++)
-    {
-        if((ra&7)==0) fprintf(fp,"\n");
-        fprintf(fp,"0x%02X,",def_data[ra]);
-    }
-    fprintf(fp,"\n");
-    fprintf(fp,"};\n");
-    fprintf(fp,"#define INF_DATA_LEN %u\n",inf_len);
-    rb=0; for(ra=0;ra<inf_len;ra++) rb+=inf_data[ra]; rb&=0xFFFF;
-    fprintf(fp,"#define INF_DATA_CHECKSUM 0x%04X\n",rb);
-    fprintf(fp,"\n");
-    fclose(fp);
-
-    printf("done\n");
-    return(0);
+    test_print_total_time();
+    return test_done();
 }
 
 
