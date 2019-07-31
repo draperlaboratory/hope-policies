@@ -48,6 +48,7 @@ class AllTests:
         "aes",
         "rc4",
         "crc",
+        "rsa",
     ]
 
 class webapp(AllTests):
