@@ -1,3 +1,5 @@
+#include "test_status.h"
+#include "test.h"
 
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
@@ -9,8 +11,6 @@ unsigned int LSR ( unsigned int rd, unsigned int rs );
 unsigned int LSR_FLAG ( unsigned int rd, unsigned int rs );
 unsigned int LSL ( unsigned int rd, unsigned int rs );
 unsigned int LSL_FLAG ( unsigned int rd, unsigned int rs );
-
-void hexstring ( unsigned int d );
 
 //------------------------------------------------------------------------
 unsigned int prand32 ( unsigned int x )
@@ -27,12 +27,16 @@ unsigned int prand32 ( unsigned int x )
     return(x);
 }
 //------------------------------------------------------------------------
-int regression ( void )
+int test_main ( void )
 {
     unsigned int rb;
     unsigned int rc;
     unsigned int prand;
     unsigned int sum;
+
+    test_positive();
+    test_begin();
+    test_start_timer();
 
     prand=0x12345678;
     //for(rb=0;rb<5;rb++)
@@ -68,8 +72,9 @@ int regression ( void )
         sum+=rc;
     }
 
-    hexstring(sum);
-    return(0);
+    t_printf("%x\r\n", sum);
+    test_print_total_time();
+    return test_done();
 }
 //------------------------------------------------------------------------
 //------------------------------------------------------------------------
