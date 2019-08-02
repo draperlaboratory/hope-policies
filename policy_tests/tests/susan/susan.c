@@ -301,15 +301,16 @@ typedef float      TOTAL_TYPE; /* for my PowerPC accelerator only */
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "../bareBench.h"
 #include "input_small.h"
+
+#include "test_status.h"
+#include "test.h"
 
 int argc = 4;
 char *argv[] = {"susan", "input.pgm", "output.pgm", "-s"};
 //char *argv[] = {"susan", "input.pgm", "output.pgm", "-e"};
 //char *argv[] = {"susan", "input.pgm", "output.pgm", "-c"};
 
-#define  exit_error(IFB,IFC) { printf(IFB,IFC); exit(0); }
 #define  FTOI(a) ( (a) < 0 ? ((int)(a-0.5)) : ((int)(a+0.5)) )
 typedef  unsigned char uchar;
 typedef  struct {int x,y,info, dx, dy, I;} CORNER_LIST[MAX_CORNERS];
@@ -339,8 +340,10 @@ int getint()
   {
     if (c=='#')    /* if we're at a comment, read to end of line */
         while(c!= '\n') c=fgetc2();
-    if (c==EOF)
-      exit_error("Image %s not binary PGM.\n","is");
+    if (c==EOF) {
+      test_error("Image is not binary PGM.\n");
+      exit(test_done());
+    }
     if (c>='0' && c<='9')
       break;   /* found what we were looking for */
     c = fgetc2();
@@ -371,13 +374,15 @@ char header [100];
   header[0]=fgetc2();
   header[1]=fgetc2();
     
-  if(!(header[0]=='P' && header[1]=='5'))
-    exit_error("Image does %s have binary PGM header.\n", "not");
+  if(!(header[0]=='P' && header[1]=='5')) {
+    test_error("Image does not have binary PGM header.\n");
+    exit(test_done());
+  }
 
   *x_size = getint();
   *y_size = getint();
 
-      printf(" %d %d\n", *x_size, *y_size);
+      t_printf(" %d %d\n", *x_size, *y_size);
       
 /* }}} */
 
@@ -392,9 +397,9 @@ void put_image(in,x_size,y_size)
   int  x_size,
        y_size;
 {
-  printf("P5\n");
-  printf("%d %d\n",x_size,y_size);
-  printf("255\n");
+  t_printf("P5\n");
+  t_printf("%d %d\n",x_size,y_size);
+  t_printf("255\n");
 }
 
 /* }}} */
@@ -416,7 +421,7 @@ int i,
         min_r=r[i];
     }
 
-  /*printf("min=%d max=%d\n",min_r,max_r);*/
+  /*t_printf("min=%d max=%d\n",min_r,max_r);*/
 
   max_r-=min_r;
 
@@ -659,16 +664,16 @@ TOTAL_TYPE total;
   total=0.1; /* test for total's type */
   if ( (dt>15) && (total==0) )
   {
-    printf("Distance_thresh (%f) too big for integer arithmetic.\n",dt);
-    printf("Either reduce it to <=15 or recompile with variable \"total\"\n");
-    printf("as a float: see top \"defines\" section.\n");
-    exit(0);
+    test_error("Distance_thresh (%f) too big for integer arithmetic.\n",dt);
+    test_error("Either reduce it to <=15 or recompile with variable \"total\"\n");
+    test_error("as a float: see top \"defines\" section.\n");
+    exit(test_done());
   }
 
   if ( (2*mask_size+1>x_size) || (2*mask_size+1>y_size) )
   {
-    printf("Mask size (1.5*distance_thresh+1=%d) too big for image (%dx%d).\n",mask_size,x_size,y_size);
-    exit(0);
+    test_error("Mask size (1.5*distance_thresh+1=%d) too big for image (%dx%d).\n",mask_size,x_size,y_size);
+    exit(test_done());
   }
 
   //tmp_image = (uchar *) malloc( (x_size+mask_size*2) * (y_size+mask_size*2) );
@@ -1696,8 +1701,8 @@ corner_list[n].dy=cgy[i*x_size+j];
 corner_list[n].I=in[i*x_size+j];
 n++;
 if(n==MAX_CORNERS){
-      printf("Too many corners.\n");
-      exit(1);
+      test_error("Too many corners.\n");
+      exit(test_done());
          }}}}
 corner_list[n].info=7;
 
@@ -1913,13 +1918,13 @@ corner_list[n].dx=x/15;
 corner_list[n].dy=y/15;
 n++;
 if(n==MAX_CORNERS){
-      printf("Too many corners.\n");
-      exit(1);
+      test_error("Too many corners.\n");
+      exit(test_done());
          }}}}
 corner_list[n].info=7;
 }
 
-int main() {
+int test_main() {
 /* {{{ vars */
 char   *tcp;
 uchar  *in, *bp, *mid;
@@ -1939,6 +1944,10 @@ int    *r,
 CORNER_LIST corner_list;;
 
 /* }}} */
+  test_positive();
+  test_begin();
+  test_start_timer();
+
   fakeFile = test_data;
 
   get_image(&in,&x_size,&y_size);
@@ -1977,15 +1986,15 @@ CORNER_LIST corner_list;;
 	  break;
 	case 'd': /* distance threshold */
           if (++argindex >= argc){
-	    printf ("No argument following -d\n");
-	    exit(0);}
+	    test_error("No argument following -d\n");
+	    exit(test_done());}
 	  dt=atof(argv[argindex]);
           if (dt<0) three_by_three=1;
 	  break;
 	case 't': /* brightness threshold */
           if (++argindex >= argc){
-	    printf ("No argument following -t\n");
-	    exit(0);}
+	    test_error("No argument following -t\n");
+	    exit(test_done());}
 	  bt=atoi(argv[argindex]);
 	  break;
       }	    
@@ -2003,7 +2012,7 @@ CORNER_LIST corner_list;;
   {
     case 0:
       /* {{{ smoothing */
-          puts("smoothing\n");
+          t_printf("smoothing\n");
       setup_brightness_lut(&bp,bt,2);
       susan_smoothing(three_by_three,in,dt,x_size,y_size,bp);
       break;
@@ -2011,7 +2020,7 @@ CORNER_LIST corner_list;;
 /* }}} */
     case 1:
       /* {{{ edges */
-          puts("edges\n");
+          t_printf("edges\n");
       r   = (int *) malloc(x_size * y_size * sizeof(int));
       setup_brightness_lut(&bp,bt,6);
 
@@ -2042,7 +2051,7 @@ CORNER_LIST corner_list;;
 /* }}} */
     case 2:
       /* {{{ corners */
-          puts("corners\n");
+          t_printf("corners\n");
       r   = (int *) malloc(x_size * y_size * sizeof(int));
       setup_brightness_lut(&bp,bt,6);
 
@@ -2068,7 +2077,9 @@ CORNER_LIST corner_list;;
 /* }}} */
 
   put_image(in,x_size,y_size);
-    return 0;
+
+  test_print_total_time();
+  return test_done();
 }
 
 /* }}} */
