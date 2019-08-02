@@ -288,10 +288,10 @@ int lzfx_decompress(const void* ibuf, unsigned int ilen,
 }
 
 
-unsigned char def_data[0x8000];
+unsigned char def_data[0x2000];
 unsigned int def_len;
 unsigned int inf_len;
-unsigned char inf_data[0x8000];
+unsigned char inf_data[0x2000];
 
 int lzfx_decompress_tiny
 (
