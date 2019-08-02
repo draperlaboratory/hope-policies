@@ -15,7 +15,9 @@
 #include <stddef.h>
 #include <string.h>
 #include <limits.h>
-#include "../bareBench.h"
+
+#include "test_status.h"
+#include "test.h"
 
 static size_t table[UCHAR_MAX + 1];
 static size_t len;
@@ -70,7 +72,7 @@ char *strsearch(const char *string)
 
 #include <stdio.h>
 
-int main()
+int test_main()
 {
       char *here;
       char *find_strings[] = { "Kur",
@@ -1695,20 +1697,25 @@ NULL};
       int i;
       int y;
 
+      test_positive();
+      test_begin();
+      test_start_timer();
+
       for(y = 0; y < 50; ++y)
       {
       for (i = 0; find_strings[i]; i++)
       {
             init_search(find_strings[i]);
             here = strsearch(search_strings[i]);
-            printf("\"%s\" is%s in \"%s\"", find_strings[i],
+            t_printf("\"%s\" is%s in \"%s\"", find_strings[i],
                   here ? "" : " not", search_strings[i]);
             if (here)
-                  printf(" [\"%s\"]", here);
-            printf("\n");
+                  t_printf(" [\"%s\"]", here);
+            t_printf("\n");
       }
       }
 
-      return 0;
+      test_print_total_time();
+      return test_done();
 }
 
