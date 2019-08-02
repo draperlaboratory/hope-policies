@@ -55,6 +55,7 @@ class AllTests:
         "qsort",
         "randmath",
         "lzfx",
+	"stringsearch",
     ]
 
 class webapp(AllTests):
