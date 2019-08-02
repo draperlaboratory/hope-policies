@@ -19,6 +19,10 @@
 #include "test_status.h"
 #include "test.h"
 
+#ifndef LOOPS
+#define LOOPS 50
+#endif
+
 static size_t table[UCHAR_MAX + 1];
 static size_t len;
 static char *findme;
@@ -1701,7 +1705,7 @@ NULL};
       test_begin();
       test_start_timer();
 
-      for(y = 0; y < 50; ++y)
+      for(y = 0; y < LOOPS; ++y)
       {
       for (i = 0; find_strings[i]; i++)
       {
