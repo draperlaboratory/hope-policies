@@ -97,9 +97,37 @@ class bare(AllTests):
                                  ]
                                  )]
 
+
+class mibench(AllTests):
+    tests = [
+        "adpcm_decode",
+        "adpcm_encode",
+        "aes",
+        "bitcount",
+        "crc",
+        "dijkstra",
+        "qsort",
+        "rc4",
+        "rsa",
+        "sha",
+    ]
+
+
+class webapp(AllTests):
+    tests = [
+        "webapp_doctor_user_works",
+        "webapp_admin_user_works",
+        "webapp_patient_read_works",
+        "heap-ppac-userType/webapp_unauth_doctor_routine_fails",
+        "heap-ppac-userType/webapp_patient_info_leak_fails",
+        "userType/webapp_double_usr_set",
+        "password/webapp_password_leak",
+    ]
+
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
-               'webapp' : webapp
+               'webapp' : webapp,
+               'mibench' : mibench,
 }
 
