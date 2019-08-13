@@ -50,6 +50,7 @@ class AllTests:
         "crc",
         "rsa",
         "dijkstra",
+        "sha",
     ]
 
 class webapp(AllTests):
