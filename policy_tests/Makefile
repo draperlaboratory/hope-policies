@@ -152,7 +152,7 @@ run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests build-kernels
 	mkdir -p $(TEST_OUTPUT_DIR)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 clean: clean-kernels clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html report.xml prof_results.log .cache \
