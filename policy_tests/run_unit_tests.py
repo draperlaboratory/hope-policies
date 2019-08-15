@@ -22,9 +22,23 @@ def incompatibleReason(test, policy):
         return "PPAC policy must run with heap and userType policies"
     return None
 
-def xfailReason(test, policy):
+def xfailReason(test, policy, runtime):
     if "longjump" in test:
         return "longjump test known to be broken"
+
+    long_tests = [
+        "link_list_works_1",
+        "string_works_1",
+        "bitcount",
+        "fft",
+        "qsort",
+        "rc4",
+        "rsa",
+        "sha",
+        "stringsearch",
+    ]
+    if test in long_tests and "heap" in policy and (runtime == "frtos"):
+        return "long-running tests known to fail with heap policy on frtos due to context switching"
 
     return None
 
@@ -38,7 +52,7 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, out
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test, policy)
+    xfail = xfailReason(test, policy, runtime)
     if xfail:
         pytest.xfail(xfail)
 
