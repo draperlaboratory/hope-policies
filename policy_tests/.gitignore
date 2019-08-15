@@ -6,6 +6,7 @@ __pycache__/
 assets/
 report.html
 report.xml
+*_report.xml
 prof_results.log
 *.pyc
 kernels/
