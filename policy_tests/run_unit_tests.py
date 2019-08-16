@@ -29,6 +29,8 @@ def xfailReason(test, policy, runtime):
     long_tests = [
         "link_list_works_1",
         "string_works_1",
+        "aes",
+        "basicmath",
         "bitcount",
         "fft",
         "qsort",
