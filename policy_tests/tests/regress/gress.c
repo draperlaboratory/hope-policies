@@ -27,16 +27,41 @@ unsigned int prand32 ( unsigned int x )
     return(x);
 }
 //------------------------------------------------------------------------
+void print_binary ( unsigned int x, unsigned int digits )
+{
+    unsigned int bit;
+    t_printf("0b");
+    for (bit = 1 << (digits - 1); bit; bit >>= 1) {
+        t_printf((bit & x) ? "1" : "0");
+    }
+    t_printf("\n");
+}
+//------------------------------------------------------------------------
 int test_main ( void )
 {
     unsigned int rb;
     unsigned int rc;
     unsigned int prand;
     unsigned int sum;
+    unsigned int shift[6] = {0,1,2,31,32,33};
+    unsigned int ror_flags[6] = {0b100,0b101,0b000,0b000,0b101,0b101};
+    unsigned int lsr_flags[6] = {0b100,0b001,0b000,0b000,0b011,0b010};
+    unsigned int lsl_flags[6] = {0b100,0b001,0b100,0b100,0b011,0b010};
 
     test_positive();
     test_begin();
     test_start_timer();
+
+    prand=0xa0000005;
+    for(rb=0;rb<6;rb++)
+    {
+        rc=ROR_FLAG(prand,shift[rb]);
+        if(rc != ror_flags[rb]) test_error("Incorrect ROR flags\n");
+        rc=LSR_FLAG(prand,shift[rb]);
+        if(rc != lsr_flags[rb]) test_error("Incorrect LSR flags\n");
+        rc=LSL_FLAG(prand,shift[rb]);
+        if(rc != lsl_flags[rb]) test_error("Incorrect LSL flags\n");
+    }
 
     prand=0x12345678;
     //for(rb=0;rb<5;rb++)
