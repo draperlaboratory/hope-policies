@@ -1,0 +1,189 @@
+Groups:
+  srli:
+  - osv.riscv.og.arithGrp
+  sw:
+  - osv.riscv.og.storeGrp
+  sub:
+  - osv.riscv.og.arithGrp
+  sllw:
+  - osv.riscv.og.arithGrp
+  sfence.vma:
+  - osv.riscv.og.privGrp
+  fsq:
+  - osv.riscv.og.storeGrp
+  xori:
+  - osv.riscv.og.arithGrp
+  mul:
+  - osv.riscv.og.arithGrp
+  fmul.s:
+  - osv.riscv.og.arithGrp
+  lr.w:
+  - osv.riscv.og.loadGrp
+  amoor.w:
+  - osv.riscv.og.arithGrp
+  fsub.s:
+  - osv.riscv.og.arithGrp
+  sraw:
+  - osv.riscv.og.arithGrp
+  addiw:
+  - osv.riscv.og.arithGrp
+  remu:
+  - osv.riscv.og.arithGrp
+  amoxor.w:
+  - osv.riscv.og.arithGrp
+  blt:
+  - osv.riscv.og.arithGrp
+  mulhsu:
+  - osv.riscv.og.arithGrp
+  ebreak:
+  - osv.riscv.og.privGrp
+  fsw:
+  - osv.riscv.og.storeGrp
+  csrrsi:
+  - osv.riscv.og.csriGrp
+  csrrci:
+  - osv.riscv.og.csriGrp
+  fdiv.q:
+  - osv.riscv.og.arithGrp
+  fadd.s:
+  - osv.riscv.og.arithGrp
+  slti:
+  - osv.riscv.og.arithGrp
+  andi:
+  - osv.riscv.og.arithGrp
+  fadd.d:
+  - osv.riscv.og.arithGrp
+  bgeu:
+  - osv.riscv.og.arithGrp
+  srl:
+  - osv.riscv.og.arithGrp
+  flw:
+  - osv.riscv.og.loadGrp
+  xor:
+  - osv.riscv.og.arithGrp
+  fsub.d:
+  - osv.riscv.og.arithGrp
+  sra:
+  - osv.riscv.og.arithGrp
+  addi:
+  - osv.riscv.og.arithGrp
+  fmul.d:
+  - osv.riscv.og.arithGrp
+  sret:
+  - osv.riscv.og.arithGrp
+  csrrc:
+  - osv.riscv.og.csrGrp
+  csrrs:
+  - osv.riscv.og.csrGrp
+  subw:
+  - osv.riscv.og.arithGrp
+  amoadd.w:
+  - osv.riscv.og.arithGrp
+  lbu:
+  - osv.riscv.og.loadGrp
+  lw:
+  - osv.riscv.og.loadGrp
+  slt:
+  - osv.riscv.og.arithGrp
+  and:
+  - osv.riscv.og.arithGrp
+  srliw:
+  - osv.riscv.og.arithGrp
+  flq:
+  - osv.riscv.og.loadGrp
+  csrrwi:
+  - osv.riscv.og.csriGrp
+  divu:
+  - osv.riscv.og.arithGrp
+  lb:
+  - osv.riscv.og.loadGrp
+  mret:
+  - osv.riscv.og.arithGrp
+  beq:
+  - osv.riscv.og.arithGrp
+  fld:
+  - osv.riscv.og.loadGrp
+  addw:
+  - osv.riscv.og.arithGrp
+  amoand.w:
+  - osv.riscv.og.arithGrp
+  sc.w:
+  - osv.riscv.og.storeGrp
+  mulhu:
+  - osv.riscv.og.arithGrp
+  add:
+  - osv.riscv.og.arithGrp
+  lhu:
+  - osv.riscv.og.loadGrp
+  ori:
+  - osv.riscv.og.arithGrp
+  mulh:
+  - osv.riscv.og.arithGrp
+  lh:
+  - osv.riscv.og.loadGrp
+  fdiv.d:
+  - osv.riscv.og.arithGrp
+  sd:
+  - osv.riscv.og.storeGrp
+  jal:
+  - osv.riscv.og.jumpGrp
+  ecall:
+  - osv.riscv.og.arithGrp
+  bltu:
+  - osv.riscv.og.arithGrp
+  sltiu:
+  - osv.riscv.og.arithGrp
+  csrrw:
+  - osv.riscv.og.csrGrp
+  rem:
+  - osv.riscv.og.arithGrp
+  srlw:
+  - osv.riscv.og.arithGrp
+  slli:
+  - osv.riscv.og.arithGrp
+  slliw:
+  - osv.riscv.og.arithGrp
+  jalr:
+  - osv.riscv.og.jumpRegGrp
+  fsub.q:
+  - osv.riscv.og.arithGrp
+  or:
+  - osv.riscv.og.arithGrp
+  fmul.q:
+  - osv.riscv.og.arithGrp
+  bge:
+  - osv.riscv.og.arithGrp
+  fdiv.s:
+  - osv.riscv.og.arithGrp
+  fadd.q:
+  - osv.riscv.og.arithGrp
+  ld:
+  - osv.riscv.og.loadGrp
+  lui:
+  - osv.riscv.og.arithGrp
+  wfi:
+  - osv.riscv.og.arithGrp
+  div:
+  - osv.riscv.og.arithGrp
+  sh:
+  - osv.riscv.og.storeGrp
+  sll:
+  - osv.riscv.og.arithGrp
+  sraiw:
+  - osv.riscv.og.arithGrp
+  lwu:
+  - osv.riscv.og.loadGrp
+  uret:
+  - osv.riscv.og.arithGrp
+  auipc:
+  - osv.riscv.og.arithGrp
+  sltu:
+  - osv.riscv.og.arithGrp
+  bne:
+  - osv.riscv.og.arithGrp
+  sb:
+  - osv.riscv.og.storeGrp
+  srai:
+  - osv.riscv.og.arithGrp
+  fsd:
+  - osv.riscv.og.storeGrp
