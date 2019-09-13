@@ -46,12 +46,15 @@ class AllTests:
         "adpcm_decode",
         "adpcm_encode",
         "aes",
-        "rc4",
         "crc",
-        "rsa",
-        "dijkstra",
-        "sha",
+	    "dijkstra",
+	    "fft",
+        "limits",
         "qsort",
+        "randmath",
+	    "rc4",
+        "rsa",
+        "sha",
     ]
 
 class webapp(AllTests):
@@ -97,9 +100,32 @@ class bare(AllTests):
                                  ]
                                  )]
 
+class Mibench(AllTests):
+    tests = [
+        "adpcm_decode",
+        "adpcm_encode",
+        "aes",
+        "bitcount",
+        "crc",
+        "fft",
+        "limits",
+        "qsort",
+        "randmath",
+        "rc4",
+    ]
+
+class MibenchFrtos(Mibench):
+    tests = [test for test in Mibench.tests
+                      if not any(test in s for s in
+                                 ["bitcount",
+                                 ]
+                                 )]
+
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
-               'webapp' : webapp
+               'webapp' : webapp,
+               'mibench' : Mibench,
+               'mibenchfrtos' : MibenchFrtos,
 }
 

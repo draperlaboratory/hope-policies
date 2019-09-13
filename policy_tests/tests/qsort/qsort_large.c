@@ -6,6 +6,10 @@
 
 #define UNLIMIT
 
+#ifndef QSORT_ARRAY_SIZE
+#define QSORT_ARRAY_SIZE 300
+#endif
+
 
 /*struct my3DVertexStruct {
   int x, y, z;
@@ -33,7 +37,7 @@ int test_main(void)
   test_begin();
   test_start_timer();
 
-  for(count = 0; count < sizeof(array)/sizeof(struct my3DVertexStruct); ++count)
+  for(count = 0; count < QSORT_ARRAY_SIZE; ++count)
 	 array[count].distance = sqrt(pow(array[count].x, 2) + pow(array[count].y, 2) + pow(array[count].z, 2));
   
   t_printf("\nSorting %d vectors based on distance from the origin.\n\n",count);
