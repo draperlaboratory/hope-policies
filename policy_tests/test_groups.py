@@ -120,11 +120,14 @@ class Mibench(AllTests):
         "aes",
         "bitcount",
         "crc",
+        "dijkstra",
         "fft",
         "limits",
         "qsort",
         "randmath",
         "rc4",
+        "rsa",
+        "sha",
     ]
 
 class MibenchFrtos(Mibench):
