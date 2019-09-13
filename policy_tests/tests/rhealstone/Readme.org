@@ -1,0 +1,94 @@
+#+TITLE: README
+#+AUTHOR: Jesse Millwood
+
+* Rhealstone
+** Definitions from the original proposal
+  - Real-time computer system :: Any marriage of hardware and systems software --
+       operating system, kernel, executive, or these elements of systems software in
+       combination -- that forms a platform for a real-time application
+  - Real-time application :: A limited-purpose computerized system that responds to
+       defined circumstances as they arise in time to influence subsequent events. An
+       example is an aircraft autopilot, which detects and corrects deviations from the
+       plane's intended flight profile
+
+** Overview
+Similar to the Dhrystone and Wheatstone benchmarks that attempt to measure certain
+components of a system and assign a weighted score, the Rhealstone benchmark is focused on
+real-time systems. The final figure is made of six performance measures:
+
+   - Task switching time
+   - Preemption time
+   - Interrupt latency time
+   - Semaphore shuffling time
+   - Deadlock breaking time
+   - Datagram throughput time
+
+The operator that runs the benchmark can assign coefficients to each measure in order to
+give a measure that makes sense for the intended system. This is because the authors of
+the Rhealstone benchmark realize that real time systems are optimized for different
+situations and the system designer may weigh certain features or performance metrics
+differently for different systems.
+
+*** Task Switching Time
+    - Measure: Average time the system takes to switch between two independent and active tasks of equal priority
+      - The tasks must not be suspended or sleeping
+      - Task switching is synchronous and nonpreemptive
+*** Preemption Time
+    - Measure: Average Time the system takes to be preempted by another task of the same priority.
+      - Preemption must be enabled
+*** Deadlock Break
+    - Measure: The dead-lock resolution time.
+      - The time is inflated by the time of 2 preemptions, and several task-switches that is caused by the dead-lock.
+      - The time taken to break a deadlock
+    - Situation:
+      - System consists of three tasks of raising priority.
+      - lowest priority task takes semaphore and is preempted by medium priority task
+      - medium priority task is preempted by highest priority task
+      - highest priority task tries to takes semaphore
+      - According to Rhealstone:
+        - Executive should now raise the lowest priority task so that it can release semaphore
+        - As soon as it does, it is preempted by highest priority task
+        - Executive gives the semaphore to the highest priority task
+    - Caveat:
+      - This must be run twice, once with deadlocking enabled and once with it disabled
+    - Notes
+      - With Mutex semaphores, the priority of a task that holds a mutex will be raised if another task of higher priority attempts to obtain the same mutex.
+      - For xSemaphoreTake, setting xTicksToWait to portMAX_DELAY will cause the task to wait indefinitely
+*** Semaphore Shuffle
+    - Measure: Semaphore shuffling time is the delay between a task's release of a semaphore and the activation
+      of another task blocked on the "wait semaphore" primitive
+*** Intertask Messaging Latency
+    - Measure: The delay within the executive when a non-zero length message is sent from one task to another
+*** Interrupt Latency
+    - Measure: Time taken to service an interrupt
+    - Method: Use machine core local software interrupts and trigger them
+      - MIE (Machine Interrupt Enable Register)
+        - MSIE (Machine Software Interrupt Enable)
+      - MIP (Machine Interrupt Pending Register)
+        - MSIP (Machine Software Interrupt Pending)
+        - Written by access to memory mapped control register
+    - Comments:
+      - The FreeRTOS RISC-V port sets the single vector method of handling the trap in =portASM.S=
+        - It uses the =freertos_risc_v_trap_handler=
+          - This checks the =mcause= register once in the handler to check what triggered the trap
+        - Other methods could be used for handling traps, this would change the time taken to service particular interrupts.
+
+** Report
+- Results are reported in JSON format in the form:
+#+BEGIN_SRC json
+{"rhealstone_result": {
+  "name":"rehalstone test name",
+  "variant":"base|with_deadlock|with_semaphore",
+  "ticks":"NumberOfTicks",
+  "cpu_frequency":"NumberHz",
+  "measure_usecs":"NumberUs"
+  }
+}
+#+END_SRC
+
+
+* References
+  - [[http://collaboration.cmc.ec.gc.ca/science/rpn/biblio/ddj/Website/articles/DDJ/1989/8902/8902a/8902a.htm][Original Rhealstone Proposal]]
+  - [[https://github.com/javamonn/rtems-rhealstone][RTEMS Rhealstone Implementation]]
+  - [[http://timsengineeringblog.weebly.com/uploads/1/1/0/4/11040693/timothy_boger_msee_defense.pdf][FreeRTOS Xilinx Zynq Rhealstone (2013) Masters Thesis]]
+  - [[https://publications.lib.chalmers.se/records/fulltext/158029.pdf][Benchmarking Real-time Operating Systems for use in Radio Base Station applications (2012) Masters Thesis]]

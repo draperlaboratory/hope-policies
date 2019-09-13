@@ -7,7 +7,7 @@ INCLUDES += -I.
 LDFLAGS += $(ISP_LDFLAGS)
 
 TARGET := $(patsubst %,$(OUTPUT_DIR)/%,$(TEST))
-SOURCE := $(patsubst %,%.c,$(shell basename $(TEST)))
+SOURCE := $(patsubst %,%.c,$(basename $(TEST)))
 
 all: $(TARGET)
 

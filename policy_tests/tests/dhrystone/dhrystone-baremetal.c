@@ -21,7 +21,7 @@
  *			The time(2) function is library dependant; Most
  *			return the time in seconds, but beware of some, like
  *			Aztec C, which return other units.
- *			The LOOPS define is initially set for 50000 loops.
+ *			The DHRY_LOOPS define is initially set for 50000 loops.
  *			If you have a machine with large integers and is
  *			very fast, please change this number to 500000 to
  *			get better accuracy.  Please select the way to
@@ -53,8 +53,12 @@
 #include "test.h"
 #include "mem.h"
 
+extern uint32_t uiPortGetWallTimestampUs(void);
+
 /* Accuracy of timings and human fatigue controlled by next two lines */
-#define LOOPS	50000		/* Use this for slow or 16 bit machines */
+#ifndef DHRY_LOOPS
+#define DHRY_LOOPS	50000		/* Use this for slow or 16 bit machines */
+#endif
 
 #define US_IN_SEC 1000000
 #define	structassign(d, s)	d = s
@@ -116,17 +120,6 @@ Array1Dim	Array1Glob;
 Array2Dim	Array2Glob;
 RecordPtr	PtrGlb;
 RecordPtr	PtrGlbNext;
-
-static uint8_t malloc_pool[4096];
-static uint64_t malloc_offset = 0;
-static void* malloc(uint64_t size)
-{
-	void* ptr = malloc_pool + malloc_offset;
-	malloc_offset += size;
-	return ptr;
-}
-
-
 
 Enumeration Func1(CapitalLetter CharPar1, CapitalLetter CharPar2)
 {
@@ -304,13 +297,16 @@ void dhry_proc0(void)
 	volatile uint32_t	benchtime_us;
 	uint32_t		nulltime;
 	uint32_t		endtime;
+        uint32_t                dhrystones_whole;
+        uint32_t                dhrystones_frac;
 
-	starttime = sys_GetWallTimestampUs();
-	for (i = 0; i < LOOPS; ++i)
+
+	starttime = uiPortGetWallTimestampUs();
+	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
             asm volatile("nop");
 	}
-	endtime = sys_GetWallTimestampUs();
+	endtime = uiPortGetWallTimestampUs();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
 
 	t_printf("Start Time: %u (us)\n", starttime);
@@ -331,9 +327,9 @@ void dhry_proc0(void)
 	/*****************
 	-- Start Timer --
 	*****************/
-	t_printf("Starting Timer for %lu Loops\n", (long)LOOPS);
-	starttime = sys_GetWallTimestampUs();
-	for (i = 0; i < LOOPS; ++i)
+	t_printf("Starting Timer for %lu Loops\n", (long)DHRY_LOOPS);
+	starttime = uiPortGetWallTimestampUs();
+	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
 
 		Proc5();
@@ -359,13 +355,15 @@ void dhry_proc0(void)
 		IntLoc2 = 7 * (IntLoc3 - IntLoc2) - IntLoc1;
 		Proc2(&IntLoc1);
 	}
-	benchtime_us = sys_GetWallTimestampUs() - starttime - nulltime;
+	benchtime_us = uiPortGetWallTimestampUs() - starttime - nulltime;
+        dhrystones_whole = (DHRY_LOOPS * US_IN_SEC)/benchtime_us;
+        dhrystones_frac  = (DHRY_LOOPS * US_IN_SEC)%benchtime_us;
 
 	t_printf("===================================================\n");
-	t_printf("Passes: %u\n", LOOPS);
+	t_printf("Passes: %u\n", DHRY_LOOPS);
 	t_printf("Benchtime (us): %u\n", benchtime_us);
-	t_printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
-	t_printf("Dhrystones:     %u dhrystones/second\n", LOOPS/(benchtime_us/US_IN_SEC));
+	t_printf("Benchtime (s) : %u.%u\n", (benchtime_us/US_IN_SEC), (benchtime_us%US_IN_SEC));
+	t_printf("Dhrystones:     %u.%u dhrystones/second\n", dhrystones_whole, dhrystones_frac);
 
 }
 

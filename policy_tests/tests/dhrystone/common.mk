@@ -1,19 +1,19 @@
 TEST_ROOT_DIR=..
 
-CFLAGS := $(ISP_CFLAGS) -O0 -g3
-
-LDFLAGS += $(ISP_LDFLAGS)
-LDFLAGS += -lm
-
+CFLAGS += $(ISP_CFLAGS)
+CFLAGS += -DDHRY_LOOPS=5000
 INCLUDES += $(ISP_INCLUDES)
 INCLUDES += -I$(TEST_ROOT_DIR)
 
-SOURCES := bitcnt_1.c bitcnt_2.c bitcnt_3.c bitcnt_4.c bitcnts.c bitstrng.c bstr_i.c
+LDFLAGS += $(ISP_LDFLAGS) --sysroot=${ISP_PREFIX}/riscv32-unknown-elf -L${ISP_PREFIX}/riscv32-unknown-elf/lib
+LINKER_SCRIPT = dhrystone-baremetal.lds
+
+SOURCES := dhrystone-baremetal.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 
-TARGET := $(OUTPUT_DIR)/bitcount
+TARGET := $(OUTPUT_DIR)/dhrystone
 
 all: $(TARGET)
 
