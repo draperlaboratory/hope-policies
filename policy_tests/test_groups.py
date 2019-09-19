@@ -54,6 +54,7 @@ class AllTests:
         "sha",
         "qsort",
         "randmath",
+        "lzfx",
     ]
 
 class webapp(AllTests):
