@@ -7,10 +7,10 @@ class AllTests:
     #positive tests go in the tests dir
     tests = [
         "printf_works_1",
-        "hello_works_1",
         "stanford_int_treesort_fixed",
         "ping_pong_works_1",
         "link_list_works_1",
+        "hello_works_1",
         "ptr_arith_works_1",
         "malloc_prof_1",
         "malloc_prof_2",
@@ -95,8 +95,10 @@ class frtos(AllTests):
 class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
-                                 ["ping_pong_works_1",
+                                 [
+                                  "ping_pong_works_1",
                                   "dhrystone7000",
+                                  "hello_works_1",
                                  ]
                                  )]
 
