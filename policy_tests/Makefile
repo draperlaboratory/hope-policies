@@ -16,13 +16,14 @@ all: build-tests build-kernels run-tests
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
-#   minimum variables (probably) needed: SIM, TESTS, RUNTIME, POLICIES
+#   minimum variables (probably) needed: SIM, TESTS, RUNTIME, GPOLICIES, POLICIES
 
 # config for webapp tests and policies
 webapp_SIM = qemu
 webapp_TESTS = webapp
 webapp_RUNTIME = bare
 webapp_MODULE = osv.bare.main
+webapp_GPOLICIES = 
 webapp_POLICIES = none,userType,password,ppac,heap
 webapp_XDIST = -n $(JOBS) # run in parallel
 webapp: CONFIG=webapp
@@ -33,6 +34,7 @@ bare_SIM = qemu
 bare_TESTS = bare
 bare_RUNTIME = bare
 bare_MODULE = osv.bare.main
+bare_GPOLICIES = 
 bare_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 bare_XDIST = -n $(JOBS) # run in parallel
@@ -44,7 +46,8 @@ frtos_SIM = qemu
 frtos_TESTS = frtos
 frtos_RUNTIME = frtos
 frtos_MODULE = osv.frtos.main
-frtos_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
+frtos_GPOLICIES = contextswitch
+frtos_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos_XDIST= -n $(JOBS) # run in parallel
 frtos: CONFIG=frtos
 frtos: all
@@ -54,7 +57,7 @@ COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py
@@ -67,6 +70,7 @@ build-ripe: SIM ?= $($(CONFIG)_SIM)
 build-ripe: TESTS ?= $($(CONFIG)_TESTS)
 build-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-ripe: MODULE ?= $($(CONFIG)_MODULE)
+build-ripe: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 build-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-ripe: $(RIPE_CONFIGS)
@@ -79,6 +83,7 @@ run-ripe: SIM ?= $($(CONFIG)_SIM)
 run-ripe: TESTS ?= $($(CONFIG)_TESTS)
 run-ripe: RUNTIME ?= $($(CONFIG)_RUNTIME)
 run-ripe: MODULE ?= $($(CONFIG)_MODULE)
+run-ripe: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 run-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-ripe: 
@@ -107,6 +112,7 @@ build-tests: SIM ?= $($(CONFIG)_SIM)
 build-tests: TESTS ?= $($(CONFIG)_TESTS)
 build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-tests: MODULE ?= $($(CONFIG)_MODULE)
+build-tests: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: build-dirs
@@ -119,6 +125,7 @@ build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
 build-dirs: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-dirs: MODULE ?= $($(CONFIG)_MODULE)
+build-dirs: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)
@@ -136,6 +143,7 @@ build-kernels: SIM ?= $($(CONFIG)_SIM)
 build-kernels: TESTS ?= $($(CONFIG)_TESTS)
 build-kernels: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-kernels: MODULE ?= $($(CONFIG)_MODULE)
+build-kernels: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
@@ -148,6 +156,7 @@ run-tests: SIM ?= $($(CONFIG)_SIM)
 run-tests: TESTS ?= $($(CONFIG)_TESTS)
 run-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
 run-tests: MODULE ?= $($(CONFIG)_MODULE)
+run-tests: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests build-kernels
