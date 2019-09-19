@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <FreeRTOS.h>
+#include <task.h>
 
 #include "test_status.h"
 #include "test.h"
@@ -34,17 +36,73 @@
 // include malloc wrappers
 #include "mem.h"
 
+int adone, bdone;
+
+void procA_main(void *arg) {
+
+  int a, i, j;
+  a=0;
+  int adder='a';
+  int adder2='c';
+
+  for ( j = 0; j < 4; j++ ) { 
+    t_printf("Proc A in loop\n");
+
+    for ( i = 0; i < 2; i++ )
+      adder = adder + j;
+      int temp = i + adder2;
+      a += temp;
+    
+    vTaskDelay(0);
+  }
+
+}
+
+void procB_main(void *a) {
+
+  int b, i, j;
+  b=0;
+  int adder='b';
+  int adder2='d';
+
+  for ( j = 0; j < 4; j++ ) {
+    t_printf("Proc B in loop\n");
+    
+    for ( i = 0; i < 2; i++ )
+      b += j + i + adder + adder2;
+    
+    vTaskDelay(0);
+  }
+
+  bdone = 1;
+}
+
 /*
  * Hello world sanity test to check we can execute code i.e. main and 
  *     call printf
  */
 int test_main(void)
   {
+
+    int i;
+    
     test_positive(); // identify test as positive (will complete)
+
+    t_printf("hello doing context test\n");
+    
+    xTaskCreate(procB_main, "procB", 1000, NULL, 1, NULL);
+
+    t_printf("before scheduler invokation\n");
+    
+    procA_main(0x0);
+
+    t_printf("after scheduler invokation\n");
 
     t_printf("Hello Test\n");
     
     test_pass();
+    
     return test_done();
   }
+
 
