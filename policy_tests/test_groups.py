@@ -56,6 +56,7 @@ class AllTests:
         "randmath",
         "lzfx",
 	"stringsearch",
+	"blowfish",
     ]
 
 class webapp(AllTests):
