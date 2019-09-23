@@ -72,7 +72,7 @@ require:
     init ISA.RISCV.Reg.Default               {}
     init ISA.RISCV.Reg.RZero                 {}
     init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.CSR.MTVEC                 {}
 
     init llvm.CPI.FPtrCreate                 {FPtrCreate}
     init llvm.CPI.FPtrStore                  {FPtrStore}

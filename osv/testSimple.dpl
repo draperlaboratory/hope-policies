@@ -67,7 +67,7 @@ require:
     init ISA.RISCV.Reg.Default               {Nothing}
     init ISA.RISCV.Reg.RZero                 {Nothing}
     init ISA.RISCV.CSR.Default               {Nothing}
-    init ISA.RISCV.CSR.MTVec                 {Nothing}
+    init ISA.RISCV.CSR.MTVEC                 {Nothing}
 
     init Tools.Link.MemoryMap.Default        {Nothing}
     init Tools.Link.MemoryMap.UserHeap       {Nothing}

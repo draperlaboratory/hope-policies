@@ -156,7 +156,7 @@ require:
   init ISA.RISCV.Reg.Default               {}
   init ISA.RISCV.Reg.RZero                 {}
   init ISA.RISCV.CSR.Default               {}
-  init ISA.RISCV.CSR.MTVec                 {}
+  init ISA.RISCV.CSR.MTVEC                 {}
 
   init Tools.Elf.Section.SHF_ALLOC         {}
   init Tools.Elf.Section.SHF_EXECINSTR     {}

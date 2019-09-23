@@ -70,7 +70,7 @@ policy:           // Allow most ops involving regular registers, memory & csrs
               -> mem = {AllowIO}, env = {AllowEnv} )
    ^ loadUpperGrp(code == [AllowCode], env == [AllowEnv] -> env = {AllowEnv}, dest = {AllowReg})
    ^ csrGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], csr == [AllowCSR] -> csr = {AllowCSR}, res = {AllowReg}, env = {AllowEnv} )
-   // special case for MTVec CSR
+   // special case for MTVEC CSR
    ^ csrGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], csr == [AllowEnv] -> csr = {AllowEnv}, res = {AllowReg}, env = {AllowEnv} )
    ^ csriGrp(code == [AllowCode], env == [AllowEnv], csr == [AllowCSR] -> csr = {AllowCSR}, res = {AllowReg}, env = {AllowEnv} )
      // Change privledge mode
@@ -82,7 +82,7 @@ require:
     init ISA.RISCV.Reg.Default               {AllowReg}
     init ISA.RISCV.Reg.RZero                 {AllowReg}
     init ISA.RISCV.CSR.Default               {AllowCSR}
-    init ISA.RISCV.CSR.MTVec                 {AllowCSR}
+    init ISA.RISCV.CSR.MTVEC                 {AllowCSR}
 
     init Tools.Link.MemoryMap.Default        {}
     init Tools.Link.MemoryMap.UserHeap       {}

@@ -2,7 +2,13 @@
   name: ISA.RISCV.CSR.Default
   kind: isa
 -
-  name: ISA.RISCV.CSR.MTVec
+  name: ISA.RISCV.CSR.MTVEC
+  kind: isa
+-
+  name: ISA.RISCV.CSR.MTVAL
+  kind: isa
+-
+  name: ISA.RISCV.CSR.MEPC
   kind: isa
 -
   name: ISA.RISCV.Reg.Default
