@@ -25,8 +25,8 @@ def incompatibleReason(test, policy):
 def xfailReason(test, policy, runtime):
     if "longjump" in test:
         return "longjump test known to be broken"
-    if "hello_works_1" in test and "testContext" in policy and not "contextswitch" in policy:
-        return "hello_works_1 should fail with testContext unless the contextswitch policy is also there."
+    if "hello_works_2" in test and "testContext" in policy and not "contextswitch" in policy:
+        return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
 
     long_tests = [
         "link_list_works_1",

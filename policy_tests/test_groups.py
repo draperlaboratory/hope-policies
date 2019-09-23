@@ -11,6 +11,7 @@ class AllTests:
         "ping_pong_works_1",
         "link_list_works_1",
         "hello_works_1",
+        "hello_works_2",
         "ptr_arith_works_1",
         "malloc_prof_1",
         "malloc_prof_2",
@@ -98,7 +99,7 @@ class bare(AllTests):
                                  [
                                   "ping_pong_works_1",
                                   "dhrystone7000",
-                                  "hello_works_1",
+                                  "hello_works_2",
                                  ]
                                  )]
 
