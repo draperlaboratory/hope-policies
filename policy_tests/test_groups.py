@@ -93,7 +93,7 @@ class frtos(AllTests):
                                   "userType/webapp_double_usr_set",
                                   "password/webapp_password_leak",
                                   "bitcount",
-				  "dhrystone",
+				  "dhrystone/dhrystone-baremetal",
                                  ]
                                  )]
 
@@ -102,7 +102,7 @@ class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1",
-                                  "dhrystone7000",
+                                  "dhrystone/dhrystone-baremetal",
 				  "hello_works_2",
                                  ]
                                  )]
