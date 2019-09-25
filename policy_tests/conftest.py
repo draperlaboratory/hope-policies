@@ -54,6 +54,10 @@ def composite(request):
 def debug(request):
     return 'yes' == request.config.getoption('--isp_debug')
 
+@pytest.fixture
+def timeout(request):
+    return request.config.getoption('--timeout')
+
 def pytest_generate_tests(metafunc):
 
     if 'policy' in metafunc.fixturenames:
