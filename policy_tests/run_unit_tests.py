@@ -23,25 +23,12 @@ def incompatibleReason(test, policy):
     return None
 
 def xfailReason(test, policy, runtime):
-    if "longjump" in test:
-        return "longjump test known to be broken"
-    if "hello_works_2" in test and "testContext" in policy and not "contextswitch" in policy:
+    if test in ["longjump_works_1"] and "stack" in policy and (runtime == "frtos"):
+        return "known to fail"
+    if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-
-    long_tests = [
-        "link_list_works_1",
-        "string_works_1",
-        "aes",
-        "bitcount",
-        "fft",
-        "qsort",
-        "rc4",
-        "rsa",
-        "sha",
-        "stringsearch",
-    ]
-    if test in long_tests and "heap" in policy and (runtime == "frtos"):
-        return "long-running tests known to fail with heap policy on frtos due to context switching"
+    if test in ["fft"] and "heap" in policy and (runtime == "frtos"):
+        return "known to fail due to heap policy not playing nice with printf functions"
 
     return None
 
