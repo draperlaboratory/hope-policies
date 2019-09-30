@@ -7,6 +7,7 @@ class AllTests:
     #positive tests go in the tests dir
     tests = [
         "printf_works_1",
+        "hello_works_1",
         "stanford_int_treesort_fixed",
         "ping_pong_works_1",
         "link_list_works_1",
@@ -23,8 +24,8 @@ class AllTests:
         "timer_works_1",
         "function_pointer_works_1",
         "function_pointer_works_2",
-        "rwx/code_write_fails_1", 
-        "rwx/data_exe_fails_1", 
+        "rwx/code_write_fails_1",
+        "rwx/data_exe_fails_1",
         "cfi/jump_data_fails_1",
         "heap/ptr_arith_fails_1",
         "heap/ptr_arith_fails_2",
@@ -35,7 +36,7 @@ class AllTests:
         "threeClass/jump_data_fails_1",
         "threeClass/call_fails_1",
         "taint/tainted_print_fails",
-        "dhrystone7000",
+        "dhrystone/dhrystone-baremetal",
         "webapp_doctor_user_works",
         "webapp_admin_user_works",
         "webapp_patient_read_works",
@@ -84,7 +85,6 @@ class frtos(AllTests):
                                   "malloc_prof_1",
                                   "malloc_prof_2",
                                   "taint/tainted_print_fails",
-                                  "dhrystone7000",
                                   "webapp_doctor_user_works",
                                   "webapp_admin_user_works",
                                   "webapp_patient_read_works",
@@ -93,6 +93,7 @@ class frtos(AllTests):
                                   "userType/webapp_double_usr_set",
                                   "password/webapp_password_leak",
                                   "bitcount",
+				  "dhrystone/dhrystone-baremetal",
                                  ]
                                  )]
 
@@ -100,10 +101,9 @@ class frtos(AllTests):
 class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
-                                 [
-                                  "ping_pong_works_1",
-                                  "dhrystone7000",
-                                  "hello_works_2",
+                                 ["ping_pong_works_1",
+                                  "dhrystone/dhrystone-baremetal",
+				  "hello_works_2",
                                  ]
                                  )]
 
@@ -112,4 +112,3 @@ test_groups = {'all' : AllTests,
                'bare' : bare,
                'webapp' : webapp
 }
-
