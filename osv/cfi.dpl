@@ -48,7 +48,7 @@ policy:
     mretGrp ( env == _ -> env = {} )
 
      // Case for not checking cfi (asm code)
-    ^ allGrp    (code == [+NoCFI], env == _ -> env = env )
+    ^ allGrp    (code == [+NoCFI,-Target], env == _ -> env = env )
          // cases for landing on a jump (bounce)
     ^ branchGrp (code == [Target], env == [Jumping] -> env = {Jumping})
     ^ jumpGrp   (code == [Target], env == [Jumping] -> env = {Jumping}, return = {})
@@ -60,7 +60,7 @@ policy:
     ^ allGrp    (code == [+Target], env == [+Jumping] -> env = env[-Jumping])
        // Case for normal execution
     ^ allGrp    (env == [-Jumping] -> env = env)
-    ^ allGrp (-> fail "Illegal control flow detected")
+    ^ allGrp (-> fail "cfi: Illegal control flow detected")
 
     main = cfiPol
 
@@ -74,6 +74,9 @@ require:
     init llvm.CFI_Call-Tgt                   {Target}
     init llvm.CFI_Branch-Tgt                 {Target}
     init llvm.CFI_Return-Tgt                 {Target}
+    init llvm.CFI_Call-Instr                 {NoCFI}
+    init llvm.CFI_Branch-Instr               {NoCFI}
+    init llvm.CFI_Return-Instr               {NoCFI}
     init llvm.NoCFI                          {NoCFI}
     
     init dover.Kernel.MemoryMap.Default       {}
