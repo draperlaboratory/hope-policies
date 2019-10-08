@@ -23,8 +23,6 @@ def incompatibleReason(test, policy):
     return None
 
 def xfailReason(test, policy, runtime):
-    if test in ["longjump_works_1"] and "stack" in policy and (runtime == "frtos"):
-        return "known to fail"
     if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
     if test in ["fft"] and "heap" in policy and (runtime == "frtos"):
