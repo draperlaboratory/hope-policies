@@ -25,8 +25,6 @@ def incompatibleReason(test, policy):
 def xfailReason(test, policy, runtime):
     if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-    if test in ["fft"] and "heap" in policy and (runtime == "frtos"):
-        return "known to fail due to heap policy not playing nice with printf functions"
 
     return None
 
