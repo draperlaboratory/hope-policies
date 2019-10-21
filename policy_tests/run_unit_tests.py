@@ -23,25 +23,8 @@ def incompatibleReason(test, policy):
     return None
 
 def xfailReason(test, policy, runtime):
-    if "longjump" in test:
-        return "longjump test known to be broken"
-    if "hello_works_2" in test and "testContext" in policy and not "contextswitch" in policy:
+    if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-
-    long_tests = [
-        "link_list_works_1",
-        "string_works_1",
-        "aes",
-        "bitcount",
-        "fft",
-        "qsort",
-        "rc4",
-        "rsa",
-        "sha",
-        "stringsearch",
-    ]
-    if test in long_tests and "heap" in policy and (runtime == "frtos"):
-        return "long-running tests known to fail with heap policy on frtos due to context switching"
 
     return None
 
@@ -50,14 +33,12 @@ def xfailReason(test, policy, runtime):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, output_subdir=None):
+def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, timeout, output_subdir=None):
     incompatible = incompatibleReason(test, policy)
     if incompatible:
         pytest.skip(incompatible)
 
     xfail = xfailReason(test, policy, runtime)
-    if xfail:
-        pytest.xfail(xfail)
 
     output_dir = os.path.abspath("output")
     if output_subdir is not None:
@@ -69,7 +50,7 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, out
 
     test_path = os.path.abspath(os.path.join("build", runtime, test))
 
-    runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size, output_dir)
+    runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size, output_dir, timeout)
     
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
 
@@ -84,10 +65,10 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, out
     if exe_dir is not "tests":
         test_output_dir = test_output_dir + "-" + exe_dir
 
-    testResult(test_output_dir)
+    testResult(test_output_dir,xfail)
 
 
-def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir):
+def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir, timeout):
     run_cmd = "isp_run_app"
     run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
@@ -98,13 +79,16 @@ def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir)
     if exe_dir is not "tests":
         run_args += ["-S", exe_dir]
 
-    process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if timeout:
+        process = subprocess.Popen(["timeout",str(timeout),run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     run_output,run_error = process.communicate()
     if process.returncode != 0:
         pytest.fail("Runtime failed with error: \n{}".format(run_error))
 
 
-def testResult(test_output_dir):
+def testResult(test_output_dir,xfail):
     uart_log_file = os.path.join(test_output_dir, "uart.log")   
     pex_log_file = os.path.join(test_output_dir, "pex.log")
 
@@ -121,9 +105,23 @@ def testResult(test_output_dir):
     if "PASS: test passed." not in uart_data:
         if "MSG: Negative test." in uart_data:
             if "Policy Violation:" in open(pex_log_file, 'r').read():
+                if xfail:
+                    pytest.fail(xfail)
                 return
-            pytest.fail("No policy violation in negative test")
+            else:
+                if xfail:
+                    pytest.xfail(xfail)
+                else:
+                    pytest.fail("No policy violation in negative test")
         elif "MSG: Positive test." in uart_data:
-            pytest.fail("Positive test failed")
+            if xfail:
+                pytest.xfail(xfail)
+            else:
+                pytest.fail("Positive test failed")
         else:
-            pytest.fail("Invalid output in uart file{}".format(uart_data))
+            if xfail:
+                pytest.xfail(xfail)
+            else:
+                pytest.fail("Invalid output in uart file{}".format(uart_data))
+    elif xfail:
+        pytest.fail("XFAIL test passed: "+xfail)

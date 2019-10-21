@@ -46,11 +46,8 @@ metadata:
   
 policy:
   heapPol =
-// Special case to avoid hacking printf %x
-    andiGrp(code == [SpecialCaseVFPRINTF], env == _, op1 == _ -> env = env, res = {})
-
 // Handle generic pointer arithmetic
-   ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
+     arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
 // since the previous rule didn't fire check for AntiPointer
    ^ arithGrp(env == _, op1 == [+AntiPointer], op2 == _ -> env = env, res = {})
    ^ arithGrp(env == _, op1 == _, op2 == [+AntiPointer] -> env = env, res = {})
