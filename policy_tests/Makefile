@@ -10,7 +10,7 @@ TEST_BUILD_DIR := build
 TEST_OUTPUT_DIR := output
 
 # default for unadorned `make`
-CONFIG ?= bare
+CONFIG ?= bare-qemu
 JOBS   ?= 1
 all: build-dirs run-tests
 
@@ -29,17 +29,29 @@ webapp_XDIST = -n $(JOBS) # run in parallel
 webapp: CONFIG=webapp
 webapp: all
 
-# config for bare-metal
-bare_SIM = qemu
-bare_TESTS = bare
-bare_RUNTIME = bare
-bare_MODULE = osv.bare.main
-bare_GPOLICIES = 
-bare_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
-bare_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
-bare_XDIST = -n $(JOBS) # run in parallel
-bare: CONFIG=bare
-bare: all
+# config for bare-metal on QEMU
+bare-qemu_SIM = qemu
+bare-qemu_TESTS = bare
+bare-qemu_RUNTIME = bare
+bare-qemu_MODULE = osv.bare.main
+bare-qemu_GPOLICIES = 
+bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
+bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+bare-qemu_XDIST = -n $(JOBS) # run in parallel
+bare-qemu: CONFIG=bare-qemu
+bare-qemu: all
+
+# config for bare-metal on VCU118 board
+bare-vcu118_SIM = vcu118
+bare-vcu118_TESTS = bare
+bare-vcu118_RUNTIME = bare
+bare-vcu118_MODULE = osv.bare.main
+bare-vcu118_GPOLICIES = 
+bare-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
+bare-vcu118_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+bare-vcu118_XDIST = -n $(JOBS) # run in parallel
+bare-vcu118: CONFIG=bare-vcu118
+bare-vcu118: all
 
 # config for FreeRTOS
 frtos_SIM = qemu
@@ -126,9 +138,6 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: build-dirs
 build-tests: build-kernels
-	mkdir -p $(TEST_BUILD_DIR)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 build-dirs: SIM ?= $($(CONFIG)_SIM)
@@ -140,7 +149,8 @@ build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/log
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
