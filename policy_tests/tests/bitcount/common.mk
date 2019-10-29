@@ -10,6 +10,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)
 
 SOURCES := bitcnt_1.c bitcnt_2.c bitcnt_3.c bitcnt_4.c bitcnts.c bitstrng.c bstr_i.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

@@ -31,8 +31,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to check that trying to read code is not an error

@@ -9,6 +9,7 @@ LDFLAGS += $(ISP_LDFLAGS)
 SOURCES := $(wildcard *c)
 SOURCES := $(wildcard $(TEST_ROOT_DIR)/webapp/*.c)
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 SOURCES += $(TEST_SOURCE)
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))

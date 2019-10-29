@@ -31,8 +31,6 @@
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to allocate memory and check that we can 

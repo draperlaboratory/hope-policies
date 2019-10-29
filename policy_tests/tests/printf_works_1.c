@@ -31,8 +31,6 @@
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test that printf works ok on a few different format params.

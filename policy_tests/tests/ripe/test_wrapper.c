@@ -31,7 +31,6 @@
 #include "test_status.h"
 #include "test.h"
 
-#include "mem.h"
 #include "ripe_attack_generator.h"
 
 /*

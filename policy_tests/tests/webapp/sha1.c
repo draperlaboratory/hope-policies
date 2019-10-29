@@ -12,7 +12,6 @@
 #include <stdlib.h>
 #include <memory.h>
 #include "sha1.h"
-#include "mem.h"
 
 #define ROTLEFT(a, b) ((a << b) | (a >> (32 - b)))
 

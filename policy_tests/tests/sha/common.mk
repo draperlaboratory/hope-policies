@@ -11,6 +11,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)/sha
 
 SOURCES := main.c sha.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

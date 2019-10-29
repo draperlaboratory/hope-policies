@@ -32,8 +32,6 @@
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 // total number of mallocs
 #define MALLOC_COUNT 150 // 2000 larger allocation numbers exhaust heap space on hifive bare metal.

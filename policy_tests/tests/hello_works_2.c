@@ -33,8 +33,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 int adone, bdone;
 

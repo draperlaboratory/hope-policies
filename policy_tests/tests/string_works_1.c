@@ -32,8 +32,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to allocate memory for 1 to 26 chars and check that we can 

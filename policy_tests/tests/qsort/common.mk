@@ -11,6 +11,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)/qsort
 
 SOURCES := qsort_large.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

@@ -11,6 +11,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)/stringsearch
 
 SOURCES := bmhasrch.c bmhisrch.c bmhsrch.c main.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

@@ -5,7 +5,6 @@
 
 #include "medical.h"
 #include "test.h"
-#include "mem.h"
 
 bool
 MedicalDoctorCertified(doctor_t *doctor, char *condition)

@@ -10,6 +10,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)/lzfx
 
 SOURCES := lzfx.c lzfx_decomp.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

@@ -31,13 +31,11 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 #define INST_COUNT 100000
 
-extern uint32_t get_usec_time();
-extern uint32_t get_inst_ret();
+extern uint32_t isp_get_time_usec();
+extern uint32_t t_instret();
 /*
  * Test to calibrate cpu and timer frequency
  * 
@@ -51,15 +49,15 @@ int test_main(void)
     uint32_t start_time = 0;
     uint32_t end_time = 0;
 
-    start_time = get_usec_time();
-    last_ret = get_inst_ret();
+    start_time = isp_get_time_usec();
+    last_ret = t_instret();
     while(inst_count < INST_COUNT){
-      inst_ret = get_inst_ret();
+      inst_ret = t_instret();
       inst_count += inst_ret - last_ret;
       last_ret = inst_ret;
         
     }
-    end_time = get_usec_time();
+    end_time = isp_get_time_usec();
 
     t_printf("Test Complete\n");
     t_printf("Executed %d instructions\n", inst_count);

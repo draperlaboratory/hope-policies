@@ -11,7 +11,7 @@
 #include <limits.h>
 #include "bitops.h"
 
-extern uint32_t uiPortGetWallTimestampUs(void);
+extern uint32_t isp_get_time_usec(void);
 
 #define US_PER_SEC 1000000
 
@@ -59,7 +59,7 @@ int test_main(void)
   t_printf("Bit counter algorithm benchmark\n");
   
   for (i = 0; i < FUNCS; i++) {
-    start = uiPortGetWallTimestampUs();
+    start = isp_get_time_usec();
     
     // Reseed rand() every time to ensure the
     // same sequence of numbers for all tests
@@ -67,7 +67,7 @@ int test_main(void)
     for (j = n = 0; j < iterations; j++)
 	 n += pBitCntFunc[i](rand());
     
-    stop = uiPortGetWallTimestampUs();
+    stop = isp_get_time_usec();
     ct = (stop - start);
     if (ct < cmin) {
 	 cmin = ct;

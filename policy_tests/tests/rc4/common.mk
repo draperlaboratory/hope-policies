@@ -10,6 +10,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)/rc4
 
 SOURCES := rc4test.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

@@ -10,6 +10,7 @@ LINKER_SCRIPT = dhrystone-baremetal.lds
 
 SOURCES := dhrystone-baremetal.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

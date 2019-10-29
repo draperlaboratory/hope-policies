@@ -13,6 +13,7 @@ LDFLAGS += $(ISP_LDFLAGS)
 
 SOURCES := $(wildcard *c)
 SOURCES += ../test_status.c
+SOURCES += ../test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

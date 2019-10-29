@@ -13,6 +13,7 @@ INCLUDES += -I$(TEST_ROOT_DIR)/adpcm_decode
 
 SOURCES := adpcm.c rawdaudio.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
+SOURCES += $(TEST_ROOT_DIR)/test.c
 
 OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
 

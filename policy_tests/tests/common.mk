@@ -1,4 +1,5 @@
-TEST_HELPER_SOURCES := test_status.c
+TEST_HELPER_SOURCES := test.c
+TEST_HELPER_SOURCES += test_status.c
 TEST_HELPER_OBJECTS := $(patsubst %.c,%.o,$(TEST_HELPER_SOURCES))
 
 CFLAGS += $(ISP_CFLAGS)

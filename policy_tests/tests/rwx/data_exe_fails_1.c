@@ -31,8 +31,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to check we can not execute data as code
