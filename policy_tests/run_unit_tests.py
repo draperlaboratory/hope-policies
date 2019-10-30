@@ -48,7 +48,7 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, tim
     if debug is True:
         policy_dir = "-".join([policy_dir, "debug"])
 
-    test_path = os.path.abspath(os.path.join("build", runtime, test))
+    test_path = os.path.abspath(os.path.join("build", runtime, sim, test))
 
     runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size, output_dir, timeout)
     
