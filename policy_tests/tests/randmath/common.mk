@@ -22,7 +22,11 @@ $(TARGET): $(ISP_OBJECTS) $(ISP_LIBS) $(ISP_DEPS) $(OBJECTS)
 	$(CC) $(CFLAGS) $(INCLUDES) $(ISP_LIBS) $(ISP_OBJECTS) \
 		$(OBJECTS) -o $@ $(LDFLAGS)
 
-include abcmath.mk
+abcmath.c: randmath
+	./randmath
+
+randmath: randmath.c
+	gcc -o randmath randmath.c
 
 $(OBJECTS): %.o: %.c $(SOURCES)
 	$(CC) $(CFLAGS) $(INCLUDES) $< -c -o $@
