@@ -14,6 +14,11 @@ CONFIG ?= bare-qemu
 JOBS   ?= 1
 all: build-dirs run-tests
 
+# Arguments specific to running on an FPGA
+BITSTREAM ?= soc_chisel_pipe_p1
+AP_TTY ?= /dev/ttyUSB1
+PEX_TTY ?= /dev/ttyUSB0
+
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
 #   minimum variables (probably) needed: SIM, TESTS, RUNTIME, GPOLICIES, POLICIES
@@ -47,9 +52,9 @@ bare-vcu118_TESTS = bare
 bare-vcu118_RUNTIME = bare
 bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
-bare-vcu118_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
+bare-vcu118_PYTEST_ARGS = --extra=+program,+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
@@ -138,7 +143,7 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: build-dirs
 build-tests: build-kernels
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
@@ -151,7 +156,7 @@ build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/log
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
 
@@ -167,7 +172,7 @@ build-kernels: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-kernels:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
 
 kernels: clean-kernels build-kernels
 
@@ -181,7 +186,7 @@ run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 clean: clean-kernels clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html *report.xml prof_results.log .cache \

@@ -29,6 +29,8 @@ def pytest_addoption(parser):
                      help='What composite policies (simple, full, else none)')
     parser.addoption('--isp_debug', default='no',
                      help='pass debug options to testing tasks (yes/no)')
+    parser.addoption('--extra', default=[],
+                     help='extra args to pass to isp_run_app')
 
 @pytest.fixture
 def sim(request):
@@ -57,6 +59,10 @@ def debug(request):
 @pytest.fixture
 def timeout(request):
     return request.config.getoption('--timeout')
+
+@pytest.fixture
+def extra(request):
+    return request.config.getoption('--extra')
 
 def pytest_generate_tests(metafunc):
 
