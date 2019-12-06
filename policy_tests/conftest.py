@@ -13,6 +13,8 @@ def pytest_addoption(parser):
     # TODO: add optimizations
     parser.addoption('--runtime', default='',
                      help='What runtime should the test be compiled for')
+    parser.addoption('--soc', default='',
+                     help='Path to SOC config file')
     parser.addoption('--test', default='',
                      help='Which test(s) to run')
     parser.addoption('--gpolicies', default='',
@@ -39,6 +41,10 @@ def sim(request):
 @pytest.fixture
 def runtime(request):
     return request.config.getoption('--runtime')
+
+@pytest.fixture
+def soc(request):
+    return request.config.getoption('--soc')
 
 @pytest.fixture
 def rule_cache(request):

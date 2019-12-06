@@ -43,6 +43,7 @@ bare-qemu_GPOLICIES =
 bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 bare-qemu_XDIST = -n $(JOBS) # run in parallel
+bare-qemu_SOC_CFG = $(ISP_PREFIX)/sources/policy-engine/soc_cfg/hifive_e_cfg.yml
 bare-qemu: CONFIG=bare-qemu
 bare-qemu: all
 
@@ -54,6 +55,7 @@ bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
+bare-vcu118_SOC_CFG = $(ISP_PREFIX)/sources/policy-engine/soc_cfg/gfe-vcu118.yml
 bare-vcu118_PYTEST_ARGS = --extra=+program,+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
@@ -83,7 +85,7 @@ COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE)
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py
@@ -184,6 +186,7 @@ run-tests: MODULE ?= $($(CONFIG)_MODULE)
 run-tests: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
