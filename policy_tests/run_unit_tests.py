@@ -109,7 +109,8 @@ def testResult(test_output_dir,xfail):
 
     if "PASS: test passed." not in uart_data:
         if "MSG: Negative test." in uart_data:
-            if "Policy Violation:" in open(pex_log_file, 'r').read():
+            message = open(pex_log_file, 'r').read()
+            if any(s in message for s in ["Policy Violation:", "TMT misses are fatal"]):
                 if xfail:
                     pytest.fail(xfail)
                 return
