@@ -22,7 +22,7 @@ TARGET := $(OUTPUT_DIR)/adpcm_decode
 all: $(TARGET)
 
 $(TARGET): $(ISP_OBJECTS) $(ISP_LIBS) $(ISP_DEPS) $(OBJECTS)
-	$(CC) $(CFLAGS) $(INCLUDES) $(ISP_LIBS) $(ISP_OBJECTS) \
+	$(CC) $(CFLAGS) $(INCLUDES) $(ISP_OBJECTS) \
 		$(OBJECTS) -o $@ $(LDFLAGS)
 
 $(OBJECTS): %.o: %.c $(SOURCES)
