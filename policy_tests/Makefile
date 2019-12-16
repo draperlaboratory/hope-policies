@@ -15,7 +15,7 @@ JOBS   ?= 1
 all: build-dirs run-tests
 
 # Arguments specific to running on an FPGA
-BITSTREAM ?= soc_chisel_pipe_p1
+BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
 AP_TTY ?= /dev/ttyUSB1
 PEX_TTY ?= /dev/ttyUSB0
 
@@ -56,7 +56,7 @@ bare-vcu118_GPOLICIES =
 bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_SOC_CFG = $(ISP_PREFIX)/sources/policy-engine/soc_cfg/gfe-vcu118.yml
-bare-vcu118_PYTEST_ARGS = --extra=+program,+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
+bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
