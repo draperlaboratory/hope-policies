@@ -43,7 +43,6 @@ bare-qemu_GPOLICIES =
 bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 bare-qemu_XDIST = -n $(JOBS) # run in parallel
-bare-qemu_SOC_CFG = $(ISP_PREFIX)/sources/policy-engine/soc_cfg/hifive_e_cfg.yml
 bare-qemu: CONFIG=bare-qemu
 bare-qemu: all
 
@@ -55,7 +54,6 @@ bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare-vcu118_SOC_CFG = $(ISP_PREFIX)/sources/policy-engine/soc_cfg/gfe-vcu118.yml
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
