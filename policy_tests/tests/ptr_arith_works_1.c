@@ -32,8 +32,6 @@
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to check that basic ptr arithmetic works

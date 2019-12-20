@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "user.h"
-#include "mem.h"
 
 #define USER_FULL_NAME_LENGTH (USER_NAME_LENGTH * 2 + 3)
 

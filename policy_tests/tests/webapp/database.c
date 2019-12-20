@@ -5,7 +5,6 @@
 #include "database.h"
 #include "hashtable.h"
 #include "medical.h"
-#include "mem.h"
 
 #define DATABASE_KEY_LENGTH USER_NAME_LENGTH
 #define DATABASE_CAPACITY 0x10

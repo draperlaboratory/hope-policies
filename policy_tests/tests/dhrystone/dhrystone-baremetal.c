@@ -51,9 +51,8 @@
 #include <sys/times.h>
 #include "test_status.h"
 #include "test.h"
-#include "mem.h"
 
-extern uint32_t uiPortGetWallTimestampUs(void);
+extern uint32_t isp_get_time_usec(void);
 
 /* Accuracy of timings and human fatigue controlled by next two lines */
 #ifndef DHRY_LOOPS
@@ -309,12 +308,12 @@ void dhry_proc0(void)
 	uint32_t		nulltime;
 	uint32_t		endtime;
 
-	starttime = uiPortGetWallTimestampUs();
+	starttime = isp_get_time_usec();
 	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
             asm volatile("nop");
 	}
-	endtime = uiPortGetWallTimestampUs();
+	endtime = isp_get_time_usec();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
 
 	t_printf("Start Time: %u (us)\n", starttime);
@@ -336,7 +335,7 @@ void dhry_proc0(void)
 	-- Start Timer --
 	*****************/
 	t_printf("Starting Timer for %lu Loops\n", (long)DHRY_LOOPS);
-	starttime = uiPortGetWallTimestampUs();
+	starttime = isp_get_time_usec();
 	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
 
@@ -363,7 +362,7 @@ void dhry_proc0(void)
 		IntLoc2 = 7 * (IntLoc3 - IntLoc2) - IntLoc1;
 		Proc2(&IntLoc1);
 	}
-	benchtime_us = uiPortGetWallTimestampUs() - starttime - nulltime;
+	benchtime_us = isp_get_time_usec() - starttime - nulltime;
 
 	t_printf("===================================================\n");
 	t_printf("Passes: %u\n", DHRY_LOOPS);

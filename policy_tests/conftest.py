@@ -13,6 +13,8 @@ def pytest_addoption(parser):
     # TODO: add optimizations
     parser.addoption('--runtime', default='',
                      help='What runtime should the test be compiled for')
+    parser.addoption('--soc', default='',
+                     help='Path to SOC config file')
     parser.addoption('--test', default='',
                      help='Which test(s) to run')
     parser.addoption('--gpolicies', default='',
@@ -29,6 +31,8 @@ def pytest_addoption(parser):
                      help='What composite policies (simple, full, else none)')
     parser.addoption('--isp_debug', default='no',
                      help='pass debug options to testing tasks (yes/no)')
+    parser.addoption('--extra', default=[],
+                     help='extra args to pass to isp_run_app')
 
 @pytest.fixture
 def sim(request):
@@ -37,6 +41,10 @@ def sim(request):
 @pytest.fixture
 def runtime(request):
     return request.config.getoption('--runtime')
+
+@pytest.fixture
+def soc(request):
+    return request.config.getoption('--soc')
 
 @pytest.fixture
 def rule_cache(request):
@@ -57,6 +65,10 @@ def debug(request):
 @pytest.fixture
 def timeout(request):
     return request.config.getoption('--timeout')
+
+@pytest.fixture
+def extra(request):
+    return request.config.getoption('--extra')
 
 def pytest_generate_tests(metafunc):
 
