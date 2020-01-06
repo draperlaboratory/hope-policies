@@ -58,16 +58,28 @@ bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
-# config for FreeRTOS
-frtos_SIM = qemu
-frtos_TESTS = frtos
-frtos_RUNTIME = frtos
-frtos_MODULE = osv.frtos.main
-frtos_GPOLICIES = contextswitch
-frtos_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos_XDIST= -n $(JOBS) # run in parallel
-frtos: CONFIG=frtos
-frtos: all
+# config for FreeRTOS on QEMU
+frtos-qemu_SIM = qemu
+frtos-qemu_TESTS = frtos
+frtos-qemu_RUNTIME = frtos
+frtos-qemu_MODULE = osv.frtos.main
+frtos-qemu_GPOLICIES = contextswitch
+frtos-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos-qemu_XDIST= -n $(JOBS) # run in parallel
+frtos-qemu: CONFIG=frtos-qemu
+frtos-qemu: all
+
+# config for FreeRTOS on VCU118 board
+frtos-vcu118_SIM = vcu118
+frtos-vcu118_TESTS = frtos
+frtos-vcu118_RUNTIME = frtos
+frtos-vcu118_MODULE = osv.frtos.main
+frtos-vcu118_GPOLICIES = contextswitch
+frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
+frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
+frtos-vcu118: CONFIG=frtos-vcu118
+frtos-vcu118: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
