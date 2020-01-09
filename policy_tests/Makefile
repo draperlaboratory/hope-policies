@@ -58,6 +58,17 @@ bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
+# config for bare-metal in VCS sim
+bare-vcs_SIM = vcs
+bare-vcs_TESTS = bare
+bare-vcs_RUNTIME = bare
+bare-vcs_MODULE = osv.bare.main
+bare-vcs_GPOLICIES = 
+bare-vcs_POLICIES = rwx
+bare-vcs_XDIST = -n $(JOBS) # run in parallel
+bare-vcs: CONFIG=bare-vcs
+bare-vcs: all
+
 # config for FreeRTOS on QEMU
 frtos-qemu_SIM = qemu
 frtos-qemu_TESTS = frtos
