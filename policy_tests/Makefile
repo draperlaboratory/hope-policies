@@ -106,7 +106,8 @@ COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
+#PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
+PYTEST_ARGS ?= --capture=no -v -rsx --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py
