@@ -65,6 +65,7 @@ bare-vcs_RUNTIME = bare
 bare-vcs_MODULE = osv.bare.main
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
+bare-vcs_PYTEST_ARGS = --extra=+debug
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs: CONFIG=bare-vcs
 bare-vcs: all
