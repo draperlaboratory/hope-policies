@@ -62,6 +62,7 @@ class AllTests:
 	"limits",
 	"picojpeg",
         "coremark",
+        "dhrystone",
     ]
 
 class webapp(AllTests):
