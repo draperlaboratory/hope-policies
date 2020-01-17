@@ -16,8 +16,6 @@ all: build-dirs run-tests
 
 # Arguments specific to running on an FPGA
 BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
-AP_TTY ?= /dev/ttyUSB1
-PEX_TTY ?= /dev/ttyUSB0
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
@@ -54,7 +52,7 @@ bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
+bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
@@ -77,7 +75,7 @@ frtos-vcu118_MODULE = osv.frtos.main
 frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
-frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+ap-tty=$(AP_TTY),+pex-tty=$(PEX_TTY)
+frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
 
