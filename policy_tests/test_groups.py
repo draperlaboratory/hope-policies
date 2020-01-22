@@ -61,6 +61,8 @@ class AllTests:
 	"blowfish",
 	"limits",
 	"picojpeg",
+        "coremark",
+        "dhrystone",
     ]
 
 class webapp(AllTests):
