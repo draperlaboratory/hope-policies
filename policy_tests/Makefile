@@ -29,6 +29,7 @@ webapp_MODULE = osv.bare.main
 webapp_GPOLICIES = 
 webapp_POLICIES = none,userType,password,ppac,heap
 webapp_XDIST = -n $(JOBS) # run in parallel
+webapp_TIMEOUT = 360
 webapp: CONFIG=webapp
 webapp: all
 
@@ -41,6 +42,7 @@ bare-qemu_GPOLICIES =
 bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 bare-qemu_XDIST = -n $(JOBS) # run in parallel
+bare-qemu_TIMEOUT = 360
 bare-qemu: CONFIG=bare-qemu
 bare-qemu: all
 
@@ -52,6 +54,7 @@ bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
+bare-vcu118_TIMEOUT = 360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
@@ -63,8 +66,9 @@ bare-vcs_RUNTIME = bare
 bare-vcs_MODULE = osv.bare.main
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+debug
+bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
+bare-vcs_TIMEOUT = 0
 bare-vcs: CONFIG=bare-vcs
 bare-vcs: all
 
@@ -76,6 +80,7 @@ frtos-qemu_MODULE = osv.frtos.main
 frtos-qemu_GPOLICIES = contextswitch
 frtos-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-qemu_XDIST= -n $(JOBS) # run in parallel
+frtos-qemu_TIMEOUT = 360
 frtos-qemu: CONFIG=frtos-qemu
 frtos-qemu: all
 
@@ -87,6 +92,7 @@ frtos-vcu118_MODULE = osv.frtos.main
 frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
+frtos-vcu118_TIMEOUT = 360
 frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
@@ -97,15 +103,17 @@ dhrystone_RUNTIME = bare
 dhrystone_MODULE = osv.bare.main
 dhrystone_POLICIES = heap,rwx,stack,none,testSimple
 dhrystone_XDIST = -n $(JOBS) # run in parallel
+dhrystone_TIMEOUT = 360
 dhrystone: CONFIG=dhrystone
 dhrystone: all
 
-# default test config settings that arn't commonly overwritten
+# default test config settings that aren't commonly overwritten
 COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
 DEBUG ?= no
+MAX_CYCLES ?= 60000000
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=360 --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py
@@ -121,6 +129,7 @@ build-ripe: MODULE ?= $($(CONFIG)_MODULE)
 build-ripe: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 build-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-ripe: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-ripe: $(RIPE_CONFIGS)
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
@@ -134,6 +143,7 @@ run-ripe: MODULE ?= $($(CONFIG)_MODULE)
 run-ripe: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 run-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+run-ripe: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-ripe:
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
@@ -163,6 +173,7 @@ build-tests: MODULE ?= $($(CONFIG)_MODULE)
 build-tests: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-tests: build-dirs
 build-tests: build-kernels
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
@@ -173,6 +184,7 @@ build-dirs: RUNTIME ?= $($(CONFIG)_RUNTIME)
 build-dirs: MODULE ?= $($(CONFIG)_MODULE)
 build-dirs: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
+build-dirs: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
@@ -193,6 +205,7 @@ build-kernels: MODULE ?= $($(CONFIG)_MODULE)
 build-kernels: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
 build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-kernels: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-kernels:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
 
@@ -207,6 +220,7 @@ run-tests: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
+run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
