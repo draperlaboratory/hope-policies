@@ -52,7 +52,7 @@ bare-vcu118_TESTS = bare
 bare-vcu118_RUNTIME = bare
 bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = stack
+bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
@@ -65,8 +65,8 @@ bare-vcs_TESTS = bare
 bare-vcs_RUNTIME = bare
 bare-vcs_MODULE = osv.bare.main
 bare-vcs_GPOLICIES = 
-bare-vcs_POLICIES = stack 
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug,+debug,+init-only
+bare-vcs_POLICIES = rwx
+bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
 bare-vcs: CONFIG=bare-vcs
