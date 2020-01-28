@@ -108,7 +108,7 @@ def testResult(test_output_dir,xfail):
         pytest.fail("Simulator did not produce UART log file")
         return
 
-    uart_data = open(uart_log_file, 'r').read()
+    uart_data = open(uart_log_file, 'r', encoding='utf-8',errors='backslashreplace').read()
 
     if "PASS: test passed." not in uart_data:
         if "MSG: Negative test." in uart_data:
