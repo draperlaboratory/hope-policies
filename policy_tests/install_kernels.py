@@ -11,7 +11,7 @@ import multiprocessing
 
 def test_install_kernel(policy, debug):
     if not policy:
-        pytest.fail("No policy specified");
+        pytest.fail("No policy specified")
     
     install_path = os.path.join("kernels", policy)
     if debug is True:

@@ -10,7 +10,24 @@ import glob
 import errno
 import re
 
+from pathlib import Path
 from helper_fns import *
+
+# Recusively copies the content of the directory src to the directory dst.
+# If dst doesn't exist, it is created, together with all missing parent directories.
+# If a file from src already exists in dst, the file in dst is overwritten.
+# Files already existing in dst which don't exist in src are preserved.
+# Symlinks inside src are copied as symlinks, they are not resolved before copying.
+#
+def copy_dir(src, dst):
+    dst.mkdir(parents=True, exist_ok=True)
+    for item in os.listdir(src):
+        s = src / item
+        d = dst / item
+        if s.is_dir():
+            copy_dir(s, d)
+        else:
+            shutil.copy2(str(s), str(d))
 
 # True when test has its own Makefile
 def isMakefileTest(test):
@@ -40,7 +57,7 @@ def test_copy_build_dir(test, runtime, sim):
         output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
 
         if not os.path.isdir(output_test_parent_dir):
-            os.mkdir(output_test_parent_dir)
+            os.makedirs(output_test_parent_dir)
 
     output_test_dir = os.path.join(output_dir, test)
 
@@ -58,6 +75,9 @@ def test_copy_build_dir(test, runtime, sim):
         shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
         if "webapp" in test:
             shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
+    elif isAllCombinedPolicyTest(test):
+        test_dir = os.path.dirname(os.path.join("tests", test))
+        copy_dir(Path(test_dir), Path(output_test_dir))
     else:
         shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
         shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
@@ -79,10 +99,15 @@ def test_build(test, runtime, sim, extra_args=None, extra_env=None):
     if isMakefileTest(test):
         test_dir = os.path.join(test_dir, test)
 
+    if isAllCombinedPolicyTest(test):
+        test_dir = os.path.dirname(os.path.join(test_dir, test))
+
     if isRipeTest(test):
         test_dir = os.path.join(test_dir, "ripe")
 
     makefile = "Makefile.{}".format(runtime)
+    if isAllCombinedPolicyTest(test):
+        makefile = "{}_Makefile.{}".format(os.path.basename(test), runtime)
     if not os.path.isfile(os.path.join(test_dir, makefile)):
         pytest.fail("Test Makefile not found: {}".format(os.path.join(test_dir, makefile)))
 
@@ -100,7 +125,7 @@ def test_build(test, runtime, sim, extra_args=None, extra_env=None):
         make_args += extra_args
 
     env = dict(os.environ, OUTPUT_DIR=output_dir)
-    if not isMakefileTest(test):
+    if not isMakefileTest(test) and not isAllCombinedPolicyTest(test):
         env['TEST'] = test
     if extra_env is not None:
         env.update(extra_env)

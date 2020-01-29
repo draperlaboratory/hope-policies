@@ -28,3 +28,5 @@ def doMkDir(dir):
         if e.errno != errno.EEXIST:
             raise    
 
+def isAllCombinedPolicyTest(test):
+    return "/" in test and test.split('/')[0] == "all-combined"
