@@ -46,6 +46,18 @@ bare-qemu_TIMEOUT = 360
 bare-qemu: CONFIG=bare-qemu
 bare-qemu: all
 
+# config for 64-bit bare-metal on QEMU
+bare64-qemu_SIM = qemu
+bare64-qemu_TESTS = bare64
+bare64-qemu_RUNTIME = bare64
+bare64-qemu_MODULE = osv.bare64.main
+bare64-qemu_GPOLICIES = 
+bare64-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+bare64-qemu_XDIST = -n $(JOBS) # run in parallel
+bare64-qemu_TIMEOUT = 360
+bare64-qemu: CONFIG=bare64-qemu
+bare64-qemu: all
+
 # config for bare-metal on VCU118 board
 bare-vcu118_SIM = vcu118
 bare-vcu118_TESTS = bare
@@ -109,6 +121,18 @@ frtos-vcs_TIMEOUT = 0
 frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
+
+# config for 64-bit FreeRTOS
+frtos64-qemu_SIM = qemu
+frtos64-qemu_TESTS = frtos64
+frtos64-qemu_RUNTIME = frtos64
+frtos64-qemu_MODULE = osv.frtos64.main
+frtos64-qemu_GPOLICIES = contextswitch
+frtos64-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
+frtos64-qemu_TIMEOUT = 360
+frtos64-qemu: CONFIG=frtos64-qemu
+frtos64-qemu: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
