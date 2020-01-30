@@ -117,7 +117,9 @@ class performance(AllTests):
 
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
+               'frtos64' : frtos,
                'bare' : bare,
+               'bare64' : bare,
                'webapp' : webapp,
                'mibench' : mibench,
                'performance' : performance
