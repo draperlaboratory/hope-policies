@@ -97,6 +97,19 @@ frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
 
+# config for FreeRTOS in VCS sim
+frtos-vcs_SIM = vcs
+frtos-vcs_TESTS = frtos
+frtos-vcs_RUNTIME = frtos
+frtos-vcs_MODULE = osv.frtos.main
+frtos-vcs_GPOLICIES =
+frtos-vcs_POLICIES = rwx
+frtos-vcs_XDIST= -n $(JOBS) # run in parallel
+frtos-vcs_TIMEOUT = 0
+frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
+frtos-vcs: CONFIG=frtos-vcs
+frtos-vcs: all
+
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
 dhrystone_RUNTIME = bare
