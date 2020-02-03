@@ -4,23 +4,27 @@
 #include <stdint.h>
 #include <stddef.h>
 
-#define HAS_FLOAT 0
+#define HAS_FLOAT 1
 #define HAS_TIME_H 1
 #define USE_CLOCK 1
-#define HAS_STDIO 1
+#define HAS_STDIO 0
 #define HAS_PRINTF 1
 #define SEED_METHOD SEED_VOLATILE
-#define CORE_TICKS uint64_t
-#define ee_u8 uint8_t
-#define ee_u16 uint16_t
-#define ee_u32 uint32_t
-#define ee_s16 int16_t
-#define ee_s32 int32_t
-#define ee_ptr_int uintptr_t
-#define ee_size_t size_t
+typedef uint64_t CORE_TICKS;
+typedef unsigned char ee_u8;
+typedef unsigned short ee_u16;
+typedef unsigned int ee_u32;
+typedef signed short ee_s16;
+typedef signed int ee_s32;
+typedef double ee_f32;
+typedef unsigned long ee_ptr_int;
+typedef size_t ee_size_t;
 #define COMPILER_FLAGS FLAGS_STR
 
-#define align_mem(x) (void *)(((ee_ptr_int)(x) + sizeof(ee_u32) - 1) & -sizeof(ee_u32))
+/* align_mem :
+	This macro is used to align an offset to point to a 32b value. It is used in the Matrix algorithm to initialize the input memory blocks.
+*/
+#define align_mem(x) (void *)(4 + (((ee_ptr_int)(x) - 1) & ~3))
 
 #ifdef __GNUC__
 # define COMPILER_VERSION "GCC"__VERSION__
@@ -28,8 +32,8 @@
 # error
 #endif
 
-#define MEM_METHOD MEM_MALLOC
-#define MEM_LOCATION "HEAP"
+#define MEM_METHOD MEM_STACK
+#define MEM_LOCATION "STACK"
 
 #define MAIN_HAS_NOARGC 1
 #define MAIN_HAS_NORETURN 0
