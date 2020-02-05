@@ -2,7 +2,7 @@
 
 uint32_t t_instret(){
   uint64_t instret;
-  asm volatile ("csrr %0, 0xc02 " : "=r"(instret));
+  asm volatile ("csrr %0, 0xb02 " : "=r"(instret));
   return instret;
 }
 
