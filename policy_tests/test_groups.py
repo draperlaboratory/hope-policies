@@ -84,6 +84,8 @@ class frtos(AllTests):
                                   "heap-ppac-userType/webapp_patient_info_leak_fails",
                                   "password/webapp_password_leak",
 				  "dhrystone/dhrystone-baremetal",
+                                  "fft",
+                                  "timer_works_1",
                                  ]
                                  )]
 
@@ -94,6 +96,8 @@ class bare(AllTests):
                                  ["ping_pong_works_1",
                                   "dhrystone/dhrystone-baremetal",
 				  "hello_works_2",
+                                  "fft",
+                                  "timer_works_1",
                                  ]
                                  )]
 
