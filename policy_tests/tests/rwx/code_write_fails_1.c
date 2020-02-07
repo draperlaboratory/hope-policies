@@ -31,7 +31,6 @@
 #include "test_status.h"
 #include "test.h"
 
-
 /*
  * Test to check that trying to write code is an error
  * under the RWX policy.
