@@ -125,6 +125,10 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {RawHeap}
     init Tools.Link.MemoryMap.UserStack      {}
 
+    init elf.Section.SHF_ALLOC         {}
+    init elf.Section.SHF_EXECINSTR     {}
+    init elf.Section.SHF_WRITE         {}
+
     init SOC.IO.UART_0                       {}
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
@@ -134,7 +138,16 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
+    init SOC.IO.GEM0                         {}
+    init SOC.IO.I2C_0                        {}
+    init SOC.IO.GPIO_0                       {}
+    init SOC.IO.GPIO_1                       {}
+    init SOC.IO.Ethernet_0                   {}
 
+    init SOC.Memory.BRAM_CTRL_0              {}
+    init SOC.Memory.DMA_0                    {}
+    init SOC.Memory.QSPI_1                   {}
+    
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
 
