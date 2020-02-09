@@ -16,6 +16,7 @@ all: build-dirs run-tests
 
 # Arguments specific to running on an FPGA
 BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
+STOCK_BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_p1.bit
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
@@ -58,6 +59,20 @@ bare-vcu118_TIMEOUT = 0 #360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)#,+pex-debug
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
+
+# config for bare-metal on VCU118 board
+bare-stock_SIM = vcu118
+bare-stock_TESTS = bare
+bare-stock_RUNTIME = bare
+bare-stock_MODULE = osv.bare.main
+bare-stock_GPOLICIES = 
+bare-stock_POLICIES = none
+bare-stock_XDIST = -n $(JOBS) # run in parallel
+bare-stock_TIMEOUT = 0 #360
+bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock#,+pex-debug
+bare-stock: CONFIG=bare-vcu118
+bare-stock: all
+
 
 # config for bare-metal in VCS sim
 bare-vcs_SIM = vcs
