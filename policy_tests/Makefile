@@ -53,7 +53,7 @@ bare-vcu118_TESTS = bare
 bare-vcu118_RUNTIME = bare
 bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = rwx
+bare-vcu118_POLICIES = heap,stack,rwx,threeClass
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 0 #360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)#,+pex-debug
