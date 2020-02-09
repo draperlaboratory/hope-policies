@@ -54,8 +54,7 @@ bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
-#bare-vcu118_TIMEOUT = 360
-bare-vcu118_TIMEOUT = 0
+bare-vcu118_TIMEOUT = 0 #360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)#,+pex-debug
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
@@ -67,7 +66,7 @@ bare-vcs_RUNTIME = bare
 bare-vcs_MODULE = osv.bare.main
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES)#,+pex-debug
+bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
 bare-vcs: CONFIG=bare-vcs
@@ -93,9 +92,8 @@ frtos-vcu118_MODULE = osv.frtos.main
 frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
-#frtos-vcu118_TIMEOUT = 360
-frtos-vcu118_TIMEOUT = 0
-frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)#,+pex-debug
+frtos-vcu118_TIMEOUT = 360
+frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
 
@@ -108,7 +106,7 @@ frtos-vcs_GPOLICIES =
 frtos-vcs_POLICIES = rwx
 frtos-vcs_XDIST= -n $(JOBS) # run in parallel
 frtos-vcs_TIMEOUT = 0
-frtos-vcs_PYTEST_ARGS = --extra=#+pex-debug
+frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
 

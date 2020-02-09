@@ -2,8 +2,6 @@
 #include <stdlib.h>
 #include "coremark.h"
 #include "core_portme.h"
-#include "encoding.h"
-//#include "uart_16550.h"
 
 #if VALIDATION_RUN
 	volatile ee_s32 seed1_volatile=0x3415;
