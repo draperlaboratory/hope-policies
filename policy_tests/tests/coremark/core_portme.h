@@ -7,8 +7,8 @@
 #define HAS_FLOAT 0
 #define HAS_TIME_H 1
 #define USE_CLOCK 1
-#define HAS_STDIO 0
-#define HAS_PRINTF 0
+#define HAS_STDIO 1
+#define HAS_PRINTF 1
 #define SEED_METHOD SEED_VOLATILE
 #define CORE_TICKS uint64_t
 #define ee_u8 uint8_t
@@ -19,16 +19,6 @@
 #define ee_ptr_int uintptr_t
 #define ee_size_t size_t
 #define COMPILER_FLAGS FLAGS_STR
-
-
-/* Configuration : CORE_TICKS
-	Define type of return from the timing functions.
- */
-#define CORETIMETYPE uint64_t
-typedef uint64_t CORE_TICKS;
-
-#define CLOCKS_PER_SEC 50000000
-
 
 #define align_mem(x) (void *)(((ee_ptr_int)(x) + sizeof(ee_u32) - 1) & -sizeof(ee_u32))
 
@@ -51,13 +41,9 @@ typedef uint64_t CORE_TICKS;
 
 #define default_num_contexts MULTITHREAD
 
-typedef struct CORE_PORTABLE_S {
-	ee_u8	portable_id;
-} core_portable;
-
-/* target specific init/fini */
-void portable_init(core_portable *p, int *argc, char *argv[]);
-void portable_fini(core_portable *p);
+typedef int core_portable;
+static void portable_init(core_portable *p, int *argc, char *argv[]) {}
+static void portable_fini(core_portable *p) {}
 
 #if !defined(PROFILE_RUN) && !defined(PERFORMANCE_RUN) && !defined(VALIDATION_RUN)
 #if (TOTAL_DATA_SIZE==1200)
@@ -68,7 +54,5 @@ void portable_fini(core_portable *p);
 #define VALIDATION_RUN 1
 #endif
 #endif
-
-int ee_printf(const char *fmt, ...);
 
 #endif
