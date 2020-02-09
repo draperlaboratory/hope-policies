@@ -21,6 +21,24 @@ Original Author: Shay Gal-on
 */
 #include "coremark.h"
 
+uint64_t barebones_clock();
+
+void print_mcycle() {
+	uint32_t cycle_lo, cycle_hi;
+	asm volatile (
+			"%=:\n\t"
+			"csrr %1, mcycleh\n\t"
+			"csrr %0, mcycle\n\t"
+			"csrr t1, mcycleh\n\t"
+			"bne  %1, t1, %=b"
+		: "=r" (cycle_lo), "=r" (cycle_hi)
+		: // No inputs.
+		: "t1"
+	);
+	ee_printf("mcycle: %u, %u %lu\n", cycle_hi, cycle_lo, (((uint64_t) cycle_hi) << 32) | (uint64_t) cycle_lo);
+}
+
+
 /* Function: iterate
 	Run the benchmark for a specified number of iterations.
 
@@ -213,6 +231,7 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 	}
 	/* perform actual benchmark */
 	start_time();
+	print_mcycle();
 #if (MULTITHREAD>1)
 	if (default_num_contexts>MULTITHREAD) {
 		default_num_contexts=MULTITHREAD;
@@ -228,6 +247,7 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 #else
 	iterate(&results[0]);
 #endif
+	print_mcycle();
 	stop_time();
 	total_time=get_time();
 	/* get a function of the input to report */
@@ -286,7 +306,6 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 	/* and report results */
 	ee_printf("CoreMark Size    : %lu\n",(ee_u32)results[0].size);
 	ee_printf("Total ticks      : %lu\n",(ee_u32)total_time);
-#if 0
 #if HAS_FLOAT
 	ee_printf("Total time (secs): %f\n",time_in_secs(total_time));
 	if (time_in_secs(total_time) > 0)
@@ -300,7 +319,6 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 		ee_printf("ERROR! Must execute for at least 10 secs for a valid result!\n");
 		total_errors++;
 	}
-#endif
 
 	ee_printf("Iterations       : %lu\n",(ee_u32)default_num_contexts*results[0].iterations);
 	ee_printf("Compiler version : %s\n",COMPILER_VERSION);
