@@ -1,0 +1,4 @@
+[submodule "policy_tests/tests/all-combined/hope-testgen-tests"]
+	path = policy_tests/tests/all-combined/hope-testgen-tests
+	url = https://github.com/draperlaboratory/hope-testgen-tests.git
+	branch = master
