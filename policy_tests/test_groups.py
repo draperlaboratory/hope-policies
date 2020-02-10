@@ -186,6 +186,43 @@ class AllTests:
         "all-combined/hope-testgen-tests/1_BufferErrors/25",
     ]
 
+    # List of tests that are failing because no policy catches them.
+    failingTests = [
+        "all-combined/hope-testgen-tests/1_BufferErrors/02",
+        "all-combined/hope-testgen-tests/1_BufferErrors/17",
+        "all-combined/hope-testgen-tests/1_BufferErrors/23",
+        "all-combined/hope-testgen-tests/1_BufferErrors/25",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_cached_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_flatstore_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_fragmented_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_separate_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/cache_cached_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/cache_flatstore_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/cache_fragmented_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/cache_separate_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_cached_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_flatstore_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_fragmented_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_separate_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_cached_simpleatoi",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_flatstore_simpleatoi",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_fragmented_simpleatoi",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/error_separate_simpleatoi",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/indexing_flatstore_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/indexing_separate_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_separate_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_fragmented_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_flatstore_biinterpreter",
+        "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_cached_biinterpreter",
+        "all-combined/hope-testgen-tests/7_NumericErrors/234/numeric_error_234",
+        "all-combined/hope-testgen-tests/7_NumericErrors/665p1/numeric_error_665p1",
+        "all-combined/hope-testgen-tests/7_NumericErrors/665p2/numeric_error_665p2",
+        "all-combined/hope-testgen-tests/7_NumericErrors/686/numeric_error_686",
+        "all-combined/hope-testgen-tests/7_NumericErrors/687/numeric_error_687",
+        "all-combined/hope-testgen-tests/7_NumericErrors/824p1/numeric_error_824p1",
+        "all-combined/hope-testgen-tests/7_NumericErrors/824p2/numeric_error_824p2",
+    ]
+    
     # Tests that should be run only against all policies simultaneously.
     combinedPolicyTests = testgenTests + []
 

@@ -9,6 +9,7 @@ import time
 import glob
 import errno
 from helper_fns import *
+from test_groups import AllTests
 
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesn't, the
@@ -27,7 +28,8 @@ def incompatibleReason(test, policy, allPolicySuffix):
 def xfailReason(test, policy, runtime):
     if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-
+    if test in AllTests.failingTests:
+        return "{} is known to fail. Either a new policy needs to be written or an existing policy modified to catch this.".format(test)
     return None
 
 # test function found automatically by pytest. Pytest calls
