@@ -31,8 +31,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /* Kernel includes. */
 #include "FreeRTOS.h"
@@ -49,10 +47,6 @@
 #define TIMER_INTERVAL (TICK_INTERVAL * configCPU_CLOCK_HZ / configTICK_RATE_HZ)
 
 #define PREEMPTIVE
-
-uint64_t xPortRawTime(void) {
-  return get_timer_value();
-}
 
 bool pong;
 int msg_count = 0;
@@ -87,7 +81,7 @@ static void ping_task(void *p) {
   last_wake_time = xTaskGetTickCount();
   while (1) {
       if(pong == false){
-          uint64_t raw = xPortRawTime();
+          uint64_t raw = isp_get_time_usec();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
           t_printf("ping %x %x\r\n", high, low);
@@ -109,7 +103,7 @@ static void pong_task(void *p) {
   last_wake_time = xTaskGetTickCount();
   while (1) {
       if(pong == true){
-          uint64_t raw = xPortRawTime();
+          uint64_t raw = isp_get_time_usec();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
           t_printf("pong %x %x\r\n", high, low);

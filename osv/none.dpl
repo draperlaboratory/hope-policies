@@ -48,8 +48,21 @@ require:
    init SOC.Memory.Flash_0                  {}
    init SOC.Memory.Ram_0                    {}
 
+   init SOC.IO.Debug                        {}
    init SOC.IO.TEST                         {}
+   init SOC.IO.CLINT                        {}
+   init SOC.IO.ITIM                         {}
+   init SOC.IO.PLIC                         {}
+   init SOC.IO.GEM0                         {}
+   init SOC.IO.I2C_0                        {}
+   init SOC.IO.GPIO_0                       {}
+   init SOC.IO.GPIO_1                       {}
+   init SOC.IO.Ethernet_0                   {}
 
-   init Tools.Elf.Section.SHF_ALLOC         {}
-   init Tools.Elf.Section.SHF_EXECINSTR     {}
-   init Tools.Elf.Section.SHF_WRITE         {}
+   init SOC.Memory.BRAM_CTRL_0              {}
+   init SOC.Memory.DMA_0                    {}
+   init SOC.Memory.QSPI_1                   {}
+
+   init elf.Section.SHF_ALLOC               {}
+   init elf.Section.SHF_EXECINSTR           {}
+   init elf.Section.SHF_WRITE               {}

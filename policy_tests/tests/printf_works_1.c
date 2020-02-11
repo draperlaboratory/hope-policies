@@ -31,8 +31,6 @@
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test that printf works ok on a few different format params.
@@ -46,9 +44,9 @@ int test_main(void)
     test_begin();
 
     // do some random work for no good reason
-    ptr = malloc(3 * sizeof(uintptr_t));
+    ptr = malloc(4 * sizeof(uintptr_t));
     write_ptr = ptr;
-    for(int i =0; i < 3;i++){
+    for(int i =0; i < 4;i++){
       *write_ptr = i;
       write_ptr++;
     }	
@@ -59,6 +57,8 @@ int test_main(void)
     t_printf("test_printf_works1: print         int ptr @ %ld = %ld\n", read_ptr, *read_ptr );
     read_ptr++;
     t_printf("test_printf_works1: print         hex ptr @ %lx = %ld\n", read_ptr, *read_ptr );
+    read_ptr++;
+    t_printf("test_printf_works1: print         oct ptr @ %lo = %ld\n", read_ptr, *read_ptr );
     read_ptr++;
     t_printf("test_printf_works1: print     pointer ptr @ %p = %ld\n", read_ptr, *read_ptr );
     

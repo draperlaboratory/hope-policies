@@ -18,8 +18,6 @@ these programs were gathered by John Hennessy and modified by Peter Nye. */
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 //#define DEBUG 1
 

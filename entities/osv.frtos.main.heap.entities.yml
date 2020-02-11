@@ -39,8 +39,3 @@
     elf_name: dover_ptr_untag
     kind: symbol
     tag_all: true
--
-    name: dover.Tools.RTL._vfprintf_r
-    elf_name: _svfprintf_r
-    kind: symbol
-    tag_all: true

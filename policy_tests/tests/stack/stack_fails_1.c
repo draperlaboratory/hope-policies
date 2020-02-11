@@ -31,8 +31,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to check that Stack policy catches a buffer overrun

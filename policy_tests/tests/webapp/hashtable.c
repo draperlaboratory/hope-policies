@@ -4,7 +4,6 @@
 #include <stdio.h>
 
 #include "hashtable.h"
-#include "mem.h"
 
 static void HashTableIntSwap(size_t* first, size_t* second);
 static void HashTablePointerSwap(void** first, void** second);

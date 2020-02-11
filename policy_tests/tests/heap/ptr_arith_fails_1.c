@@ -33,8 +33,6 @@
 #include "test_status.h"
 #include "test.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to check that a forged pointer to heap memory of the wrong color fails.

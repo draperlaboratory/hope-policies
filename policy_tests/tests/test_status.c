@@ -6,7 +6,7 @@
 #include <sys/time.h>
 #include <sys/times.h>
 #include "test.h"
-#include "sifive_test.h"
+#include "isp_utils.h"
 
 #define log printf
 
@@ -18,24 +18,16 @@ static bool test_status_passing = false;
 static bool test_status_positive = false;
 static bool test_status_negative = false;
 
-extern uint32_t uiPortGetWallTimestampUs(void);
+#define US_TO_SEC 1000000
 
-int isp_main(int argc, char *argv[])
-{
-  test_main();
-  return 0;
-}
+static uint32_t test_start_time = 0;
+static uint32_t test_start_interval = 0;
 
 // Identify positive case (test will end)
 void test_positive(){
   test_status_positive = true;
-  //  struct timeval tv;
-  //  gettimeofday(&tv,NULL);
-  //  uint32_t sec = tv.tv_sec;
-  //  uint32_t usec = tv.tv_usec;
   t_printf("MSG: Positive test.\n");
-  t_printf("Start time: %u\n", uiPortGetWallTimestampUs());
-  // t_printf("Clock time: %d.%06d\n", sec, usec);
+  t_printf("Start time: %u\n", isp_get_time_usec());
 }
 
 // Identify negative case (test will never end)
@@ -50,6 +42,25 @@ void test_begin(){
   test_status_passing = true;
 }
 
+// Start a timer for benchmark tests
+void test_start_timer(){
+  test_start_time = isp_get_time_usec();
+  test_start_interval = test_start_time;
+}
+
+// Print the current time interval
+void test_print_time_interval(){
+  uint32_t current_time = isp_get_time_usec();
+  t_printf("Current interval: %u\n", (current_time - test_start_interval));
+  test_start_interval = isp_get_time_usec();
+}
+
+// Print the total time elapsed since test_start_timer() call
+void test_print_total_time(){
+  uint32_t current_time = isp_get_time_usec();
+  t_printf("Total time: %u\n", (current_time - test_start_time));
+}
+
 // Set passing status
 void test_pass(){
   test_status_passing = true;
@@ -62,29 +73,23 @@ void test_fail(){
 
 // print the test status for a positive test case
 int test_done(){
-  test_device = (uint32_t *)SIFIVE_TEST_ADDR;
   if(test_status_passing && test_status_positive && !test_status_negative){
-    //  struct timeval tv;
-    //  gettimeofday(&tv,NULL);
-    //  uint32_t sec = tv.tv_sec;
-    //  uint32_t usec = tv.tv_usec;
   t_printf("PASS: test passed.\n");
-  t_printf("End time: %u\n", uiPortGetWallTimestampUs());
-  //  t_printf("Clock time: %d.%06d\n", sec, usec);
+  t_printf("End time: %u\n", isp_get_time_usec());
   t_printf("MSG: End test.\n");
-  *test_device = SIFIVE_TEST_PASS;
+  isp_test_device_pass();
   return 0;
   }
   else if(test_status_positive && test_status_negative) {
     t_printf("FAIL: error in test, can't be both positive and negative test.\n");
     t_printf("MSG: End test.\n");
-    *test_device = SIFIVE_TEST_FAIL;
+    isp_test_device_fail();
     return 1;
   }
   else {
     t_printf("FAIL: test failed.\n");
     t_printf("MSG: End test.\n");
-    *test_device = SIFIVE_TEST_FAIL;
+    isp_test_device_fail();
     return 1;
   }
 }
@@ -100,10 +105,4 @@ void test_error(const char *fmt, ...){
 
   test_fail();
 }
-
-
-
-
-
-
 

@@ -31,8 +31,6 @@
 
 #include "test_status.h"
 
-// include malloc wrappers
-#include "mem.h"
 
 /*
  * Test to check that longjump works correctly
