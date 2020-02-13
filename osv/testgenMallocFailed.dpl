@@ -1,0 +1,72 @@
+
+module osv.testgenMallocFailed:
+
+import:
+  osv.riscv
+
+metadata:
+  ApplyTag, // Code tag for heap chunk tagging routine. Not reached if malloc returns NULL
+  Malloc, // Code tag for malloc
+  TagSuccess, // PC tag when tags are applied
+  Return-Instr, // Code tag for return instructions. Used for call site tracing
+  MallocFailed // Code tag for malloc failure hook
+
+policy:
+  testgenMallocFailedPol =
+
+   // Explicit failure for returning from malloc without tagging chunk
+   allGrp(code == [+Malloc,+Return-Instr], env == [-TagSuccess] ->
+          fail "Malloc returned without tagging block")
+
+   // Explicit failure for entering malloc failure hook
+   ^ allGrp(code == [+MallocFailed], env == _ ->
+            fail "Entered a malloc failure hook")
+
+   // Allow returning from malloc after tagging
+   ^ allGrp(code == [+Malloc,+Return-Instr], env == [+TagSuccess] -> env = env[-TagSuccess])
+   // Record when tagging is performed
+   ^ allGrp(code == [+ApplyTag], env == [-TagSuccess] -> env = env[+TagSuccess])
+
+   // default: allow other operations
+   ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+   ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+   ^ jumpGrp(code == _, env == _ -> return = {})
+   ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+   ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+   ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+   ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+   ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ privGrp(code == _, env == _ -> env = env)
+   ^ systemGrp(code == _, env == _ -> env = env)
+   ^ floatGrp(code == _, env == _ -> env = env)
+   ^ atomicGrp(code == _, env == _ -> env = env)
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
+
+    init llvm.CFI_Return-Instr               {Return-Instr}
+
+    init frtos.Code.pvPortMalloc                 {Malloc}
+    init frtos.Code.vApplicationMallocFailedHook {MallocFailed}
+    init dover.Code.dover_tag                    {ApplyTag}

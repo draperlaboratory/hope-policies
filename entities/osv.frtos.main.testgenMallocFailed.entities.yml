@@ -1,0 +1,16 @@
+-
+    name: frtos.Code.pvPortMalloc
+    elf_name: pvPortMalloc
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Code.dover_tag
+    elf_name: dover_tag
+    kind: symbol
+    tag_all: true
+-
+    name: frtos.Code.vApplicationMallocFailedHook
+    elf_name: vApplicationMallocFailedHook
+    kind: symbol
+    tag_all: true
+    optional: true
