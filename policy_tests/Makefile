@@ -55,12 +55,12 @@ bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = heap,stack,rwx,threeClass
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare-vcu118_TIMEOUT = 0 #360
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)#,+pex-debug
+bare-vcu118_TIMEOUT = 360
+bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
-# config for bare-metal on VCU118 board
+# config for bare-metal on VCU118 board without PIPE
 bare-stock_SIM = vcu118
 bare-stock_TESTS = bare
 bare-stock_RUNTIME = bare
@@ -68,11 +68,10 @@ bare-stock_MODULE = osv.bare.main
 bare-stock_GPOLICIES = 
 bare-stock_POLICIES = none
 bare-stock_XDIST = -n $(JOBS) # run in parallel
-bare-stock_TIMEOUT = 0 #360
-bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock#,+pex-debug
-bare-stock: CONFIG=bare-vcu118
+bare-stock_TIMEOUT = 360
+bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock
+bare-stock: CONFIG=bare-stock
 bare-stock: all
-
 
 # config for bare-metal in VCS sim
 bare-vcs_SIM = vcs
