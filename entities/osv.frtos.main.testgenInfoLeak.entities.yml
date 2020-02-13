@@ -1,0 +1,12 @@
+-
+    name: testgen.var.secret
+    elf_name: secret 
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: testgen.func.init_secret
+    elf_name: initialize_secret
+    kind: symbol
+    tag_all: true
+    optional: true
