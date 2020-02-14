@@ -23,22 +23,6 @@ Original Author: Shay Gal-on
 
 uint64_t barebones_clock();
 
-void print_mcycle() {
-	uint32_t cycle_lo, cycle_hi;
-	asm volatile (
-			"%=:\n\t"
-			"csrr %1, mcycleh\n\t"
-			"csrr %0, mcycle\n\t"
-			"csrr t1, mcycleh\n\t"
-			"bne  %1, t1, %=b"
-		: "=r" (cycle_lo), "=r" (cycle_hi)
-		: // No inputs.
-		: "t1"
-	);
-  ee_printf("mcycle: 0x%08x%08x\n", cycle_hi, cycle_lo);
-}
-
-
 /* Function: iterate
 	Run the benchmark for a specified number of iterations.
 
@@ -231,7 +215,6 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 	}
 	/* perform actual benchmark */
 	start_time();
-	print_mcycle();
 #if (MULTITHREAD>1)
 	if (default_num_contexts>MULTITHREAD) {
 		default_num_contexts=MULTITHREAD;
@@ -247,7 +230,6 @@ MAIN_RETURN_TYPE main(int argc, char *argv[]) {
 #else
 	iterate(&results[0]);
 #endif
-	print_mcycle();
 	stop_time();
 	total_time=get_time();
 	/* get a function of the input to report */
