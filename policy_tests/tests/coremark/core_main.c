@@ -35,7 +35,7 @@ void print_mcycle() {
 		: // No inputs.
 		: "t1"
 	);
-	ee_printf("mcycle: %u, %u\n", cycle_hi, cycle_lo);
+  ee_printf("mcycle: 0x%08x%08x\n", cycle_hi, cycle_lo);
 }
 
 
