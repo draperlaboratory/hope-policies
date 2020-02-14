@@ -25,20 +25,24 @@ static uint32_t test_start_interval = 0;
 
 // Identify positive case (test will end)
 void test_positive(){
+  uint32_t cycle_hi, cycle_lo;
   test_status_positive = true;
-  t_printf("MSG: Positive test.\n");
-  t_printf("Start time: %u\n", isp_get_time_usec());
+  printf("MSG: Positive test.\n");
+
+  isp_get_cycle_count(&cycle_hi, &cycle_lo);
+  printf("Start time: %uus\n", isp_get_time_usec());
+  printf("Start cycles: 0x%x%08x\n", cycle_hi, cycle_lo);
 }
 
 // Identify negative case (test will never end)
 void test_negative(){
   test_status_negative = true;
-  t_printf("MSG: Negative test.\n");
+  printf("MSG: Negative test.\n");
 }
 
 // Set passing status at start of test
 void test_begin(){
-  t_printf("MSG: Begin test.\n");
+  printf("MSG: Begin test.\n");
   test_status_passing = true;
 }
 
@@ -51,14 +55,14 @@ void test_start_timer(){
 // Print the current time interval
 void test_print_time_interval(){
   uint32_t current_time = isp_get_time_usec();
-  t_printf("Current interval: %u\n", (current_time - test_start_interval));
+  printf("Current interval: %u\n", (current_time - test_start_interval));
   test_start_interval = isp_get_time_usec();
 }
 
 // Print the total time elapsed since test_start_timer() call
 void test_print_total_time(){
   uint32_t current_time = isp_get_time_usec();
-  t_printf("Total time: %u\n", (current_time - test_start_time));
+  printf("Total time: %u\n", (current_time - test_start_time));
 }
 
 // Set passing status
@@ -73,22 +77,27 @@ void test_fail(){
 
 // print the test status for a positive test case
 int test_done(){
+  uint32_t cycle_hi, cycle_lo;
   if(test_status_passing && test_status_positive && !test_status_negative){
-  t_printf("PASS: test passed.\n");
-  t_printf("End time: %u\n", isp_get_time_usec());
-  t_printf("MSG: End test.\n");
+  printf("PASS: test passed.\n");
+
+  isp_get_cycle_count(&cycle_hi, &cycle_lo);
+  printf("End time: %uus\n", isp_get_time_usec());
+  printf("End cycles: 0x%x%08x\n", cycle_hi, cycle_lo);
+
+  printf("MSG: End test.\n");
   isp_test_device_pass();
   return 0;
   }
   else if(test_status_positive && test_status_negative) {
-    t_printf("FAIL: error in test, can't be both positive and negative test.\n");
-    t_printf("MSG: End test.\n");
+    printf("FAIL: error in test, can't be both positive and negative test.\n");
+    printf("MSG: End test.\n");
     isp_test_device_fail();
     return 1;
   }
   else {
-    t_printf("FAIL: test failed.\n");
-    t_printf("MSG: End test.\n");
+    printf("FAIL: test failed.\n");
+    printf("MSG: End test.\n");
     isp_test_device_fail();
     return 1;
   }
@@ -100,7 +109,7 @@ void test_error(const char *fmt, ...){
   va_list args;
 
   va_start(args, fmt);
-  t_printf(fmt, args);
+  printf(fmt, args);
   va_end(args);
 
   test_fail();
