@@ -1,0 +1,19 @@
+-
+    name: dover.Kernel.Code.ApplyTag.ucHeap
+    elf_name: ucHeap
+    kind: symbol
+    tag_all: true
+    optional: true
+
+-
+    name: testgen.func.p02
+    elf_name: p02
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: testgen.func.p01
+    elf_name: p01
+    kind: symbol
+    tag_all: true
+    optional: true

@@ -206,11 +206,7 @@ class AllTests:
         "all-combined/hope-testgen-tests/7_NumericErrors/456p3/numeric_error_456p3",
         "all-combined/hope-testgen-tests/7_NumericErrors/457p1/numeric_error_457p1",
         "all-combined/hope-testgen-tests/7_NumericErrors/457p2/numeric_error_457p2",
-        "all-combined/hope-testgen-tests/7_NumericErrors/665p1/numeric_error_665p1",
-        "all-combined/hope-testgen-tests/7_NumericErrors/665p2/numeric_error_665p2",
         "all-combined/hope-testgen-tests/7_NumericErrors/686/numeric_error_686",
-        "all-combined/hope-testgen-tests/7_NumericErrors/824p1/numeric_error_824p1",
-        "all-combined/hope-testgen-tests/7_NumericErrors/824p2/numeric_error_824p2",
     ]
 
     # Tests that should be run only against all policies simultaneously.
