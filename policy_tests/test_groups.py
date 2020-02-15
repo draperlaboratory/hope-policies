@@ -65,7 +65,7 @@ class AllTests:
         "dhrystone",
     ]
 
-    testgenTests = [
+    numericErrors = [
         "all-combined/hope-testgen-tests/7_NumericErrors/234/numeric_error_234",
         "all-combined/hope-testgen-tests/7_NumericErrors/456p1/numeric_error_456p1",
         "all-combined/hope-testgen-tests/7_NumericErrors/456p2/numeric_error_456p2",
@@ -79,6 +79,9 @@ class AllTests:
         "all-combined/hope-testgen-tests/7_NumericErrors/687/numeric_error_687",
         "all-combined/hope-testgen-tests/7_NumericErrors/824p1/numeric_error_824p1",
         "all-combined/hope-testgen-tests/7_NumericErrors/824p2/numeric_error_824p2",
+    ]
+
+    informationLeakage = [
         # "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_cached_biinterpreter", # This test crashes :'(
         "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_flatstore_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_fragmented_biinterpreter",
@@ -159,6 +162,9 @@ class AllTests:
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_fragmented_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_flatstore_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_cached_biinterpreter",
+    ]
+
+    bufferErrors = [
         # "all-combined/hope-testgen-tests/1_BufferErrors/01", # Invalid Test
         "all-combined/hope-testgen-tests/1_BufferErrors/02",
         "all-combined/hope-testgen-tests/1_BufferErrors/03",
@@ -186,6 +192,8 @@ class AllTests:
         "all-combined/hope-testgen-tests/1_BufferErrors/25",
     ]
 
+    testgenTests = numericErrors + informationLeakage + bufferErrors
+
     # List of tests that are failing because no policy catches them.
     failingTests = [
         "all-combined/hope-testgen-tests/1_BufferErrors/02",
@@ -204,7 +212,7 @@ class AllTests:
         "all-combined/hope-testgen-tests/7_NumericErrors/824p1/numeric_error_824p1",
         "all-combined/hope-testgen-tests/7_NumericErrors/824p2/numeric_error_824p2",
     ]
-    
+
     # Tests that should be run only against all policies simultaneously.
     combinedPolicyTests = testgenTests + []
 
@@ -257,9 +265,21 @@ class bare(AllTests):
                                  ] + AllTests.testgenTests
                                  )]
 
+class bufferErrors(AllTests):
+    tests = AllTests.bufferErrors
+
+class informationLeakage(AllTests):
+    tests = AllTests.informationLeakage
+
+class numericErrors(AllTests):
+    tests = AllTests.numericErrors
+
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
                'webapp' : webapp,
                'testgen' : testgen,
+               'bufferErrors' : bufferErrors,
+               'informationLeakage' : informationLeakage,
+               'numericErrors' : numericErrors
 }
