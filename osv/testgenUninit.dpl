@@ -1,0 +1,144 @@
+/*
+ * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.testgenUninit:
+
+/* Read, Write, Execute policy.
+ * Provides basic memory access protections:
+ *  Load from memory must have Rd tag
+ *  Store to memory must have Wr tag
+ *  Instructions must have Ex tag to be run
+ */
+
+import:
+      osv.riscv
+
+metadata:
+  Uninit,
+  FuncToProtect,
+  ProtectedStack,
+  ReturnInstr
+
+
+policy:
+  testgenUninitPol =
+    // explicit failure for loading from uninitialized memory inside the
+    // function we're protecting or its call stack
+      loadGrp (code == [+FuncToProtect], mem == [+Uninit] -> fail "uninitialized load")
+    // storing to memory from the function we're protecting and its call stack
+    // initializes the memory.
+    ^ storeGrp(code == [+FuncToProtect], mem ==  _, env == _ -> mem = {}, env = env)
+
+    // default: allow other operations
+    ^ storeGrp(env == _, mem == _ -> mem = mem, env = {})
+    ^ allGrp(env == _ -> env = {})
+
+
+/*  // CJC The policy in this comment is a more complex version of the above.
+    // In particular, it adds "call site tracking" so that we could catch use
+    // of uninitialized variables from within the functions that are called by
+    // The function we care about.  However, this complexity was not necessary
+    // for the testgen tests.  There are also some tags above and init
+    // statements below that can be removed because they are only used by this
+    // more complex version.
+
+    // explicit failure for loading from uninitialized memory inside the
+    // function we're protecting or its call stack
+      loadGrp (code == [+FuncToProtect], mem == [+Uninit] -> fail "uninitialized load")
+    ^ loadGrp (env == [+ProtectedStack], mem == [+Uninit] -> fail "uninitialized load")
+
+    // storing to memory from the function we're protecting and its call stack
+    // initializes the memory.
+    ^ storeGrp(code == [+FuncToProtect], mem ==  _, env == _ -> mem = {}, env = env)
+    ^ storeGrp(mem ==  _, env == [+ProtectedStack] -> mem = {}, env = env)
+
+    // Manage call site tracking.  We use the ProtectedStack tag to track when
+    // we're within the function we're protecting or a function called by it.
+    ^ allGrp (   code == [+FuncToProtect,+ReturnInstr], env == [+ProtectedStack]
+              -> env = {})
+    ^ allGrp (   code == [+FuncToProtect], env == [-ProtectedStack]
+              -> env = {ProtectedStack})
+
+
+    // default: allow other operations
+    ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env)
+    ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+    ^ jumpGrp(code == _, env == _ -> return = {})
+    ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+    ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+    ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+    ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+    ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = mem)
+    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+    ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+    ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+    ^ privGrp(code == _, env == _ -> env = env)
+    ^ systemGrp(code == _, env == _ -> env = env)
+    ^ floatGrp(code == _, env == _ -> env = env)
+    ^ atomicGrp(code == _, env == _ -> env = env)
+*/
+
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {Uninit}
+    init dover.Kernel.Code.ApplyTag.ucHeap   {Uninit}
+    init Tools.Link.MemoryMap.UserStack      {Uninit}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.IO.UART_1                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
+    init SOC.IO.GEM0                         {}
+    init SOC.IO.I2C_0                        {}
+    init SOC.IO.GPIO_0                       {}
+    init SOC.IO.GPIO_1                       {}
+    init SOC.IO.Ethernet_0                   {}
+
+    init SOC.Memory.BRAM_CTRL_0              {}
+    init SOC.Memory.DMA_0                    {}
+    init SOC.Memory.QSPI_1                   {}
+
+    init llvm.CFI_Return-Instr         {ReturnInstr}
+
+    init elf.Section.SHF_ALLOC         {}
+    init elf.Section.SHF_EXECINSTR     {}
+    init elf.Section.SHF_WRITE         {}
+
+    init testgen.func.p02               {FuncToProtect}
+    init testgen.func.p01               {FuncToProtect}

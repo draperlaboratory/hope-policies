@@ -65,7 +65,7 @@ class AllTests:
         "dhrystone",
     ]
 
-    testgenTests = [
+    numericErrors = [
         "all-combined/hope-testgen-tests/7_NumericErrors/234/numeric_error_234",
         "all-combined/hope-testgen-tests/7_NumericErrors/456p1/numeric_error_456p1",
         "all-combined/hope-testgen-tests/7_NumericErrors/456p2/numeric_error_456p2",
@@ -79,6 +79,9 @@ class AllTests:
         "all-combined/hope-testgen-tests/7_NumericErrors/687/numeric_error_687",
         "all-combined/hope-testgen-tests/7_NumericErrors/824p1/numeric_error_824p1",
         "all-combined/hope-testgen-tests/7_NumericErrors/824p2/numeric_error_824p2",
+    ]
+
+    informationLeakage = [
         # "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_cached_biinterpreter", # This test crashes :'(
         "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_flatstore_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/atoi_fragmented_biinterpreter",
@@ -159,6 +162,9 @@ class AllTests:
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_fragmented_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_flatstore_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_cached_biinterpreter",
+    ]
+
+    bufferErrors = [
         # "all-combined/hope-testgen-tests/1_BufferErrors/01", # Invalid Test
         "all-combined/hope-testgen-tests/1_BufferErrors/02",
         "all-combined/hope-testgen-tests/1_BufferErrors/03",
@@ -185,6 +191,8 @@ class AllTests:
         "all-combined/hope-testgen-tests/1_BufferErrors/24",
         "all-combined/hope-testgen-tests/1_BufferErrors/25",
     ]
+
+    testgenTests = numericErrors + informationLeakage + bufferErrors
 
     # List of tests that are failing because no policy catches them.
     failingTests = [
@@ -215,14 +223,10 @@ class AllTests:
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_flatstore_biinterpreter",
         "all-combined/hope-testgen-tests/5_InformationLeakage/markprivate_cached_biinterpreter",
         "all-combined/hope-testgen-tests/7_NumericErrors/234/numeric_error_234",
-        "all-combined/hope-testgen-tests/7_NumericErrors/665p1/numeric_error_665p1",
-        "all-combined/hope-testgen-tests/7_NumericErrors/665p2/numeric_error_665p2",
         "all-combined/hope-testgen-tests/7_NumericErrors/686/numeric_error_686",
         "all-combined/hope-testgen-tests/7_NumericErrors/687/numeric_error_687",
-        "all-combined/hope-testgen-tests/7_NumericErrors/824p1/numeric_error_824p1",
-        "all-combined/hope-testgen-tests/7_NumericErrors/824p2/numeric_error_824p2",
     ]
-    
+
     # Tests that should be run only against all policies simultaneously.
     combinedPolicyTests = testgenTests + []
 
@@ -256,6 +260,56 @@ class frtos(AllTests):
                                  )]
 
 
+class bufferErrors(AllTests):
+    tests = [test for test in AllTests.bufferErrors
+                      if not any(test in s for s in
+                                 [
+                                  "heap-ppac-userType/webapp_patient_info_leak_fails",
+                                  "password/webapp_password_leak",
+                                  "fft",
+                                  "timer_works_1",
+                                  "dhrystone/dhrystone-baremetal",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p1/numeric_error_456p1",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p2/numeric_error_456p2",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p3/numeric_error_456p3",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/457p1/numeric_error_457p1",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/457p2/numeric_error_457p2",
+                                 ]
+                                 )]
+
+class informationLeakage(AllTests):
+    tests = [test for test in AllTests.informationLeakage
+                      if not any(test in s for s in
+                                 [
+                                  "heap-ppac-userType/webapp_patient_info_leak_fails",
+                                  "password/webapp_password_leak",
+                                  "fft",
+                                  "timer_works_1",
+                                  "dhrystone/dhrystone-baremetal",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p1/numeric_error_456p1",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p2/numeric_error_456p2",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p3/numeric_error_456p3",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/457p1/numeric_error_457p1",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/457p2/numeric_error_457p2",
+                                 ]
+                                 )]
+class numericErrors(AllTests):
+    tests = [test for test in AllTests.numericErrors
+                      if not any(test in s for s in
+                                 [
+                                  "heap-ppac-userType/webapp_patient_info_leak_fails",
+                                  "password/webapp_password_leak",
+                                  "fft",
+                                  "timer_works_1",
+                                  "dhrystone/dhrystone-baremetal",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p1/numeric_error_456p1",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p2/numeric_error_456p2",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/456p3/numeric_error_456p3",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/457p1/numeric_error_457p1",
+                                  "all-combined/hope-testgen-tests/7_NumericErrors/457p2/numeric_error_457p2",
+                                 ]
+                                 )]
+
 class bare(AllTests):
     tests = [test for test in AllTests.tests + AllTests.combinedPolicyTests
                       if not any(test in s for s in
@@ -271,5 +325,8 @@ class bare(AllTests):
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'bare' : bare,
-               'webapp' : webapp
+               'webapp' : webapp,
+               'bufferErrors' : bufferErrors,
+               'informationLeakage' : informationLeakage,
+               'numericErrors' : numericErrors
 }

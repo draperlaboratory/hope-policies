@@ -4,7 +4,7 @@ import operator
 runtime = "frtos"
 module = "osv."
 global_policies = ["contextswitch"]
-local_policies = sorted(["cfi", "rwx", "stack", "taint", "heap", "threeClass", "none", "testSimple", "testComplex", "password", "ppac", "userType", "testContext"])
+local_policies = sorted(["cfi", "rwx", "stack", "taint", "heap", "threeClass", "none", "testSimple", "testComplex", "password", "ppac", "testgenUninit", "userType", "testContext"])
 all_policies = global_policies + local_policies
 
 print("module " + module + runtime + ".main:")
