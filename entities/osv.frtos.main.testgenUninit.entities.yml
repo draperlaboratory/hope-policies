@@ -6,6 +6,12 @@
     optional: true
 
 -
+    name: testgen.func.p03
+    elf_name: p03
+    kind: symbol
+    tag_all: true
+    optional: true
+-
     name: testgen.func.p02
     elf_name: p02
     kind: symbol
@@ -14,6 +20,18 @@
 -
     name: testgen.func.p01
     elf_name: p01
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: testgen.func.mock_function
+    elf_name: mock_function
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: testgen.func.buggy
+    elf_name: buggy
     kind: symbol
     tag_all: true
     optional: true

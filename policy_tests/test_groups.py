@@ -201,11 +201,6 @@ class AllTests:
         "all-combined/hope-testgen-tests/1_BufferErrors/23",
         "all-combined/hope-testgen-tests/1_BufferErrors/25",
         "all-combined/hope-testgen-tests/7_NumericErrors/234/numeric_error_234",
-        "all-combined/hope-testgen-tests/7_NumericErrors/456p1/numeric_error_456p1",
-        "all-combined/hope-testgen-tests/7_NumericErrors/456p2/numeric_error_456p2",
-        "all-combined/hope-testgen-tests/7_NumericErrors/456p3/numeric_error_456p3",
-        "all-combined/hope-testgen-tests/7_NumericErrors/457p1/numeric_error_457p1",
-        "all-combined/hope-testgen-tests/7_NumericErrors/457p2/numeric_error_457p2",
         "all-combined/hope-testgen-tests/7_NumericErrors/686/numeric_error_686",
     ]
 

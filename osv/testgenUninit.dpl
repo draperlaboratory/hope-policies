@@ -40,11 +40,13 @@ metadata:
   Uninit,
   FuncToProtect,
   ProtectedStack,
-  ReturnInstr
+  ReturnInstr,
+  MockFunction
 
 
 policy:
   testgenUninitPol =
+
     // explicit failure for loading from uninitialized memory inside the
     // function we're protecting or its call stack
       loadGrp (code == [+FuncToProtect], mem == [+Uninit] -> fail "uninitialized load")
@@ -57,7 +59,8 @@ policy:
     ^ allGrp(env == _ -> env = {})
 
 
-/*  // CJC The policy in this comment is a more complex version of the above.
+  /*
+  // CJC The policy in this comment is a more complex version of the above.
     // In particular, it adds "call site tracking" so that we could catch use
     // of uninitialized variables from within the functions that are called by
     // The function we care about.  However, this complexity was not necessary
@@ -71,7 +74,10 @@ policy:
     ^ loadGrp (env == [+ProtectedStack], mem == [+Uninit] -> fail "uninitialized load")
 
     // storing to memory from the function we're protecting and its call stack
-    // initializes the memory.
+    // initializes the memory, except for "mock_function" which intentionally
+    // initializes memory that is morally uninitialized for the purposes of
+    // this test.
+    // ^ storeGrp(code == [+MockFunction], mem == _, env == _ -> mem = mem, env = env)
     ^ storeGrp(code == [+FuncToProtect], mem ==  _, env == _ -> mem = {}, env = env)
     ^ storeGrp(mem ==  _, env == [+ProtectedStack] -> mem = {}, env = env)
 
@@ -99,8 +105,8 @@ policy:
     ^ systemGrp(code == _, env == _ -> env = env)
     ^ floatGrp(code == _, env == _ -> env = env)
     ^ atomicGrp(code == _, env == _ -> env = env)
-*/
 
+*/
 
 require:
     init ISA.RISCV.Reg.Env                   {}
@@ -140,5 +146,9 @@ require:
     init elf.Section.SHF_EXECINSTR     {}
     init elf.Section.SHF_WRITE         {}
 
+    init testgen.func.mock_function     {MockFunction}
+
+    init testgen.func.buggy             {FuncToProtect}
+    init testgen.func.p03               {FuncToProtect}
     init testgen.func.p02               {FuncToProtect}
     init testgen.func.p01               {FuncToProtect}
