@@ -1,0 +1,12 @@
+-
+    name: testgen.var.ptrArityZero
+    elf_name: fp_wrong
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: testgen.var.ptrArityMany
+    elf_name: fp_correct
+    kind: symbol
+    tag_all: true
+    optional: true

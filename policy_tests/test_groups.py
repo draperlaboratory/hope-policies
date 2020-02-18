@@ -220,7 +220,7 @@ class webapp(AllTests):
 
 
 class frtos(AllTests):
-    tests = [test for test in AllTests.tests + AllTests.combinedPolicyTests
+    tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  [
                                   "heap-ppac-userType/webapp_patient_info_leak_fails",
@@ -228,6 +228,7 @@ class frtos(AllTests):
                                   "fft",
                                   "timer_works_1",
                                   "dhrystone/dhrystone-baremetal",
+                                  "dhrystone"
                                  ]
                                  )]
 
@@ -245,7 +246,7 @@ class testgen(AllTests):
                                  )]
 
 class bare(AllTests):
-    tests = [test for test in AllTests.tests + AllTests.combinedPolicyTests
+    tests = [test for test in AllTests.tests
                       if not any(test in s for s in
                                  ["ping_pong_works_1",
                                   "dhrystone/dhrystone-baremetal",

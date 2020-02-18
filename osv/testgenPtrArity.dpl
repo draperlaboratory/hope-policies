@@ -1,0 +1,82 @@
+
+module osv.testgenPtrArity:
+
+import:
+  osv.riscv
+
+metadata:
+  ArityZero,
+  ArityOne,
+  ArityMany
+
+policy:
+  testgenPtrArityPol =
+  // preserve arity tags on memory
+     storeGrp(   mem == _, addr == _, val == _, env == _
+              -> mem = mem, env = env)
+  // load arity tags from mem
+   ^ loadGrp (mem == _, env == _ -> res = mem)
+  // move arity tag into env on jump
+   ^ jumpRegGrp(env == _, target == _ ->
+                env = target, return = {})
+
+  // if we just jumped with an arity, check dest and clear env
+   ^ allGrp(   env == [+ArityZero], code == [+ArityZero]
+            -> env = {})
+   ^ allGrp(   env == [+ArityOne], code == [+ArityOne]
+            -> env = {})
+   ^ allGrp(   env == [+ArityMany], code == [+ArityMany]
+            -> env = {})
+   ^ allGrp(   env == [+ArityZero], code == [-ArityZero]
+            -> fail "Jump to ArityZero landed elsewhere")
+   ^ allGrp(   env == [+ArityOne], code == [-ArityOne]
+            -> fail "Jump to ArityOne landed elsewhere")
+   ^ allGrp(   env == [+ArityMany], code == [-ArityMany]
+            -> fail "Jump to ArityMany landed elsewhere")
+
+   ^ allGrp(   env == _ -> env = env)
+
+   // default: allow other operations
+   //^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+   //^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+   //^ jumpGrp(code == _, env == _ -> return = {})
+   //^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+   //^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+   //^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   //^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+   //^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+   //^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   //^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+   //^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+   //^ privGrp(code == _, env == _ -> env = env)
+   //^ systemGrp(code == _, env == _ -> env = env)
+   //^ floatGrp(code == _, env == _ -> env = env)
+   //xs^ atomicGrp(code == _, env == _ -> env = env)
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
+
+    init testgen.var.ptrArityZero                {ArityZero}
+    init testgen.var.ptrArityMany                {ArityMany}
+
+    init llvm.ArityZero                      {ArityZero}
+    init llvm.ArityOne                       {ArityOne}
+    init llvm.ArityMany                      {ArityMany}
