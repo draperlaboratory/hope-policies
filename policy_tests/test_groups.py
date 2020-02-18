@@ -201,7 +201,6 @@ class AllTests:
         "all-combined/hope-testgen-tests/1_BufferErrors/23",
         "all-combined/hope-testgen-tests/1_BufferErrors/25",
         "all-combined/hope-testgen-tests/7_NumericErrors/234/numeric_error_234",
-        "all-combined/hope-testgen-tests/7_NumericErrors/686/numeric_error_686",
     ]
 
     # Tests that should be run only against all policies simultaneously.
