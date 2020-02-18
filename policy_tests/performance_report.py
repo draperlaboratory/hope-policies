@@ -159,7 +159,10 @@ def main():
     test_arg = args.tests.split(",")
     tests = get_tests(test_arg)
 
-    output_path = "-".join(["performance", "test", args.runtime, args.sim]) + ".xml"
+    output_path = "_".join([
+        "-".join([args.runtime, args.sim]),
+        "performance",
+        "report"]) + ".xml"
     if args.output:
         output_path = args.output
     output_file = open(output_path, "w")
