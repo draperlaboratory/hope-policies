@@ -1,0 +1,20 @@
+-
+    name: testgen.func.test_main
+    elf_name: test_main
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: testgen.func.f2
+    elf_name: f2
+    kind: symbol
+    tag_all: true
+    optional: true
+
+
+
+
+
+
+
+

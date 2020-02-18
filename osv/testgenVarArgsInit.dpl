@@ -1,0 +1,69 @@
+
+module osv.testgenVarArgsInit:
+
+import:
+  osv.riscv
+
+type:
+  data FNum = Int (10)
+
+metadata:
+  Preparing FNum,
+  InitFor FNum,
+  VarArgsCopy,
+  InInitPhase,
+  Uninit,
+  FuncToProtect,
+  Initializer
+
+policy:
+  testgenVarArgsInitPol =
+    // set up preparing at beginning of time.
+      allGrp(env == {},code==[+Initializer] -> env = {Preparing new})
+
+    // loading uninit is bad
+    ^ loadGrp( mem == [+Uninit] -> fail "uninitialized varargs access")
+
+    // stores during the copy mark memory as uninit
+    ^ storeGrp(code == [+VarArgsCopy,+FuncToProtect], env == [+Preparing f], val == [+(InitFor f)]
+               -> mem = {}, env = env[+InInitPhase] )
+    ^ storeGrp(code == [+VarArgsCopy,+FuncToProtect], env == [+Preparing f]
+               -> mem = {Uninit}, env = env[+InInitPhase])
+    // preparing for a new function after init phase
+    ^ allGrp(   code == [-VarArgsCopy,+FuncToProtect], env == [+InInitPhase]
+             -> env = {Preparing new})
+
+    // any load into a reg in the correct function while preparing should init
+    // the val
+    ^ loadGrp(code == [+Initializer], env == {Preparing f} -> res = {InitFor f})
+    ^ loadUpperGrp(code == [+Initializer], env == {Preparing f} -> dest = {InitFor f})
+    ^ immArithGrp(code == [+Initializer], env == {Preparing f} -> res = {InitFor f})
+    ^ arithGrp(code == [+Initializer], env == {Preparing f} -> res = {InitFor f})
+    ^ mulDivRemGrp(code == [+Initializer], env == {Preparing f} -> res = {InitFor f})
+
+    ^ allGrp(env == _ -> env = env)
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
+
+    init llvm.VarArgsCopy                    {VarArgsCopy}
+    init testgen.func.test_main              {Initializer}
+    init testgen.func.f2                     {FuncToProtect}
