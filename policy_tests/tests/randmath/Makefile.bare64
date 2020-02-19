@@ -1,0 +1,2 @@
+include ../isp-runtime-bare64.mk
+include common.mk
