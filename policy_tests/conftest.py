@@ -83,6 +83,11 @@ def pytest_generate_tests(metafunc):
         # gather passed policies
         policies = list(filter(None, metafunc.config.option.policies.split(",")))
 
+        # give the "all" policy suffix to the test. Used if a test should only
+        # run against all policies simultaneously.
+        if metafunc.function.__name__ == 'test_new':
+            metafunc.parametrize("allPolicySuffix", [allPolicySuffix(policies)], scope='session')
+
         # build composites
         module = metafunc.config.option.module
         if module:
@@ -92,7 +97,6 @@ def pytest_generate_tests(metafunc):
                 policies = composites(module, gpolicies, policies, False)
             else:
                 policies = [module + "." + p for p in (gpolicies+policies)]
-            
         # give all policies to test
         metafunc.parametrize("policy", policies, scope='session')
 
@@ -145,6 +149,12 @@ def permutePols(polStrs):
     combs = [list(map(sorted,itertools.combinations(p, n))) for n in ns]
     # flatten list
     return (reduce(operator.concat, combs, []))
+
+# given policies, generate the "all" policy suffix
+def allPolicySuffix(policies):
+    output = sorted(policies)
+    output = list(filter(lambda x: x != "none" and x != "testSimple" and x != "testComplex", output))
+    return "-".join(output)
 
 # given modules and policies, generate composite policies
 def composites(module, gpolicies, policies, simple):

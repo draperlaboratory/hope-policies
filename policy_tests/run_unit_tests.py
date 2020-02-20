@@ -8,14 +8,17 @@ import shutil
 import time
 import glob
 import errno
-import helper_fns
+from helper_fns import *
+from test_groups import AllTests
 
 # in this function, a set of policy test parameters is checked
-#   to make sure that the test makes sense. If it doesnt, the
+#   to make sure that the test makes sense. If it doesn't, the
 #   function returns the reason why
-def incompatibleReason(test, policy):
+def incompatibleReason(test, policy, allPolicySuffix):
     # skip negative tests that are not matched to the correct policy
-    if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy):
+    if isAllCombinedPolicyTest(test) and not policy.endswith(allPolicySuffix):
+        return "Test requires all policies simultaneously."
+    if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy) and not isAllCombinedPolicyTest(test):
         return "incorrect policy to detect violation in negative test"
     if "ppac" in policy and policy not in ["osv.bare.main.heap-ppac-userType",
                                            "osv.frtos.main.heap-ppac-userType"]:
@@ -25,7 +28,8 @@ def incompatibleReason(test, policy):
 def xfailReason(test, policy, runtime):
     if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-
+    if test in AllTests.failingTests:
+        return "{} is known to fail. Either a new policy needs to be written or an existing policy modified to catch this.".format(test)
     return None
 
 # test function found automatically by pytest. Pytest calls
@@ -33,8 +37,8 @@ def xfailReason(test, policy, runtime):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, extra, output_subdir=None):
-    incompatible = incompatibleReason(test, policy)
+def test_new(test, runtime, policy, allPolicySuffix, sim, rule_cache, rule_cache_size, debug, soc, timeout, extra, output_subdir=None): 
+    incompatible = incompatibleReason(test, policy, allPolicySuffix)
     if incompatible:
         pytest.skip(incompatible)
 

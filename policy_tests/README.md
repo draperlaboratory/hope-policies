@@ -160,11 +160,20 @@ responsible for generating them:
 
 # Adding Tests
 
+Tests should be added to the tests directory. The test framework will look for this function as the point of entry. 
+```
+int test_main(void)
+```
+
 Tests should use the test_status functions to indicate test start and
 pass fail status. The test status api can be found in the
 `template/test_status.h` file.
 
-The new test should be added to the `all` group in `test_groups.py`
+Tests can be split into positive and negative tests. Negative tests should be added to the respective policies subdirectory. For example, if you wish to run a negative test against the heap policy, it should be placed in the `tests/heap` directory. 
+
+The `tests/all-combined` directory can be used for positive and negative tests. Tests in this directory will only be run against all policies simultaneously.
+
+After adding a test, make sure to edit the `all` group in `test_groups.py`
 
 # Adding Knobs
 
