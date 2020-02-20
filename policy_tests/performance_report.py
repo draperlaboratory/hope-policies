@@ -77,7 +77,13 @@ def generate_report(runtime, sim, policies, tests):
         for policy in policies:
             if policy == 'none':
                 continue
-            policy_time = policy_durations[policy]
+            policy_time = 0
+            try:
+                policy_time = policy_durations[policy]
+            except KeyError:
+                print("  Could not fetch time for {} policy".format(policy))
+                continue
+
             overhead = ((policy_time - base_time) / base_time) * 100
             print("  Policy: {}".format(policy))
             print("    total time: {}".format(policy_durations[policy]))
