@@ -56,7 +56,7 @@ bare-vcu118_GPOLICIES =
 bare-vcu118_POLICIES = heap,stack,rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
+bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
