@@ -9,20 +9,12 @@ uint32_t t_instret(){
 }
 
 static int read_mxl(void){
-  long mxl;
   long misa;
-  asm("csrr %0, 0x301\n"
-      "bgez %0, rv32\n"
-      "slli %0, %0, 1\n"
-      "bgez %0, rv64\n"
-      "li   %1, 128\n"
-      "j rv_out\n"
-      "rv32: li   %1, 32\n"
-      "j rv_out\n"
-      "rv64: li   %1, 64\n"
-      "rv_out: li %0, 0"
-      : "=r"(misa), "=r"(mxl) : );
-  return mxl;
+  asm("csrr %0, 0x301\n" : "=r"(misa) : );
+  if (misa > 0)
+      return 32;
+  else
+      return 64;
 }
 
 int isp_main(int argc, char *argv[])
