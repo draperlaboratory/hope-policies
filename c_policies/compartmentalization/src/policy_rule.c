@@ -112,6 +112,8 @@ int enforcement_mode = 0;
 // Set on initialization.
 int max_func, max_obj;
 
+int event_no = 0;
+
 // Policy initialization
 struct comp_ht * ht = NULL;
 int has_init = 0;
@@ -143,6 +145,8 @@ int print_CAPMAP(FILE * outfile, int weights){
 int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 {
 
+  event_no += 1;
+  
   /****** Generic setup ******/
   // A few things used by all components of the policy:
   
@@ -360,6 +364,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 
   /****** Handling context switching ******/  
 
+  /*
   int is_context_switch = ms_contains(ops -> ci, osv_Comp_context_switch);
   
   // Handle context swithing. Save PC tags to memory, then try to load them back later.
@@ -375,7 +380,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
       int jumping_color = ops -> pc -> tags[PC_CONTROL_INDEX];
       if (alloc_id != 0 || jumping_color != 0){
 	
-	printm("Inside context switch, had an alloc-ID of %d and jumping color of %d. Saving to mem. PC = %x", alloc_id, jumping_color, ctx ->epc);
+	printm("Inside context switch, had an alloc-ID of %d and jumping color of %d. Saving to mem. PC = %x. Event_no=%d", alloc_id, jumping_color, ctx ->epc, event_no);
 	ms_bit_add(res -> rd, osv_Comp_context_switch);
 	
 	res -> rd -> tags[PC_CONTROL_INDEX] = jumping_color;
@@ -391,6 +396,10 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 	  ms_bit_add(res -> rd, osv_Comp_globalID);
 	  res -> rd -> tags[OBJ_INDEX] = ops -> mem -> tags[OBJ_INDEX];
 	}
+
+	// Clear out tags so this doesn't trigger again
+	res -> pc -> tags[POINTER_COLOR_INDEX] = 0; // saved_alloc_id;	
+	res -> pc -> tags[PC_CONTROL_INDEX] = 0; //saved_jumping_color;	
 	
 	// Clear PC tag, we just saved to memory
 	res -> rdResult = true;
@@ -411,7 +420,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
       if (mem_contains_context_switch){
 	int saved_alloc_id = ops -> mem -> tags[POINTER_COLOR_INDEX];
 	int saved_jumping_color = ops -> mem -> tags[PC_CONTROL_INDEX];
-	printm("Just loaded a saved context switch! Had saved alloc-id of %d and jumping color of %d. PC =%x", saved_alloc_id, saved_jumping_color, ctx -> epc);
+	printm("Just loaded a saved context switch! Had saved alloc-id of %d and jumping color of %d. PC =%x. Event_no=%d", saved_alloc_id, saved_jumping_color, ctx -> epc, event_no);
 
 	res -> pc -> tags[POINTER_COLOR_INDEX] = saved_alloc_id;	
 	res -> pc -> tags[PC_CONTROL_INDEX] = saved_jumping_color;
@@ -421,6 +430,8 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 
     return policySuccess;
   }
+
+  */
   
   /****** Heap color maintenance ******/
 
@@ -460,7 +471,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
   
   // Inside apply/remove, loads and stores move pointers and leave rest intact
   if (inside_apply_remove){
-
+    
     // Logic for writes:
     // Stores carry pointer tag to memory; leave NewColor and ModColor alone.
     // If writing with ModColor, while inside apply_color, and with a colored
@@ -490,6 +501,13 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 	ms_bit_add(res -> rd, osv_Comp_globalID);
 	res -> rd -> tags[OBJ_INDEX] = globalID;
 	res -> rdResult = true;
+      }
+
+      // Keep cell?
+      if (ms_contains(ops -> mem, osv_heap_Cell)){
+	ms_bit_add(res -> rd, osv_heap_Cell);
+	res -> rd -> tags[CELL_COLOR_INDEX] = ops -> mem -> tags[CELL_COLOR_INDEX];
+	printm("Keeping existing Cell color of %d", ops -> mem -> tags[CELL_COLOR_INDEX]);
       }
 
       // Carry pointer to memory
