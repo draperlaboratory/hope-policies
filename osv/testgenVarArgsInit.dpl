@@ -66,4 +66,5 @@ require:
 
     init llvm.VarArgsCopy                    {VarArgsCopy}
     init testgen.func.test_main              {Initializer}
+    init testgen.func.do_p1                  {Initializer}
     init testgen.func.f2                     {FuncToProtect}

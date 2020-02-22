@@ -5,6 +5,12 @@
     tag_all: true
     optional: true
 -
+    name: testgen.func.do_p1
+    elf_name: do_p1
+    kind: symbol
+    tag_all: true
+    optional: true
+-
     name: testgen.func.f2
     elf_name: f2
     kind: symbol
