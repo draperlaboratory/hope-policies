@@ -126,12 +126,12 @@ int test_main( void )
     
   /* no need to init uart */
   t_printf("main: create ping task\r\n");
-  xTaskCreate(ping_task, "Ping task", 1000, NULL, 1, NULL);
+  xTaskCreate(ping_task, "Ping task", 512, NULL, 1, NULL);
   t_printf("main: create pong task\r\n");
-  xTaskCreate(pong_task, "Pong task", 1000, NULL, 1, NULL);
+  xTaskCreate(pong_task, "Pong task", 512, NULL, 1, NULL);
 
   t_printf("main: create done task\r\n");
-  xTaskCreate(done_task, "Done task", 1000, NULL, 1, NULL);
+  xTaskCreate(done_task, "Done task", 512, NULL, 1, NULL);
 
   t_printf("timer ticks: 0x%x\r\n", TIMER_INTERVAL);
 
