@@ -186,13 +186,18 @@ group:
  */
     grp mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
         mul
+        mulw
         mulh
         mulhsu
         mulhu
         div
         divu
+        divw
+        divuw
         rem
+        remw
         remu
+        remuw
         fmul.s
         fdiv.s
         fmul.d
@@ -400,13 +405,18 @@ group:
         lw
     // mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
         mul
+        mulw
         mulh
         mulhsu
         mulhu
         div
         divu
+        divw
+        divuw
         rem
         remu
+        remw
+        remuw
 
     // csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
         csrrw
@@ -575,13 +585,18 @@ group:
         lw
     // mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
         mul
+        mulw
         mulh
         mulhsu
         mulhu
         div
         divu
+        divw
+        divuw
         rem
         remu
+        remw
+        remuw
 
     // csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
         csrrw
