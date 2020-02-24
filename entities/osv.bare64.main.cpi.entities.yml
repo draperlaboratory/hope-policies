@@ -1,0 +1,24 @@
+-
+  name: dover.llvm.CPI,
+  elf_name: __libc_init_array,
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: dover.llvm.CPI,
+  elf_name: __libc_fini_array,
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: dover.llvm.CPI,
+  elf_name: __preinit_array,
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: dover.llvm.CPI,
+  elf_name: __libc_exit_fini,
+  tag_all: true
+  kind: symbol
+  optional: true
