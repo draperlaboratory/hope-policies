@@ -16,6 +16,7 @@ all: build-dirs run-tests
 
 # Arguments specific to running on an FPGA
 BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
+STOCK_BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_p1.bit
 
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
@@ -52,12 +53,25 @@ bare-vcu118_TESTS = bare
 bare-vcu118_RUNTIME = bare
 bare-vcu118_MODULE = osv.bare.main
 bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = heap,stack,rwx,threeClass
+bare-vcu118_POLICIES = heap,stack,rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
+bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
+
+# config for bare-metal on VCU118 board without PIPE
+bare-stock_SIM = vcu118
+bare-stock_TESTS = bare
+bare-stock_RUNTIME = bare
+bare-stock_MODULE = osv.bare.main
+bare-stock_GPOLICIES = 
+bare-stock_POLICIES = none
+bare-stock_XDIST = -n $(JOBS) # run in parallel
+bare-stock_TIMEOUT = 360
+bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock
+bare-stock: CONFIG=bare-stock
+bare-stock: all
 
 # config for bare-metal in VCS sim
 bare-vcs_SIM = vcs
@@ -237,6 +251,21 @@ run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+
+PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
+
+# generate performance report
+performance-report: SIM ?= $($(CONFIG)_SIM)
+performance-report: TESTS ?= $($(CONFIG)_TESTS)
+performance-report: RUNTIME ?= $($(CONFIG)_RUNTIME)
+performance-report: MODULE ?= $($(CONFIG)_MODULE)
+performance-report: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
+performance-report: POLICIES ?= $($(CONFIG)_POLICIES)
+performance-report: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+performance-report: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
+performance-report: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
+performance-report: build-tests run-tests
+	$(PYTHON) performance_report.py $(PERFORMANCE_REPORT_ARGS)
 
 clean: clean-kernels clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html *report.xml prof_results.log .cache \
