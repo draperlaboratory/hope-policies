@@ -77,7 +77,13 @@ def generate_report(runtime, sim, policies, tests):
         for policy in policies:
             if policy == 'none':
                 continue
-            policy_time = policy_durations[policy]
+            policy_time = 0
+            try:
+                policy_time = policy_durations[policy]
+            except KeyError:
+                print("  Could not fetch time for {} policy".format(policy))
+                continue
+
             overhead = ((policy_time - base_time) / base_time) * 100
             print("  Policy: {}".format(policy))
             print("    total time: {}".format(policy_durations[policy]))
@@ -120,17 +126,27 @@ def pretty_xml(node):
     return reparsed.toprettyxml(indent="  ")
 
 
-def main():
-    runtime = sys.argv[1]
-    sim = sys.argv[2]
-    policy_list = sys.argv[3]
-    test_list = sys.argv[4]
+def compose_policies(policies):
+    standalone_policies = []
+    for policy in policies:
+        if "-" not in policy and policy != "none":
+            standalone_policies.append(policy)
+    if len(standalone_policies) > 1:
+        standalone_policies = sorted(standalone_policies)
+        policies.append("-".join(standalone_policies))
 
+    return policies
+
+
+def main():
     parser = argparse.ArgumentParser(description="Generate performance report for policy tests")
     parser.add_argument("-r", "--runtime", type=str, required=True)
     parser.add_argument("-s", "--sim", type=str, required=True)
     parser.add_argument("-p", "--policies", type=str, required=True, help='''
     comma-separated list of policies e.g. rwx,stack,heap,heap-rwx-stack
+    ''')
+    parser.add_argument("-g", "--global-policies", type=str, help='''
+    comma-separated list of global policies e.g. contextswitch
     ''')
     parser.add_argument("-t", "--tests", type=str, required=True, help='''
     comma-separated list of tests or test groups e.g. bare OR hello_works_1,coremark
@@ -147,14 +163,20 @@ def main():
     if "none" not in policies:
         policies.append('none')
 
+    global_policies = []
+    if args.global_policies:
+        global_policies = args.global_policies.split(",")
+
     if args.compose:
-        standalone_policies = []
+        policies = compose_policies(policies)
+        global_policies = compose_policies(global_policies)
+
+    composed_global_policies = []
+    for global_policy in global_policies:
         for policy in policies:
-            if "-" not in policy and policy != "none":
-                standalone_policies.append(policy)
-        if len(standalone_policies) > 1:
-            standalone_policies = sorted(standalone_policies)
-            policies.append("-".join(standalone_policies))
+            composed_global_policies.append("-".join([global_policy, policy]))
+
+    policies += composed_global_policies
 
     test_arg = args.tests.split(",")
     tests = get_tests(test_arg)
