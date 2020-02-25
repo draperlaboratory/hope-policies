@@ -24,6 +24,7 @@ class AllTests:
         "timer_works_1",
         "function_pointer_works_1",
         "function_pointer_works_2",
+        "null_ptr_deref_fails_1",
         "rwx/code_write_fails_1",
         "rwx/data_exe_fails_1",
         "cfi/jump_data_fails_1",
