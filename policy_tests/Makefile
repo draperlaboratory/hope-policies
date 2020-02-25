@@ -252,6 +252,8 @@ run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
+PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
+
 # generate performance report
 performance-report: SIM ?= $($(CONFIG)_SIM)
 performance-report: TESTS ?= $($(CONFIG)_TESTS)
@@ -263,7 +265,7 @@ performance-report: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 performance-report: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 performance-report: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 performance-report: build-tests run-tests
-	$(PYTHON) performance_report.py -r $(RUNTIME) -s $(SIM) -p $(POLICIES) -t $(TESTS) -c
+	$(PYTHON) performance_report.py $(PERFORMANCE_REPORT_ARGS)
 
 clean: clean-kernels clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html *report.xml prof_results.log .cache \
