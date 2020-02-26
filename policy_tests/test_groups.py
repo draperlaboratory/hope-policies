@@ -50,6 +50,10 @@ class AllTests:
         "password/webapp_password_leak",
     ]
 
+    tests64 = [
+        "float_works",
+    ]
+
 class webapp(AllTests):
     tests = [
         "webapp_doctor_user_works",
@@ -75,6 +79,10 @@ class frtos(AllTests):
                                  )]
 
 
+class frtos64(frtos):
+    tests = frtos.tests + AllTests.tests64
+
+
 class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
@@ -85,6 +93,11 @@ class bare(AllTests):
                                   "timer_works_1",
                                  ]
                                  )]
+
+
+class bare64(bare):
+    tests = bare.tests + AllTests.tests64
+
 
 class mibench(AllTests):
     tests = [
@@ -116,9 +129,9 @@ class performance(AllTests):
 
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
-               'frtos64' : frtos,
+               'frtos64' : frtos64,
                'bare' : bare,
-               'bare64' : bare,
+               'bare64' : bare64,
                'webapp' : webapp,
                'mibench' : mibench,
                'performance' : performance
