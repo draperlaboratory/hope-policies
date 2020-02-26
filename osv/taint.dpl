@@ -22,6 +22,7 @@ policy:
    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == [+Taint] -> env = env, res = op2)
    ^ immArithGrp(env == _, op1 == [+Taint] -> env = env, res = op1)
    ^ loadGrp(mem == [+Taint], addr == _, env == _ -> env = env, res = mem )
+   ^ loadGrp(mem == _, addr == [+Taint], env == _ -> env = env, res = addr )
    ^ storeGrp(mem == _, addr == _, val == [+Taint], env == _ -> env = env, mem = val)
    ^ storeGrp(mem == [+Taint], addr == _, val == _, env == _ -> env = env, mem = mem ) 
 
