@@ -7,7 +7,6 @@ class AllTests:
     #positive tests go in the tests dir
     tests = [
         "printf_works_1",
-        "hello_works_1",
         "stanford_int_treesort_fixed",
         "ping_pong_works_1",
         "link_list_works_1",
