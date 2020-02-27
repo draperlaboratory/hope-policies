@@ -26,7 +26,7 @@ STOCK_BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_p1.bit
 webapp_SIM = qemu
 webapp_TESTS = webapp
 webapp_RUNTIME = bare
-webapp_MODULE = osv.bare.main
+webapp_MODULE = osv
 webapp_GPOLICIES = 
 webapp_POLICIES = none,userType,password,ppac,heap
 webapp_XDIST = -n $(JOBS) # run in parallel
@@ -38,7 +38,7 @@ webapp: all
 bare-qemu_SIM = qemu
 bare-qemu_TESTS = bare
 bare-qemu_RUNTIME = bare
-bare-qemu_MODULE = osv.bare.main
+bare-qemu_MODULE = osv
 bare-qemu_GPOLICIES = 
 bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
@@ -51,7 +51,7 @@ bare-qemu: all
 bare-vcu118_SIM = vcu118
 bare-vcu118_TESTS = bare
 bare-vcu118_RUNTIME = bare
-bare-vcu118_MODULE = osv.bare.main
+bare-vcu118_MODULE = osv
 bare-vcu118_GPOLICIES = 
 bare-vcu118_POLICIES = heap,stack,rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
@@ -64,7 +64,7 @@ bare-vcu118: all
 bare-stock_SIM = vcu118
 bare-stock_TESTS = bare
 bare-stock_RUNTIME = bare
-bare-stock_MODULE = osv.bare.main
+bare-stock_MODULE = osv
 bare-stock_GPOLICIES = 
 bare-stock_POLICIES = none
 bare-stock_XDIST = -n $(JOBS) # run in parallel
@@ -77,7 +77,7 @@ bare-stock: all
 bare-vcs_SIM = vcs
 bare-vcs_TESTS = bare
 bare-vcs_RUNTIME = bare
-bare-vcs_MODULE = osv.bare.main
+bare-vcs_MODULE = osv
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
 bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
@@ -90,7 +90,7 @@ bare-vcs: all
 frtos-qemu_SIM = qemu
 frtos-qemu_TESTS = frtos
 frtos-qemu_RUNTIME = frtos
-frtos-qemu_MODULE = osv.frtos.main
+frtos-qemu_MODULE = osv
 frtos-qemu_GPOLICIES = contextswitch
 frtos-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-qemu_XDIST= -n $(JOBS) # run in parallel
@@ -102,7 +102,7 @@ frtos-qemu: all
 frtos-vcu118_SIM = vcu118
 frtos-vcu118_TESTS = frtos
 frtos-vcu118_RUNTIME = frtos
-frtos-vcu118_MODULE = osv.frtos.main
+frtos-vcu118_MODULE = osv
 frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
@@ -115,7 +115,7 @@ frtos-vcu118: all
 frtos-vcs_SIM = vcs
 frtos-vcs_TESTS = frtos
 frtos-vcs_RUNTIME = frtos
-frtos-vcs_MODULE = osv.frtos.main
+frtos-vcs_MODULE = osv
 frtos-vcs_GPOLICIES =
 frtos-vcs_POLICIES = rwx
 frtos-vcs_XDIST= -n $(JOBS) # run in parallel
@@ -127,7 +127,7 @@ frtos-vcs: all
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
 dhrystone_RUNTIME = bare
-dhrystone_MODULE = osv.bare.main
+dhrystone_MODULE = osv
 dhrystone_POLICIES = heap,rwx,stack,none,testSimple
 dhrystone_XDIST = -n $(JOBS) # run in parallel
 dhrystone_TIMEOUT = 360
@@ -175,16 +175,16 @@ run-ripe:
 	mkdir -p $(TEST_OUTPUT_DIR)
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
 
-ripe: build-kernels build-ripe run-ripe
+ripe: build-policies build-ripe run-ripe
 
 # avoid short-circuiting targets based on local file/dir names
-.PHONY: build-kernels
+.PHONY: build-policies
 
 list: COLLECT_ONLY= --collect-only
 list: run-tests
 
-list-kernels: COLLECT_ONLY= --collect-only
-list-kernels: build-kernels
+list-policies: COLLECT_ONLY= --collect-only
+list-policies: build-policies
 
 list-build: COLLECT_ONLY= --collect-only
 list-build: build-tests
@@ -202,7 +202,7 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-tests: build-dirs
-build-tests: build-kernels
+build-tests: build-policies
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 build-dirs: SIM ?= $($(CONFIG)_SIM)
@@ -221,22 +221,26 @@ build-dirs:
 
 tests: clean-tests build-tests
 
-# PEX kernels
-clean-kernels:
-	rm -rf kernels/
+# PEX + policies
+clean-policies:
+	rm -rf pex/
+	rm -rf policies/
 
-build-kernels: SIM ?= $($(CONFIG)_SIM)
-build-kernels: TESTS ?= $($(CONFIG)_TESTS)
-build-kernels: RUNTIME ?= $($(CONFIG)_RUNTIME)
-build-kernels: MODULE ?= $($(CONFIG)_MODULE)
-build-kernels: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
-build-kernels: POLICIES ?= $($(CONFIG)_POLICIES)
-build-kernels: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
-build-kernels: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-build-kernels:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_kernel install_kernels.py
+build-policies: SIM ?= $($(CONFIG)_SIM)
+build-policies: TESTS ?= $($(CONFIG)_TESTS)
+build-policies: RUNTIME ?= $($(CONFIG)_RUNTIME)
+build-policies: MODULE ?= $($(CONFIG)_MODULE)
+build-policies: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
+build-policies: POLICIES ?= $($(CONFIG)_POLICIES)
+build-policies: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
+build-policies: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
+build-policies:
+	mkdir -p policies
+	mkdir -p pex
+	mkdir -p pex/$(SIM)
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
 
-kernels: clean-kernels build-kernels
+policies: clean-policies build-policies
 
 # run tests
 run-tests: SIM ?= $($(CONFIG)_SIM)
@@ -268,7 +272,7 @@ performance-report:
 	TESTS=$(TESTS) TIMEOUT=$(TIMEOUT) $(MAKE) run-tests
 	$(PYTHON) performance_report.py $(PERFORMANCE_REPORT_ARGS)
 
-clean: clean-kernels clean-tests
+clean: clean-policies clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html *report.xml prof_results.log .cache \
 		tests/isp-runtime-frtos* tests/isp-runtime-bare*
 	find tests/ -type f -name '*.o' -delete

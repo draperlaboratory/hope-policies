@@ -70,6 +70,10 @@ def timeout(request):
 def extra(request):
     return request.config.getoption('--extra')
 
+@pytest.fixture
+def global_policies(request):
+    return request.config.getoption('--gpolicies')
+
 def pytest_generate_tests(metafunc):
 
     if 'policy' in metafunc.fixturenames:
@@ -87,11 +91,11 @@ def pytest_generate_tests(metafunc):
         module = metafunc.config.option.module
         if module:
             if 'simple' in metafunc.config.option.composite:
-                policies = composites(module, gpolicies, policies, True)
+                policies = composites(gpolicies, policies, True)
             elif 'full' in metafunc.config.option.composite:
-                policies = composites(module, gpolicies, policies, False)
+                policies = composites(gpolicies, policies, False)
             else:
-                policies = [module + "." + p for p in (gpolicies+policies)]
+                policies = [p for p in (gpolicies+policies)]
             
         # give all policies to test
         metafunc.parametrize("policy", policies, scope='session')
@@ -147,7 +151,7 @@ def permutePols(polStrs):
     return (reduce(operator.concat, combs, []))
 
 # given modules and policies, generate composite policies
-def composites(module, gpolicies, policies, simple):
+def composites(gpolicies, policies, simple):
 
     # generate all permutations
     r = []
@@ -161,7 +165,7 @@ def composites(module, gpolicies, policies, simple):
     for p in localPols:
         for gp in globalPols:
             if p or gp:
-                r.append((p, module+"."+"-".join(gp+p)))
+                r.append((p, "-".join(gp+p)))
 
     # length of policy that has every member policy except none
     full_composite_len = len(policies)
