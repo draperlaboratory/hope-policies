@@ -256,15 +256,16 @@ PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) -p $(POLICIES) -t $(TESTS) -c 
 
 # generate performance report
 performance-report: SIM ?= $($(CONFIG)_SIM)
-performance-report: TESTS ?= $($(CONFIG)_TESTS)
+performance-report: TESTS ?= performance
 performance-report: RUNTIME ?= $($(CONFIG)_RUNTIME)
 performance-report: MODULE ?= $($(CONFIG)_MODULE)
 performance-report: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 performance-report: POLICIES ?= $($(CONFIG)_POLICIES)
 performance-report: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 performance-report: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
-performance-report: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-performance-report: build-tests run-tests
+performance-report: TIMEOUT ?= 0
+performance-report:
+	TESTS=$(TESTS) TIMEOUT=$(TIMEOUT) $(MAKE) run-tests
 	$(PYTHON) performance_report.py $(PERFORMANCE_REPORT_ARGS)
 
 clean: clean-kernels clean-tests
