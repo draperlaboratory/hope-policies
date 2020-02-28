@@ -100,6 +100,11 @@ def test_build(test, runtime, sim, extra_args=None, extra_env=None):
         make_args += extra_args
 
     env = dict(os.environ, OUTPUT_DIR=output_dir)
+    env['RUNTIME'] = runtime
+    env['RVXX'] = 'RV32'
+    if arch == 'rv64':
+        env['RVXX'] = 'RV64'
+    
     if not isMakefileTest(test):
         env['TEST'] = test
     if extra_env is not None:
