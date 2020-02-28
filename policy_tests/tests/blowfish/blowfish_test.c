@@ -29,6 +29,14 @@ int test_main(void) {
   unsigned long L = 1, R = 2;
   static BLOWFISH_CTX ctx;
 
+#if __riscv_xlen == 64
+  const unsigned long expect_L = 0x272A5DF333FD2L;
+  const unsigned long expect_R = 0x33A2830A71BB4L;
+#else
+  const unsigned long expect_L = 0xDF333FD2L;
+  const unsigned long expect_R = 0x30A71BB4L;
+#endif
+
   test_positive();
   test_begin();
   test_start_timer();
@@ -37,7 +45,7 @@ int test_main(void) {
 
   Blowfish_Encrypt(&ctx, &L, &R);
   t_printf("%08lX %08lX\n", L, R);
-  if (L == 0xDF333FD2L && R == 0x30A71BB4L)
+  if (L == expect_L && R == expect_R)
 	  t_printf("Test encryption OK.\n");
   else
 	  test_error("Test encryption failed.\n");
