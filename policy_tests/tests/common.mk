@@ -4,7 +4,7 @@ TEST_HELPER_SOURCES := $(TEST_HELPER_DIR)/test.c
 TEST_HELPER_SOURCES += $(TEST_HELPER_DIR)/test_status.c
 TEST_HELPER_OBJECTS := $(patsubst %.c, %.o, $(TEST_HELPER_SOURCES))
 
-TEST_HELPER_ASM         := test_asm.S
+TEST_HELPER_ASM         := $(TEST_HELPER_DIR)/test_asm.S
 TEST_HELPER_ASM_OBJECTS := $(patsubst %.S,%.o,$(TEST_HELPER_ASM))
 
 CFLAGS       += $(ISP_CFLAGS) $(TEST_CFLAGS)

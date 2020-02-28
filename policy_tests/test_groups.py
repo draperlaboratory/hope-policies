@@ -20,6 +20,7 @@ class AllTests:
         "string_works_1",
         "longjump_works_1",
         "code_read_works_1",
+        "inline_asm_works_1",
         "timer_works_1",
         "function_pointer_works_1",
         "function_pointer_works_2",
