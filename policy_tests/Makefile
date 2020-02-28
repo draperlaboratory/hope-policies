@@ -56,7 +56,7 @@ bare64-qemu_GPOLICIES =
 bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
 bare64-qemu_XDIST = -n $(JOBS) # run in parallel
 bare64-qemu_TIMEOUT = 360
-bare64-qemu_PYTEST_ARGS = --rv64
+bare64-qemu_PYTEST_ARGS = --arch=rv64
 bare64-qemu: CONFIG=bare64-qemu
 bare64-qemu: all
 
@@ -146,7 +146,7 @@ frtos64-qemu_GPOLICIES = contextswitch
 frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
 frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
 frtos64-qemu_TIMEOUT = 360
-frtos64-qemu_PYTEST_ARGS = --rv64
+frtos64-qemu_PYTEST_ARGS = --arch=rv64
 frtos64-qemu: CONFIG=frtos64-qemu
 frtos64-qemu: all
 
@@ -240,9 +240,9 @@ build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/log
+	mkdir -p $(TEST_BUILD_DIR)/$($(CONFIG)_TESTS)
+	mkdir -p $(TEST_BUILD_DIR)/$($(CONFIG)_TESTS)/$(SIM)
+	mkdir -p $(TEST_BUILD_DIR)/$($(CONFIG)_TESTS)/$(SIM)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests

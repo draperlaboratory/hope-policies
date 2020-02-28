@@ -9,7 +9,7 @@ import glob
 import shutil
 import multiprocessing
 
-def test_install_kernel(policy, debug, rv64):
+def test_install_kernel(policy, debug, arch):
     if not policy:
         pytest.fail("No policy specified");
     
@@ -26,12 +26,9 @@ def test_install_kernel(policy, debug, rv64):
         pytest.skip("Using previously compiled kernel")
     
     install_kernel_cmd = "isp_kernel"
-    install_kernel_args = [policy, "-o", "kernels"]
+    install_kernel_args = [policy, "-o", "kernels", "--arch", arch]
     if debug is True:
         install_kernel_args += ["-d"]
-
-    if rv64:
-        install_kernel_args += ["--rv64"]
 
     subprocess.call([install_kernel_cmd] + install_kernel_args)
 

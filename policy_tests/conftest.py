@@ -31,9 +31,8 @@ def pytest_addoption(parser):
                      help='What composite policies (simple, full, else none)')
     parser.addoption('--isp_debug', default='no',
                      help='pass debug options to testing tasks (yes/no)')
-    parser.addoption('--rv64', default=False,
-                     action="store_true",
-                     help='64-bit Operation')
+    parser.addoption('--arch', default='rv32',
+                     help='Which processor architecture to use.')
     parser.addoption('--extra', default=[],
                      help='extra args to pass to isp_run_app')
 
@@ -46,8 +45,8 @@ def runtime(request):
     return request.config.getoption('--runtime')
 
 @pytest.fixture
-def rv64(request):
-    return request.config.getoption('--rv64')
+def arch(request):
+    return request.config.getoption('--arch')
 
 @pytest.fixture
 def soc(request):
