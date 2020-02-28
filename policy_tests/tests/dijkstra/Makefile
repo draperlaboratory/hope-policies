@@ -1,0 +1,12 @@
+RUNTIME ?= bare
+include ../isp-runtime-$(RUNTIME).mk
+
+TEST_CFLAGS := -DNUM_NODES=30
+TEST_HELPER_DIR = ..
+TEST_INCLUDES += -I$(TEST_HELPER_DIR)
+TEST_SOURCES := dijkstra.c
+TEST_OBJECTS := $(patsubst %.c, %.o, $(TEST_SOURCES))
+
+TEST_TARGET := $(OUTPUT_DIR)/dijkstra
+
+include ../common.mk
