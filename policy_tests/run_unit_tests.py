@@ -21,12 +21,13 @@ def incompatibleReason(test, policies, arch):
         return "PPAC policy must run with heap and userType policies"
     return None
 
-
 def xfailReason(test, runtime, policies, global_policies, arch):
     if test == "hello_works_2" and "testContext" in policies and not "contextswitch" in global_policies:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
     if test == "float_works" and "heap" in policies and runtime == "frtos":
         return "float_works on FreeRTOS is known to fail with the heap policy."
+    if test == "inline_asm_works_1" and ("cfi" in policies or runtime == "bare" and "threeClass" in policies):
+        return "tagging of inline assembly is currently broken."
     return None
 
 
