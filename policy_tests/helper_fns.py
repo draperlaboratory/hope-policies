@@ -28,3 +28,8 @@ def doMkDir(dir):
         if e.errno != errno.EEXIST:
             raise    
 
+def is_64_bit_arch(arch):
+    if arch == 'rv64':
+        return True
+    return False
+    

@@ -50,7 +50,7 @@ bare-qemu: all
 # config for 64-bit bare-metal on QEMU
 bare64-qemu_SIM = qemu
 bare64-qemu_TESTS = bare64
-bare64-qemu_RUNTIME = bare64
+bare64-qemu_RUNTIME = bare
 bare64-qemu_MODULE = osv.bare64.main
 bare64-qemu_GPOLICIES = 
 bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
@@ -140,7 +140,7 @@ frtos-vcs: all
 # config for 64-bit FreeRTOS
 frtos64-qemu_SIM = qemu
 frtos64-qemu_TESTS = frtos64
-frtos64-qemu_RUNTIME = frtos64
+frtos64-qemu_RUNTIME = frtos
 frtos64-qemu_MODULE = osv.frtos64.main
 frtos64-qemu_GPOLICIES = contextswitch
 frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
@@ -240,9 +240,9 @@ build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/log
+	mkdir -p $(TEST_BUILD_DIR)/$($(CONFIG)_TESTS)
+	mkdir -p $(TEST_BUILD_DIR)/$($(CONFIG)_TESTS)/$(SIM)
+	mkdir -p $(TEST_BUILD_DIR)/$($(CONFIG)_TESTS)/$(SIM)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
