@@ -13,7 +13,7 @@ import helper_fns
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
-def incompatibleReason(test, policy):
+def incompatibleReason(test, policy, arch):
     # skip negative tests that are not matched to the correct policy
     if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy):
         return "incorrect policy to detect violation in negative test"
@@ -24,7 +24,7 @@ def incompatibleReason(test, policy):
         return "PPAC policy must run with heap and userType policies"
     return None
 
-def xfailReason(test, policy, runtime):
+def xfailReason(test, policy, runtime, arch):
     if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
     if test in ["printf_works_1"] and "heap" in policy and "bare64" in runtime:
@@ -32,17 +32,24 @@ def xfailReason(test, policy, runtime):
 
     return None
 
+
+def testPath(runtime, sim, test, arch):
+    if helper_fns.is_64_bit_arch(arch):
+        return os.path.join(os.path.abspath("build"), runtime + '64', sim, test)
+    return os.path.join(os.path.abspath("build"), runtime, sim, test)
+
+
 # test function found automatically by pytest. Pytest calls
 #   pytest_generate_tests in conftest.py to determine the
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, extra, output_subdir=None):
-    incompatible = incompatibleReason(test, policy)
+def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, extra, arch, output_subdir=None):
+    incompatible = incompatibleReason(test, policy, arch)
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test, policy, runtime)
+    xfail = xfailReason(test, policy, runtime, arch)
 
     output_dir = os.path.abspath("output")
     if output_subdir is not None:
@@ -52,10 +59,10 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc
     if debug is True:
         policy_dir = "-".join([policy_dir, "debug"])
 
-    test_path = os.path.abspath(os.path.join("build", runtime, sim, test))
+    test_path = testPath(runtime, sim, test, arch)
 
     runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size,
-            output_dir, soc, timeout, extra)
+            output_dir, soc, timeout, arch, extra)
     
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
 
@@ -70,12 +77,12 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc
     if exe_dir is not "tests":
         test_output_dir = test_output_dir + "-" + exe_dir
 
-    testResult(test_output_dir,xfail)
+    testResult(test_output_dir, xfail)
 
 
-def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, extra):
+def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
     run_cmd = "isp_run_app"
-    run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir]
+    run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir, "--arch", arch]
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
 

@@ -56,7 +56,7 @@ bare64-qemu_GPOLICIES =
 bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
 bare64-qemu_XDIST = -n $(JOBS) # run in parallel
 bare64-qemu_TIMEOUT = 360
-bare64-qemu_PYTEST_ARGS = --rv64
+bare64-qemu_PYTEST_ARGS = --arch=rv64
 bare64-qemu: CONFIG=bare64-qemu
 bare64-qemu: all
 
@@ -146,7 +146,7 @@ frtos64-qemu_GPOLICIES = contextswitch
 frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
 frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
 frtos64-qemu_TIMEOUT = 360
-frtos64-qemu_PYTEST_ARGS = --rv64
+frtos64-qemu_PYTEST_ARGS = --arch=rv64
 frtos64-qemu: CONFIG=frtos64-qemu
 frtos64-qemu: all
 

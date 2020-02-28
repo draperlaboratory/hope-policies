@@ -32,7 +32,7 @@ def test_copy_build_dir(test, runtime, sim):
     if not test:
         pytest.fail("No test provided to build")
 
-    output_dir = os.path.join(os.path.abspath("build"), runtime, sim, "src")
+    output_dir = os.path.join(outputDir(runtime, sim, arch), "src")
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
 
@@ -67,7 +67,7 @@ def test_copy_build_dir(test, runtime, sim):
 
 
 # function automatically found by pytest
-def test_build(test, runtime, sim, extra_args=None, extra_env=None):
+def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     if not runtime:
         pytest.fail("No target runtime provided")
 
