@@ -37,7 +37,7 @@ def test_copy_build_dir(test, runtime, sim, arch):
 
     output_dir = sourceDir(runtime, sim, arch)
     if not os.path.isdir(output_dir):
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
 
     if len(os.path.dirname(test)) != 0:
         output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
@@ -56,14 +56,14 @@ def test_copy_build_dir(test, runtime, sim, arch):
     shutil.copy(os.path.join("tests", "test.c"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.h"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.c"), output_test_dir)
+    shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
 
     if isMakefileTest(test):
         shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
         if "webapp" in test:
             shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
     else:
-        shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
-        shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
+        shutil.copy(os.path.join("tests", "Makefile"), output_test_dir)
         shutil.copy(os.path.join("tests", test + ".c"), output_test_dir)
 
     subprocess.Popen(["isp_install_runtime", runtime, sim, "-b", output_test_dir]).wait()
@@ -85,7 +85,7 @@ def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     if isRipeTest(test):
         test_dir = os.path.join(test_dir, "ripe")
 
-    makefile = "Makefile.{}".format(runtime)
+    makefile = "Makefile"
     if not os.path.isfile(os.path.join(test_dir, makefile)):
         pytest.fail("Test Makefile not found: {}".format(os.path.join(test_dir, makefile)))
 

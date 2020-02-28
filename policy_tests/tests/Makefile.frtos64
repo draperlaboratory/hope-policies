@@ -1,2 +1,0 @@
-include isp-runtime-frtos64.mk
-include common.mk
