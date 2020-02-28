@@ -59,13 +59,13 @@ def test_copy_build_dir(test, runtime, sim, arch):
     shutil.copy(os.path.join("tests", "test.c"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.h"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.c"), output_test_dir)
+    shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
 
     if isMakefileTest(test):
         shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
         if "webapp" in test:
             shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
     else:
-        shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
         shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
         shutil.copy(os.path.join("tests", test + ".c"), output_test_dir)
 
