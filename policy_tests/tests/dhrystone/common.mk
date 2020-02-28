@@ -12,7 +12,11 @@ SOURCES := dhrystone-baremetal.c
 SOURCES += $(TEST_ROOT_DIR)/test_status.c
 SOURCES += $(TEST_ROOT_DIR)/test.c
 
-OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
+ASM_SOURCES := $(TEST_ROOT_DIR)/test_asm.S
+
+C_OBJECTS := $(patsubst %.c,%.o,$(SOURCES))
+ASM_OBJECTS := $(patsubst %.S,%.o,$(ASM_SOURCES))
+OBJECTS := $(C_OBJECTS) $(ASM_OBJECTS)
 
 TARGET := $(OUTPUT_DIR)/dhrystone
 
@@ -22,5 +26,8 @@ $(TARGET): $(ISP_OBJECTS) $(ISP_LIBS) $(ISP_DEPS) $(OBJECTS)
 	$(CC) $(CFLAGS) $(INCLUDES) $(ISP_OBJECTS) \
 		$(OBJECTS) -o $@ $(LDFLAGS)
 
-$(OBJECTS): %.o: %.c $(SOURCES)
+$(C_OBJECTS): %.o: %.c $(SOURCES)
 	$(CC) $(CFLAGS) $(INCLUDES) $< -c -o $@
+
+$(ASM_OBJECTS): %.o: %.S $(SOURCES)
+	$(CC) $(ASM_FLAGS) $(INCLUDES) $< -c -o $@

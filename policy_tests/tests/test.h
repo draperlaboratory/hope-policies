@@ -29,3 +29,5 @@ char *t_pathrel(char *buf, size_t n, char *argv0, char *p);
 int t_setrlim(int r, long lim);
 
 uint32_t t_instret(void);
+
+int read_mxl(void);

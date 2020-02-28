@@ -50,6 +50,7 @@ def test_copy_build_dir(test, runtime, sim, arch):
 
     shutil.copy(os.path.join("tests", "test.h"), output_test_dir)
     shutil.copy(os.path.join("tests", "test.c"), output_test_dir)
+    shutil.copy(os.path.join("tests", "test_asm.S"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.h"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.c"), output_test_dir)
     shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
