@@ -40,7 +40,7 @@ def test_copy_build_dir(test, runtime, sim, arch):
 
     output_dir = os.path.join(outputDir(runtime, sim, arch), "src")
     if not os.path.isdir(output_dir):
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
 
     if len(os.path.dirname(test)) != 0:
         output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
