@@ -1,6 +1,7 @@
 RUNTIME ?= bare
 include ../isp-runtime-$(RUNTIME).mk
 
+TEST_LDFLAGS := -lm
 TEST_HELPER_DIR = ..
 TEST_INCLUDES += -I$(TEST_HELPER_DIR)
 TEST_SOURCES := bitcnt_1.c bitcnt_2.c bitcnt_3.c bitcnt_4.c bitcnts.c bitstrng.c bstr_i.c
