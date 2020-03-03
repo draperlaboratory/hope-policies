@@ -27,6 +27,8 @@ def incompatibleReason(test, policy):
 def xfailReason(test, policy, runtime):
     if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
+    if test in ["printf_works_1"] and "heap" in policy and "bare64" in runtime:
+        return "printing pointers with the heap policy is not completely supported yet. See issue #101"
 
     return None
 
