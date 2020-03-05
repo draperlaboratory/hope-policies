@@ -1,0 +1,21 @@
+import os
+import errno
+
+def pexName(sim, policies, global_policies, debug):
+    name = None
+    policy_name = policyName(policies, global_policies, debug)
+
+    if sim == "qemu":
+        return "-".join(["rv32", policy_name, "validator.so"])
+    if sim == "vcu118":
+        return "-".join(["kernel", "gfe", policy_name])
+
+    return None
+
+
+def policyName(policies, global_policies, debug):
+    all_policies = sorted(global_policies) + sorted(policies)
+    policy_name = "-".join(all_policies)
+    if debug:
+        return "-".join(policy_name, "debug")
+    return policy_name

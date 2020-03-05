@@ -10,8 +10,6 @@ import glob
 import errno
 import re
 
-from helper_fns import *
-
 # True when test has its own Makefile
 def isMakefileTest(test):
     if os.path.isdir(os.path.join("tests", test)):

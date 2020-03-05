@@ -72,7 +72,7 @@ def extra(request):
 
 @pytest.fixture
 def global_policies(request):
-    return request.config.getoption('--gpolicies')
+    return request.config.getoption('--gpolicies').split(",")
 
 def pytest_generate_tests(metafunc):
 
@@ -91,11 +91,14 @@ def pytest_generate_tests(metafunc):
         module = metafunc.config.option.module
         if module:
             if 'simple' in metafunc.config.option.composite:
-                policies = composites(gpolicies, policies, True)
+                policies = composites(policies, True)
+                gpolicies = composites(gpolicies, True)
             elif 'full' in metafunc.config.option.composite:
-                policies = composites(gpolicies, policies, False)
-            else:
-                policies = [p for p in (gpolicies+policies)]
+                policies = composites(policies, False)
+                gpolicies = composites(gpolicies, False)
+
+        gpolicies.append('')
+        metafunc.parametrize("global_policy", gpolicies, scope='session')
             
         # give all policies to test
         metafunc.parametrize("policy", policies, scope='session')
@@ -151,21 +154,15 @@ def permutePols(polStrs):
     return (reduce(operator.concat, combs, []))
 
 # given modules and policies, generate composite policies
-def composites(gpolicies, policies, simple):
+def composites(policies, simple):
 
     # generate all permutations
     r = []
-    globalPols = permuteGlobalPols(gpolicies)
-    localPols = permutePols(policies)
-    if globalPols:
-        localPols.append([])
-    if localPols:
-        globalPols.append([])
+    permuted_policies = permutePols(policies)
 
-    for p in localPols:
-        for gp in globalPols:
-            if p or gp:
-                r.append((p, "-".join(gp+p)))
+    for p in permuted_policies:
+        if p:
+            r.append((p, "-".join(p)))
 
     # length of policy that has every member policy except none
     full_composite_len = len(policies)
@@ -187,14 +184,3 @@ def composites(gpolicies, policies, simple):
                 (     (not "none" in x[0])
                   and (not "testSimple" in x[0])
                   and (not "testComplex" in x[0]))]
-
-# generate the permutations of policies to compose
-def permuteGlobalPols(polStrs):
-    p = (polStrs)
-    # list of number of policies
-    ns = list(range(1,len(p)+1))
-    # list of combinations for each n
-    combs = [list(map(sorted,itertools.combinations(p, n))) for n in ns]
-    # flatten list
-    return (reduce(operator.concat, combs, []))
-

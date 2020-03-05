@@ -8,41 +8,18 @@ import time
 import glob
 import shutil
 import multiprocessing
-
-def pexName(sim, policy, debug):
-    name = None
-
-    if sim == "qemu":
-        if debug:
-            name = "-".join(["rv32", policy, "debug", "validator.so"])
-        else:
-            name = "-".join(["rv32", policy, "validator.so"])
-    if sim == "vcu118":
-        name = "-".join(["kernel", policy])
-        if debug:
-            name = "-".join(name, "debug")
-
-    return name
-
+import policy_test_common
 
 # function found automatically by pytest
-def test_install_policy(policy, global_policies, sim, debug):
+def test_install_policy(policy, global_policy, sim, debug):
     policies = policy.split("-")
-
-    if "none" in global_policies:
-        global_policies.remove("none")
-
-    if not policy:
-        pytest.fail("No policy specified")
-
-    # split up policies from global policies for arg passing
-    global_policies = [policy for policy in policies if policy in global_policies]
-    policies = [policy for policy in policies if policy not in global_policies]
+    global_policies = global_policy.split("-")
+    global_policies = list(filter(None, global_policies))
 
     policy_install_path = "policies"
     pex_install_path = os.path.join("pex", sim)
 
-    pex_name = pexName(sim, policy, debug)
+    pex_name = policy_test_common.pexName(sim, policies, global_policies, debug)
     if not pex_name:
         pytest.fail("invalid arguments to determine pex name")
     if os.path.exists(os.path.join(pex_install_path, pex_name)):

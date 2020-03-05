@@ -80,7 +80,7 @@ bare-vcs_RUNTIME = bare
 bare-vcs_MODULE = osv
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
+bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES)
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
 bare-vcs: CONFIG=bare-vcs
@@ -107,7 +107,7 @@ frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos-vcu118_TIMEOUT = 360
-frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
+frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
 
