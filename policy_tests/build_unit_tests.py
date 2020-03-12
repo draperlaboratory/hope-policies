@@ -25,11 +25,8 @@ def isRipeTest(test):
     return False
 
 
-def outputDir(runtime, sim, arch):
-    if is_64_bit_arch(arch):
-        return os.path.join(os.path.abspath("build"), runtime + '64', sim)
-    return os.path.join(os.path.abspath("build"), runtime, sim)
-
+def sourceDir(runtime, sim, arch):
+    return os.path.join(outputDir(runtime, sim, arch), "src")
 
 def test_copy_build_dir(test, runtime, sim, arch):
     if not runtime:
@@ -38,7 +35,7 @@ def test_copy_build_dir(test, runtime, sim, arch):
     if not test:
         pytest.fail("No test provided to build")
 
-    output_dir = os.path.join(outputDir(runtime, sim, arch), "src")
+    output_dir = sourceDir(runtime, sim, arch)
     if not os.path.isdir(output_dir):
         os.mkdir(output_dir)
 

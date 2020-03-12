@@ -142,6 +142,7 @@ def main():
     parser = argparse.ArgumentParser(description="Generate performance report for policy tests")
     parser.add_argument("-r", "--runtime", type=str, required=True)
     parser.add_argument("-s", "--sim", type=str, required=True)
+    parser.add_argument('--arch', type=str, required=True)
     parser.add_argument("-p", "--policies", type=str, required=True, help='''
     comma-separated list of policies e.g. rwx,stack,heap,heap-rwx-stack
     ''')
@@ -182,7 +183,7 @@ def main():
     tests = get_tests(test_arg)
 
     output_path = "_".join([
-        "-".join([args.runtime, args.sim]),
+        "-".join([args.runtime, args.sim, args.arch]),
         "performance",
         "report"]) + ".xml"
     if args.output:

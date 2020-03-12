@@ -33,10 +33,8 @@ def xfailReason(test, policy, runtime, arch):
     return None
 
 
-def testPath(runtime, sim, test, arch):
-    if helper_fns.is_64_bit_arch(arch):
-        return os.path.join(os.path.abspath("build"), runtime + '64', sim, test)
-    return os.path.join(os.path.abspath("build"), runtime, sim, test)
+def testPath(runtime, sim, arch, test):
+    return os.path.join(helper_fns.outputDir(runtime, sim, arch), test)
 
 
 # test function found automatically by pytest. Pytest calls
@@ -55,11 +53,11 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc
     if output_subdir is not None:
         output_dir = os.path.join(output_dir, output_subdir)
 
-    policy_dir = os.path.abspath(os.path.join("kernels", policy))
+    policy_dir = os.path.abspath(os.path.join("kernels/{}".format(arch), policy))
     if debug is True:
         policy_dir = "-".join([policy_dir, "debug"])
 
-    test_path = testPath(runtime, sim, test, arch)
+    test_path = testPath(runtime, sim, arch, test)
 
     runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size,
             output_dir, soc, timeout, arch, extra)

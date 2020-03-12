@@ -32,3 +32,8 @@ def is_64_bit_arch(arch):
     if arch == 'rv64':
         return True
     return False
+
+
+def outputDir(runtime, sim, arch):
+    return os.path.join(os.path.abspath("build"), runtime, sim, arch)
+
