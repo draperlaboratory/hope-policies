@@ -159,8 +159,6 @@ def composites(module, gpolicies, policies, simple):
     r = []
     globalPols = permuteGlobalPols(gpolicies)
     localPols = permutePols(policies)
-    if globalPols:
-        localPols.append([])
     if localPols:
         globalPols.append([])
 
