@@ -19,7 +19,7 @@ def test_install_kernel(policy, debug, arch):
     if not os.path.isdir(install_path):
         os.makedirs(install_path)
 
-    val_name = "librv32-renode-validator.so"
+    val_name = "".join(["lib", arch, "-renode-validator.so"])
 
     # do not remake kernel unneccesarily
     if os.path.isfile(os.path.join(install_path, val_name)):
