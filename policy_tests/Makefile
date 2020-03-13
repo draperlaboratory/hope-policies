@@ -50,7 +50,7 @@ bare-qemu: all
 # config for 64-bit bare-metal on QEMU
 bare64-qemu_SIM = qemu
 bare64-qemu_TESTS = bare64
-bare64-qemu_RUNTIME = bare64
+bare64-qemu_RUNTIME = bare
 bare64-qemu_MODULE = osv.bare64.main
 bare64-qemu_GPOLICIES = 
 bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
@@ -140,7 +140,7 @@ frtos-vcs: all
 # config for 64-bit FreeRTOS
 frtos64-qemu_SIM = qemu
 frtos64-qemu_TESTS = frtos64
-frtos64-qemu_RUNTIME = frtos64
+frtos64-qemu_RUNTIME = frtos
 frtos64-qemu_MODULE = osv.frtos64.main
 frtos64-qemu_GPOLICIES = contextswitch
 frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
@@ -198,7 +198,7 @@ run-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-ripe: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-ripe:
-	mkdir -p $(TEST_OUTPUT_DIR)
+	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
 	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
 
 ripe: build-kernels build-ripe run-ripe
@@ -275,7 +275,7 @@ run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-tests: build-tests
-	mkdir -p $(TEST_OUTPUT_DIR)
+	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)

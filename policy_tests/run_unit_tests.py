@@ -34,6 +34,8 @@ def xfailReason(test, policy, runtime, arch):
 
 
 def testPath(runtime, sim, test, arch):
+    if helper_fns.is_64_bit_arch(arch):
+        return os.path.join(os.path.abspath("build"), runtime + '64', sim, test)
     return os.path.join(os.path.abspath("build"), runtime, sim, test)
 
 
@@ -49,7 +51,7 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc
 
     xfail = xfailReason(test, policy, runtime, arch)
 
-    output_dir = os.path.abspath("output")
+    output_dir = os.path.abspath(os.path.join("output", arch))
     if output_subdir is not None:
         output_dir = os.path.join(output_dir, output_subdir)
 
@@ -71,7 +73,7 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
 
     # add policy-specific directory test source is in to output dir
-    exe_dir = os.path.basename(os.path.dirname(test_path))
+    exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test_path)))
     if exe_dir is not "tests":
         test_output_dir = test_output_dir + "-" + exe_dir
 
@@ -92,7 +94,7 @@ def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir,
         run_args += ["-e"] + extra_args
 
     # add policy-specific directory test source is in to output dir
-    exe_dir = os.path.basename(os.path.dirname(test))
+    exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test)))
     if exe_dir is not "tests":
         run_args += ["-S", exe_dir]
 

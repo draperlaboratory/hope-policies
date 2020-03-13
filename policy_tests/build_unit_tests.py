@@ -26,6 +26,8 @@ def isRipeTest(test):
 
 
 def outputDir(runtime, sim, arch):
+    if is_64_bit_arch(arch):
+        return os.path.join(os.path.abspath("build"), runtime + '64', sim)
     return os.path.join(os.path.abspath("build"), runtime, sim)
 
 
