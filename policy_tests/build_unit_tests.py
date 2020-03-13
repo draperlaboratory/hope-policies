@@ -99,7 +99,7 @@ def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     if isMakefileTest(test):
         output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
 
-    make_args = ["make", "-C", output_test_dir, "-f", makefile, "RUNTIME={}".format(runtime), "RVXX={}".format(arch.upper())]
+    make_args = ["make", "-C", output_test_dir, "-f", makefile, "RUNTIME={}".format(runtime), "ARCH={}".format(arch)]
     if extra_args is not None:
         make_args += extra_args
 
