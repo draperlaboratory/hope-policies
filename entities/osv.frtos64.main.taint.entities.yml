@@ -1,6 +1,0 @@
--
-    name: poc.var.taint
-    elf_name: taint
-    kind: symbol
-    tag_all: true
-    optional: true
