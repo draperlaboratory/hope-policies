@@ -1,0 +1,18 @@
+RUNTIME ?= bare
+include ../isp-runtime-$(RUNTIME).mk
+
+TEST_CFLAGS := -O0
+TEST_CFLAGS += -DATTACK_TECHNIQUE=\"$(TECHNIQUE)\" \
+					-DATTACK_INJECT_PARAM=\"$(INJECT_PARAM)\" \
+					-DATTACK_CODE_PTR=\"$(CODE_PTR)\" \
+					-DATTACK_LOCATION=\"$(LOCATION)\" \
+					-DATTACK_FUNCTION=\"$(FUNCTION)\"
+
+TEST_HELPER_DIR = ..
+TEST_INCLUDES += -I$(TEST_HELPER_DIR)
+TEST_SOURCES := $(wildcard *c)
+TEST_OBJECTS := $(patsubst %.c, %.o, $(TEST_SOURCES))
+
+TEST_TARGET := $(OUTPUT_DIR)/ripe/ripe-$(TECHNIQUE)-$(INJECT_PARAM)-$(CODE_PTR)-$(LOCATION)-$(FUNCTION)
+
+include ../common.mk

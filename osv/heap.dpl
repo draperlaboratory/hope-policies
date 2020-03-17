@@ -54,6 +54,9 @@ policy:
 // pointer plus scalar retains pointer color   
    ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [-(Pointer _)] -> env = env, res = op1)
    ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [+(Pointer color)] -> env = env, res = op2)
+// Let the compiler mv the tagged data between registers
+   ^ immArithGrp(code == [ApplyColor], env == _, op1 == [ModColor] -> env = env, res = op1)
+   ^ immArithGrp(code == [RemoveColor], env == _, op1 == [ModColor] -> env = env, res = op1)
 // Allow arithmetic on same colored ptrs
    ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [+(Pointer color)] -> env = env, res = op1)
    ^ arithGrp(env == _, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
@@ -111,6 +114,7 @@ policy:
    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
    ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
    ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ floatGrp(code == _, env == _ -> env = env)
    ^ privGrp(code == _, env == _ -> env = env)
 
 

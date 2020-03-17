@@ -31,28 +31,28 @@
 #include "test_status.h"
 #include "test.h"
 
+
 /*
- * Test to check that trying to write code is an error
- * under the RWX policy.
+ * Floating Point sanity test to check we can use floats.
  */
 int test_main(void)
   {
-    volatile int foo = 42;
-    volatile int* foo_ptr;
-
-    test_negative(); // identify test as negative (will not complete)
-    
-    foo_ptr = (int*) test_main;
-
-    // should pass
-    t_printf("foo = %d\n", foo);
-    test_begin();
-
-    // should fail
-    *foo_ptr = foo;
-
-    t_printf("RWX code_write_fails_1 Test - should not execute this\n");
-    
+    test_positive();
+    float a = 2.5f;
+    float b = 3.2f;
+    t_printf("a should be 2.5");
+    t_printf("a is %f", a);
+    t_printf("b should be 3.2");
+    t_printf("b is %f", b);
+    t_printf("c = a + b should be 5.7");
+    float c = a + b;
+    t_printf("c is %f", c);
+    if (a < b) {
+      test_pass();
+    } else {
+      t_printf("a was not less than b!");
+      test_fail();
+    }
     return test_done();
   }
 

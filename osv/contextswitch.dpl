@@ -52,8 +52,10 @@ policy:
 group:
     grp loadMemGrp(RS1:addr, MEM:mem -> RD:res)
         lw
+        ld
     grp storeMemGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
         sw
+        sd
 
 require:
     init ISA.RISCV.Reg.Env                   {}

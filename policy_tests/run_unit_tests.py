@@ -13,7 +13,7 @@ import policy_test_common
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
-def incompatibleReason(test, policies):
+def incompatibleReason(test, policies, arch):
     # skip negative tests that are not matched to the correct policy
     if "ripe" not in test and "/" in test and (not test.split("/")[0] in policies):
         return "incorrect policy to detect violation in negative test"
@@ -22,11 +22,16 @@ def incompatibleReason(test, policies):
     return None
 
 
-def xfailReason(test, policies, global_policies):
+def xfailReason(test, policies, global_policies, arch):
     if test == "hello_works_2" and "testContext" in policies and not "contextswitch" in global_policies:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-
+    if test in ["printf_works_1"] and "heap" in policies and "bare" in runtime and policy_test_common.is64Bit(arch):
+        return "printing pointers with the heap policy is not completely supported yet. See issue #101"
     return None
+
+
+def testPath(runtime, sim, arch, test):
+    return os.path.join(policy_test_common.outputDir(runtime, sim, arch), test)
 
 
 # test function found automatically by pytest. Pytest calls
@@ -39,13 +44,13 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     global_policies = global_policy.split("-")
     global_policies = list(filter(None, global_policies))
 
-    incompatible = incompatibleReason(test, policies)
+    incompatible = incompatibleReason(test, policies, arch)
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test, policies, global_policies)
+    xfail = xfailReason(test, policies, global_policies, arch)
 
-    output_dir = os.path.abspath("output")
+    output_dir = os.path.abspath(os.path.join("output", arch))
     if output_subdir is not None:
         output_dir = os.path.join(output_dir, output_subdir)
 
@@ -53,12 +58,14 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     policy_dir = os.path.abspath(os.path.join("policies", policy_name))
 
     pex_dir = os.path.abspath(os.path.join("pex", sim))
-    pex_path = os.path.join(pex_dir, policy_test_common.pexName(sim, policies, global_policies, debug))
+    
+    # TODO: use arch in pexName
+    pex_path = os.path.join(pex_dir, policy_test_common.pexName(sim, policies, global_policies, arch, debug))
 
-    test_path = os.path.abspath(os.path.join("build", runtime, sim, test))
+    test_path = testPath(runtime, sim, arch, test)
 
     runTest(test_path, runtime, policy_dir, pex_path, sim, rule_cache, rule_cache_size,
-            output_dir, soc, timeout, extra)
+            output_dir, soc, timeout, arch, extra)
 
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy_name]))
 
@@ -69,16 +76,16 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
 
     # add policy-specific directory test source is in to output dir
-    exe_dir = os.path.basename(os.path.dirname(test_path))
+    exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test_path)))
     if exe_dir is not "tests":
         test_output_dir = test_output_dir + "-" + exe_dir
 
-    testResult(test_output_dir,xfail)
+    testResult(test_output_dir, xfail)
 
 
-def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, extra):
+def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
     run_cmd = "isp_run_app"
-    run_args = [test, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir]
+    run_args = [test, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir, "--arch", arch]
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
 
@@ -90,7 +97,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
         run_args += ["-e"] + extra_args
 
     # add policy-specific directory test source is in to output dir
-    exe_dir = os.path.basename(os.path.dirname(test))
+    exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test)))
     if exe_dir is not "tests":
         run_args += ["-S", exe_dir]
 

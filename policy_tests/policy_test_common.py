@@ -19,3 +19,13 @@ def policyName(policies, global_policies, debug):
     if debug:
         return "-".join(policy_name, "debug")
     return policy_name
+
+
+def is64Bit(arch):
+    if arch == 'rv64':
+        return True
+    return False
+
+
+def outputDir(runtime, sim, arch):
+    return os.path.join(os.path.abspath("build"), runtime, sim, arch)
