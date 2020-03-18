@@ -11,7 +11,7 @@ import multiprocessing
 import policy_test_common
 
 # function found automatically by pytest
-def test_install_policy(policy, global_policy, sim, debug):
+def test_install_policy(policy, global_policy, sim, arch, debug):
     policies = policy.split("-")
     global_policies = global_policy.split("-")
     global_policies = list(filter(None, global_policies))
@@ -25,7 +25,7 @@ def test_install_policy(policy, global_policy, sim, debug):
     if os.path.exists(os.path.join(pex_install_path, pex_name)):
         pytest.skip("PEX binary already exists")
 
-    args = (["isp_install_policy", "-p"] + policies + ["-s", sim,
+    args = (["isp_install_policy", "-p"] + policies + ["-s", sim, "--arch", arch,
             "-o", pex_install_path, "-O", policy_install_path])
 
     if global_policies:
