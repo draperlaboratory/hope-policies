@@ -23,9 +23,6 @@ def isRipeTest(test):
     return False
 
 
-def sourceDir(runtime, sim, arch):
-    return os.path.join(outputDir(runtime, sim, arch), "src")
-
 def test_copy_build_dir(test, runtime, sim, arch):
     if not runtime:
         pytest.fail("No target runtime provided")
@@ -33,7 +30,8 @@ def test_copy_build_dir(test, runtime, sim, arch):
     if not test:
         pytest.fail("No test provided to build")
 
-    output_dir = sourceDir(runtime, sim, arch)
+    output_dir = os.path.join("build", runtime, sim, arch, "src")
+
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
 
@@ -87,7 +85,7 @@ def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     if not os.path.isfile(os.path.join(test_dir, makefile)):
         pytest.fail("Test Makefile not found: {}".format(os.path.join(test_dir, makefile)))
 
-    output_dir = outputDir(runtime, sim, arch)
+    output_dir = os.path.realpath(os.path.join("build", runtime, sim, arch))
 
     output_subdir = os.path.join(output_dir, os.path.dirname(test))
     if not os.path.isdir(output_subdir):

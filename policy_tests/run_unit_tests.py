@@ -31,7 +31,7 @@ def xfailReason(test, policies, global_policies, arch):
 
 
 def testPath(runtime, sim, arch, test):
-    return os.path.join(policy_test_common.outputDir(runtime, sim, arch), test)
+    return os.path.join("build", runtime, sim, arch, test)
 
 
 # test function found automatically by pytest. Pytest calls
