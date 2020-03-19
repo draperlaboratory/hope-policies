@@ -18,9 +18,9 @@ Run `make` to kick off a test run using a default configuration.
 
 Internally, 'make' runs 3 different targets:
 
-- build-tests   - compiles the test program(s) to be run
-- build-kernels - runs the policy tool to build the policy(s) to be run
-- run-tests     - runs the test program(s) with the policy(s) in the simulator
+- build-tests    - compiles the test program(s) to be run
+- build-policies - runs the policy tool to build the policy(s) to be run
+- run-tests      - runs the test program(s) with the policy(s) in the simulator
 
 There are several options that can be chosen to customize what policies and
 programs are built and run during the test. These can be specified on the
@@ -52,7 +52,7 @@ See the example below to clarify this process:
 
 - JOBS: How many workers to use when running tests in parallel.
    - note: some things cannot be run in parallel. For example, running the
-     renode simulator and building the kernels are not currently supported in
+     renode simulator and building the policies are not currently supported in
      parallel. In the makefile, the variable XDIST is set to pass
      configuration for $(JOBS) workers. As such, XDIST should be left blank
      in order to avoid parallelization.
@@ -65,7 +65,7 @@ See the example below to clarify this process:
    - --tb=native  # Python standard library formatting
    - --tb=no      # no traceback at all
 
-### Test program, kernel, & run common knobs
+### Test program, policy, & run common knobs
 
 - DEBUG - tell the subtasks to produce debugging output. What this actually
     	  does is up to the implementation of the subtask. (yes/no)
@@ -89,7 +89,7 @@ See the example below to clarify this process:
      the tests should be string entries in an array called "tests" within
      the class. See the file for examples.
 
-### Policy kernel build knobs
+### Policy build knobs
 
 - MODULE: an optional prefix to be applied to the POLICIES knob.
 
@@ -118,45 +118,47 @@ each test. Each test's subdirectory contains some build files including at
 least a Makefile to compile the test, a `src/` dir and a `build/` dir for the
 finished binary and build logs.
 
-The `kernels` target stores outputs from the policy-tool in subdirectories of
-the `kernels/` directory.
+The `policies` target stores outputs from the policy-tool in subdirectories of
+the `policies/` directory.
 
 The `run` target creates subdirectories in each test's directory. Each of
 these subdirectories corresponds to a simulation run with a particular policy
-for the test. It contains Makefiles, the policy kernel, run logs, and more.
+for the test. It contains Makefiles, the policy, run logs, and more.
 
 Summary of output directories and files, their purpose, and the build target
 responsible for generating them:
 
-|file                        | description/notes                     | target |
-|----------------------------|---------------------------------------|--------|
-|`kernels/`                  | contains compiled pex kernels         | kernels|
-|`..compiled_kernel_1/`      | output of policy tool for policy 1    | kernels|
-|`output/`                   | tests binaries & simulation run output| build  |
-|`..test_1/`                 | all files related to test_1           | build  |
-|`....Makefile`              | build test_1 binary                   | build  |
-|`....test_1.entities.yml`   | test-specific policy config           | build  |
-|`....runX.py`               | script to run simulator X with test_1 | run    |
-|`....srcs/`                 | test 1 + ISP wrappers source code     | build  |
-|`......test_1.c`            |                                       | build  |
-|`......test_status.c`       |                                       | build  |
-|`......test_status.h`       |                                       | build  |
-|`......    ...`             |                                       | build  |
-|`....build/`                |                                       | build  |
-|`......Makefile`            | used build test_1 binary              | build  |
-|`......main`                | test_1 binary                         | build  |
-|`......build.log`           | output of test_1 compilation          | build  |
-|`....policy_1/`             | test_1 & policy_1 simulation output   | run    |
-|`......Makefile`            | run tagging tools or simulation       | run    |
-|`......compiled_kernel_1/`  |policy tool output copied from kernels/| run    |
-|`......bininfo/`            | test_1 & policy_1 tagging tool output | run    |
-|`........main.text`         | asm of compiled binary                | run    |
-|`........main.test.tagged`  | tagged asm of compiled binary         | run    |
-|`........main.taginfo`      | initial tag state for binary          | run    |
-|`......inits.log`           | output of tagging tools               | run    |
-|`......sim.log`             | output of simulator for run           | run    |
-|`......pex.log`             | PEX kernel output during simulation   | run    |
-|`......uart.log`            | target UART output during simulation  | run    |
+|file                        | description/notes                     | target   |
+|----------------------------|---------------------------------------|--------  |
+|`policies/`                 | contains compiled policies            | policies |
+|`..compiled_policy_1/`      | output of policy tool for policy 1    | policies |
+|`pex/`                      | contains compiled PEX binaries        | policies |
+|`..compiled_pex_1`          | compiled PEX binary                   | policies |
+|`output/`                   | tests binaries & simulation run output| build    |
+|`..test_1/`                 | all files related to test_1           | build    |
+|`....Makefile`              | build test_1 binary                   | build    |
+|`....test_1.entities.yml`   | test-specific policy config           | build    |
+|`....runX.py`               | script to run simulator X with test_1 | run      |
+|`....srcs/`                 | test 1 + ISP wrappers source code     | build    |
+|`......test_1.c`            |                                       | build    |
+|`......test_status.c`       |                                       | build    |
+|`......test_status.h`       |                                       | build    |
+|`......    ...`             |                                       | build    |
+|`....build/`                |                                       | build    |
+|`......Makefile`            | used build test_1 binary              | build    |
+|`......main`                | test_1 binary                         | build    |
+|`......build.log`           | output of test_1 compilation          | build    |
+|`....policy_1/`             | test_1 & policy_1 simulation output   | run      |
+|`......Makefile`            | run tagging tools or simulation       | run      |
+|`......compiled_policy_1/`  | copied from policies/                 | run     |
+|`......bininfo/`            | test_1 & policy_1 tagging tool output | run      |
+|`........main.text`         | asm of compiled binary                | run      |
+|`........main.test.tagged`  | tagged asm of compiled binary         | run      |
+|`........main.taginfo`      | initial tag state for binary          | run      |
+|`......inits.log`           | output of tagging tools               | run      |
+|`......sim.log`             | output of simulator for run           | run      |
+|`......pex.log`             | PEX policy output during simulation   | run      |
+|`......uart.log`            | target UART output during simulation  | run      |
 
 # Adding Tests
 
@@ -170,7 +172,7 @@ The new test should be added to the `all` group in `test_groups.py`
 
 Here we give an example of adding a new "knob" to the testing framework. This
 is a diff of the patch that implemented the DEBUG knob, specifically for the
-policy-tool (ie kernel target)
+policy-tool (ie policy target)
 
 First, pytest has to know to look for the knob.
 
@@ -206,17 +208,17 @@ Finally, subtasks can request the knob's value to be populated by pytest and
 can then use it for whatever task-specific operations it needs.
 
   ```
-  diff --git a/policy_tests/install_kernels.py b/policy_tests/install_kernels.py
+  diff --git a/policy_tests/install_policies.py b/policy_tests/install_policies.py
   index ba60f5b..df03c53 100644
-  --- a/policy_tests/install_kernels.py
-  +++ b/policy_tests/install_kernels.py
+  --- a/policy_tests/install_policies.py
+  +++ b/policy_tests/install_policies.py
   @@ -17 +17 @@ import multiprocessing
-  -def test_install_kernel(policy):
-  +def test_install_kernel(policy, debug):
-  @@ -29 +29 @@ def test_install_kernel(policy):
+  -def test_install_policy(policy):
+  +def test_install_policy(policy, debug):
+  @@ -29 +29 @@ def test_install_policy(policy):
   -    doMkPolicy(policy)
   +    doMkPolicy(policy, debug)
-  @@ -37 +37 @@ def test_install_kernel(policy):
+  @@ -37 +37 @@ def test_install_policy(policy):
   -def doMkPolicy(policy):
   +def doMkPolicy(policy, debug):
   @@ -45 +45,3 @@ def doMkPolicy(policy):
