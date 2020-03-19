@@ -22,7 +22,7 @@ def incompatibleReason(test, policies, arch):
     return None
 
 
-def xfailReason(test, policies, global_policies, arch):
+def xfailReason(test, runtime, policies, global_policies, arch):
     if test == "hello_works_2" and "testContext" in policies and not "contextswitch" in global_policies:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
     if test in ["printf_works_1"] and "heap" in policies and "bare" in runtime and policy_test_common.is64Bit(arch):
@@ -39,7 +39,7 @@ def testPath(runtime, sim, arch, test):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, extra, output_subdir=None):
+def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, arch, extra, output_subdir=None):
     policies = policy.split("-")
     global_policies = global_policy.split("-")
     global_policies = list(filter(None, global_policies))
@@ -48,7 +48,7 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test, policies, global_policies, arch)
+    xfail = xfailReason(test, runtime, policies, global_policies, arch)
 
     output_dir = os.path.abspath(os.path.join("output", arch))
     if output_subdir is not None:
@@ -59,7 +59,6 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
 
     pex_dir = os.path.abspath(os.path.join("pex", sim))
     
-    # TODO: use arch in pexName
     pex_path = os.path.join(pex_dir, policy_test_common.pexName(sim, policies, global_policies, arch, debug))
 
     test_path = testPath(runtime, sim, arch, test)

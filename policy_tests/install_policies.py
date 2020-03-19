@@ -19,7 +19,7 @@ def test_install_policy(policy, global_policy, sim, arch, debug):
     policy_install_path = "policies"
     pex_install_path = os.path.join("pex", sim)
 
-    pex_name = policy_test_common.pexName(sim, policies, global_policies, debug)
+    pex_name = policy_test_common.pexName(sim, policies, global_policies, arch, debug)
     if not pex_name:
         pytest.fail("invalid arguments to determine pex name")
     if os.path.exists(os.path.join(pex_install_path, pex_name)):

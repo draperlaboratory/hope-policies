@@ -1,14 +1,14 @@
 import os
 import errno
 
-def pexName(sim, policies, global_policies, debug):
+def pexName(sim, policies, global_policies, arch, debug):
     name = None
     policy_name = policyName(policies, global_policies, debug)
 
     if sim == "qemu":
-        return "-".join(["rv32", policy_name, "validator.so"])
+        return "-".join([arch, policy_name, "validator.so"])
     if sim == "vcu118":
-        return "-".join(["kernel", "gfe", policy_name])
+        return "-".join([arch, "kernel", "gfe", policy_name])
 
     return None
 
