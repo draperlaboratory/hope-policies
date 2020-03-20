@@ -1,7 +1,0 @@
--
-    name: dover.Tools.RTL.longjmp
-    elf_name: longjmp
-    kind: symbol
-    tag_all: true
-    optional: true
-

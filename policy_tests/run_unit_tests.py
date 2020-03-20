@@ -8,33 +8,30 @@ import shutil
 import time
 import glob
 import errno
-import helper_fns
+import policy_test_common
 
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
-def incompatibleReason(test, policy, arch):
+def incompatibleReason(test, policies, arch):
     # skip negative tests that are not matched to the correct policy
-    if "ripe" not in test and "/" in test and (not test.split("/")[0] in policy):
+    if "ripe" not in test and "/" in test and (not test.split("/")[0] in policies):
         return "incorrect policy to detect violation in negative test"
-    if "ppac" in policy and policy not in ["osv.bare.main.heap-ppac-userType",
-                                           "osv.bare64.main.heap-ppac-userType",
-                                           "osv.frtos.main.heap-ppac-userType",
-                                           "osv.frtos64.main.heap-ppac-userType"]:
+    if "ppac" in policies and not all(policy in ["heap", "ppac", "userType"] for policy in policies):
         return "PPAC policy must run with heap and userType policies"
     return None
 
-def xfailReason(test, policy, runtime, arch):
-    if test in ["hello_works_2"] and "testContext" in policy and not "contextswitch" in policy:
-        return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-    if test in ["printf_works_1"] and "heap" in policy and "bare" in runtime and helper_fns.is_64_bit_arch(arch):
-        return "printing pointers with the heap policy is not completely supported yet. See issue #101"
 
+def xfailReason(test, runtime, policies, global_policies, arch):
+    if test == "hello_works_2" and "testContext" in policies and not "contextswitch" in global_policies:
+        return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
+    if test in ["printf_works_1"] and "heap" in policies and "bare" in runtime and policy_test_common.is64Bit(arch):
+        return "printing pointers with the heap policy is not completely supported yet. See issue #101"
     return None
 
 
 def testPath(runtime, sim, arch, test):
-    return os.path.join(helper_fns.outputDir(runtime, sim, arch), test)
+    return os.path.join("build", runtime, sim, arch, test)
 
 
 # test function found automatically by pytest. Pytest calls
@@ -42,27 +39,34 @@ def testPath(runtime, sim, arch, test):
 #   arguments. If they are parameterized, it will call this
 #   function many times -- once for each combination of
 #   arguments
-def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, extra, arch, output_subdir=None):
-    incompatible = incompatibleReason(test, policy, arch)
+def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_size, debug, soc, timeout, arch, extra, output_subdir=None):
+    policies = policy.split("-")
+    global_policies = global_policy.split("-")
+    global_policies = list(filter(None, global_policies))
+
+    incompatible = incompatibleReason(test, policies, arch)
     if incompatible:
         pytest.skip(incompatible)
 
-    xfail = xfailReason(test, policy, runtime, arch)
+    xfail = xfailReason(test, runtime, policies, global_policies, arch)
 
     output_dir = os.path.abspath(os.path.join("output", arch))
     if output_subdir is not None:
         output_dir = os.path.join(output_dir, output_subdir)
 
-    policy_dir = os.path.abspath(os.path.join("kernels/{}".format(arch), policy))
-    if debug is True:
-        policy_dir = "-".join([policy_dir, "debug"])
+    policy_name = policy_test_common.policyName(policies, global_policies, debug)
+    policy_dir = os.path.abspath(os.path.join("policies", policy_name))
+
+    pex_dir = os.path.abspath(os.path.join("pex", sim))
+    
+    pex_path = os.path.join(pex_dir, policy_test_common.pexName(sim, policies, global_policies, arch, debug))
 
     test_path = testPath(runtime, sim, arch, test)
 
-    runTest(test_path, runtime, policy_dir, sim, rule_cache, rule_cache_size,
+    runTest(test_path, runtime, policy_dir, pex_path, sim, rule_cache, rule_cache_size,
             output_dir, soc, timeout, arch, extra)
-    
-    test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy]))
+
+    test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy_name]))
 
     if debug is True:
         test_output_dir = "-".join([test_output_dir, "debug"])
@@ -78,9 +82,9 @@ def test_new(test, runtime, policy, sim, rule_cache, rule_cache_size, debug, soc
     testResult(test_output_dir, xfail)
 
 
-def runTest(test, runtime, policy, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
+def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
     run_cmd = "isp_run_app"
-    run_args = [test, "-p", policy, "-s", sim, "-r", runtime, "-o", output_dir, "--arch", arch]
+    run_args = [test, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir, "--arch", arch]
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
 
