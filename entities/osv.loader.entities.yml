@@ -1,0 +1,18 @@
+-
+  name: loader.load
+  elf_name: add_tag_to_range
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: loader.load
+  elf_name: tag_loaded_elf
+  tag_all: true
+  kind: symbol
+  optional: true
+-
+  name: loader.load
+  elf_name: tag_loaded_elf.isra.0
+  tag_all: true
+  kind: symbol
+  optional: true
