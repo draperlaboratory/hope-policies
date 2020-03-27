@@ -76,6 +76,20 @@ bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
+# config for 64-bit bare-metal on VCU118 board
+bare64-vcu118_SIM = vcu118
+bare64-vcu118_TESTS = bare64
+bare64-vcu118_RUNTIME = bare64
+bare64-vcu118_ARCH = rv64
+bare64-vcu118_MODULE = osv.bare.main
+bare64-vcu118_GPOLICIES = 
+bare64-vcu118_POLICIES = heap,stack,rwx
+bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
+bare64-vcu118_TIMEOUT = 360
+bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
+bare64-vcu118: CONFIG=bare64-vcu118
+bare64-vcu118: all
+
 # config for bare-metal on VCU118 board without PIPE
 bare-stock_SIM = vcu118
 bare-stock_TESTS = bare
@@ -103,6 +117,20 @@ bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
 bare-vcs: CONFIG=bare-vcs
 bare-vcs: all
+
+# config for 64-bit bare-metal in VCS sim
+bare64-vcs_SIM = vcs
+bare64-vcs_TESTS = bare64
+bare64-vcs_RUNTIME = bare64
+bare64-vcs_ARCH = rv64
+bare64-vcs_MODULE = osv.bare.main
+bare64-vcs_GPOLICIES = 
+bare64-vcs_POLICIES = rwx
+bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
+bare64-vcs_XDIST = -n $(JOBS) # run in parallel
+bare64-vcs_TIMEOUT = 0
+bare64-vcs: CONFIG=bare64-vcs
+bare64-vcs: all
 
 # config for FreeRTOS on QEMU
 frtos-qemu_SIM = qemu
