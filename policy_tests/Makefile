@@ -79,14 +79,14 @@ bare-vcu118: all
 # config for 64-bit bare-metal on VCU118 board
 bare64-vcu118_SIM = vcu118
 bare64-vcu118_TESTS = bare64
-bare64-vcu118_RUNTIME = bare64
+bare64-vcu118_RUNTIME = bare
 bare64-vcu118_ARCH = rv64
-bare64-vcu118_MODULE = osv.bare.main
+bare64-vcu118_MODULE = osv
 bare64-vcu118_GPOLICIES = 
-bare64-vcu118_POLICIES = heap,stack,rwx
+bare64-vcu118_POLICIES = heap,rwx
 bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare64-vcu118_TIMEOUT = 360
-bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+pex-debug
+bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare64-vcu118: CONFIG=bare64-vcu118
 bare64-vcu118: all
 
