@@ -1,9 +1,23 @@
 /*
- * Generated header
+ * Generated header. Modified for compartmentalization policy.
  */
 
 #ifndef POLICY_META_H
 #define POLICY_META_H
+
+// A map of which argument fields are being used for which
+// purposes. See policy_meta_set.h. Current policy uses three
+// arguments, although there is some reuse in cases where it is
+// safe. Words 0 and 1 are for membership bits, 2 is for object
+// or subject ID, and 3 and 4 are for heap ptr/cell color.
+#define SUBJ_INDEX 2
+#define OBJ_INDEX 2
+#define PC_CONTROL_INDEX 2
+#define CELL_COLOR_INDEX 3
+#define POINTER_COLOR_INDEX 4
+
+#define opcode_begin				0x1a
+#define opcode_end				0x26
 
 #define osv_heap_AntiPointer                    0x18    // QTag ["osv","heap","AntiPointer"]
 #define osv_heap_ApplyColor                     0x13    // QTag ["osv","heap","ApplyColor"]
@@ -15,6 +29,7 @@
 #define osv_heap_RawHeap                        0x12    // QTag ["osv","heap","RawHeap"]
 #define osv_heap_RemoveColor                    0x14    // QTag ["osv","heap","RemoveColor"]
 #define osv_heap_SpecialCaseVFPRINTF            0x19    // QTag ["osv","heap","SpecialCaseVFPRINTF"]
+
 #define osv_riscv_og_andiGrp                    0x1e    // QGroup ["osv","riscv","og","andiGrp"]
 #define osv_riscv_og_arithGrp                   0x20    // QGroup ["osv","riscv","og","arithGrp"]
 #define osv_riscv_og_branchGrp                  0x1a    // QGroup ["osv","riscv","og","branchGrp"]

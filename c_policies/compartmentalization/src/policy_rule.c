@@ -87,17 +87,6 @@
 
 #include "comp_ht.c"
 
-// A map of which argument fields are being used for which
-// purposes. See policy_meta_set.h. Current policy uses three
-// arguments, although there is some reuse in cases where it is
-// safe. Words 0 and 1 are for membership bits, 2 is for object
-// or subject ID, and 3 and 4 are for heap ptr/cell color.
-const int SUBJ_INDEX = 2;
-const int OBJ_INDEX = 2;
-const int PC_CONTROL_INDEX = 2;
-const int CELL_COLOR_INDEX = 3;
-const int POINTER_COLOR_INDEX = 4;
-
 // Policy return codes
 const int policyERRORFailure = -2;
 const int policyExpFailure = 0;
@@ -274,37 +263,6 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
   // static call site to pvPortMalloc(). That subsystem uses
   // tags on the PC, so we set and preserve those here too.
   
-  // On calls, set the PC tag to indicate that we're jumping and
-  // set a field to indicate the source function
-  if (is_call && this_funcID != -1){
-    ms_bit_add(res -> pc, osv_threeClass_Jumping_Call);
-    res -> pc -> tags[PC_CONTROL_INDEX] = this_funcID;
-
-    // If this is a call to an allocator, transfer alloc-id onto PC.
-    // If it's a normal call not to an allocator, but happens before
-    // allocation routine unsets PC tag, just preserve it.
-    if (ops -> ci -> tags[POINTER_COLOR_INDEX] > 0){
-      //printm("Calling an allocator! Color = %d", ops -> ci -> tags[POINTER_COLOR_INDEX]);
-      res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> ci -> tags[POINTER_COLOR_INDEX];
-    } else if (ops -> pc -> tags[POINTER_COLOR_INDEX] != 0){
-      res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> pc -> tags[POINTER_COLOR_INDEX];
-    }
-    
-    res -> pcResult = true;
-  }
-
-  // Returns are simpler, just set PC tag with appropriate color / preserve PC tag.
-  if (is_return && this_funcID != -1){
-    // Mark return
-    ms_bit_add(res -> pc, osv_threeClass_Jumping_Return);
-    res -> pc -> tags[PC_CONTROL_INDEX] = this_funcID;
-
-    // Keep alloc-ID on PC tag
-    if (ops -> pc -> tags[POINTER_COLOR_INDEX] != 0){
-      res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> pc -> tags[POINTER_COLOR_INDEX];
-    }    
-    res -> pcResult = true;
-  }  
 
   // Log call / returns into hash table
   int is_call_jumping = ms_contains(ops -> pc, osv_threeClass_Jumping_Call);
@@ -337,7 +295,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 	       src_func_name, func_name);
 	return policyExpFailure;
       }
-#endif      
+#endif       
       if (edge_type == EDGE_CALL) {
 	printm("New call interaction: %s -> %s", src_func_name, func_name);
       } else {
@@ -353,7 +311,8 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
     }
     
     // Cleanup tags for result
-    ms_bit_remove(res -> pc, osv_threeClass_Jumping_Call);    
+    ms_bit_remove(res -> pc, osv_threeClass_Jumping_Call);
+    ms_bit_remove(res -> pc, osv_threeClass_Jumping_Return);
     res -> pc -> tags[PC_CONTROL_INDEX] = 0;
 
     // Keep alloc-ID, which rides on the pointer color slot
@@ -361,6 +320,38 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
     
     res -> pcResult = true;
   }
+
+  // On calls, set the PC tag to indicate that we're jumping and
+  // set a field to indicate the source function
+  if (is_call && this_funcID != -1){
+    ms_bit_add(res -> pc, osv_threeClass_Jumping_Call);
+    res -> pc -> tags[PC_CONTROL_INDEX] = this_funcID;
+
+    // If this is a call to an allocator, transfer alloc-id onto PC.
+    // If it's a normal call not to an allocator, but happens before
+    // allocation routine unsets PC tag, just preserve it.
+    if (ops -> ci -> tags[POINTER_COLOR_INDEX] > 0){
+      //printm("Calling an allocator! Color = %d", ops -> ci -> tags[POINTER_COLOR_INDEX]);
+      res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> ci -> tags[POINTER_COLOR_INDEX];
+    } else if (ops -> pc -> tags[POINTER_COLOR_INDEX] != 0){
+      res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> pc -> tags[POINTER_COLOR_INDEX];
+    }
+    
+    res -> pcResult = true;
+  }
+
+  // Returns are simpler, just set PC tag with appropriate color / preserve PC tag.
+  if (is_return && this_funcID != -1){
+    // Mark return
+    ms_bit_add(res -> pc, osv_threeClass_Jumping_Return);
+    res -> pc -> tags[PC_CONTROL_INDEX] = this_funcID;
+
+    // Keep alloc-ID on PC tag
+    if (ops -> pc -> tags[POINTER_COLOR_INDEX] != 0){
+      res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> pc -> tags[POINTER_COLOR_INDEX];
+    }    
+    res -> pcResult = true;
+  }    
 
   /****** Handling context switching ******/  
 
@@ -503,11 +494,11 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 	res -> rdResult = true;
       }
 
-      // Keep cell?
+      // Keep Cell
       if (ms_contains(ops -> mem, osv_heap_Cell)){
 	ms_bit_add(res -> rd, osv_heap_Cell);
 	res -> rd -> tags[CELL_COLOR_INDEX] = ops -> mem -> tags[CELL_COLOR_INDEX];
-	printm("Keeping existing Cell color of %d", ops -> mem -> tags[CELL_COLOR_INDEX]);
+	res -> rdResult = true;	
       }
 
       // Carry pointer to memory

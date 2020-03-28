@@ -144,7 +144,7 @@ Groups:
   slliw:
   - osv.riscv.og.arithGrp
   jalr:
-  - osv.riscv.og.jumpRegGrp
+  - osv.riscv.og.jumpGrp
   fsub.q:
   - osv.riscv.og.arithGrp
   or:
