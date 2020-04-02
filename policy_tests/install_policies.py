@@ -41,6 +41,10 @@ def test_install_policy(policy, global_policy, sim, arch, debug, extra):
     if extra:
         args += ["-e"] + extra.split(",")
 
-    result = subprocess.call(args, stdout=open(os.devnull, 'wb'), stderr=subprocess.STDOUT)
+    install_policy_log_file = os.path.join(policy_install_path, "log",
+            policy_test_common.policyName(policies, global_policies, debug) + ".log")
+    install_policy_log = open(install_policy_log_file, "w")
+    result = subprocess.call(args, stdout=install_policy_log, stderr=subprocess.STDOUT)
+    install_policy_log.close()
     if result != 0:
-        pytest.fail("Failed to install policy")
+        pytest.fail("Failed to install policy with command: {}".format(" ".join(args)))

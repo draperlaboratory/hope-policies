@@ -304,7 +304,7 @@ build-policies: POLICIES ?= $($(CONFIG)_POLICIES)
 build-policies: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-policies: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-policies:
-	mkdir -p policies
+	mkdir -p policies/log
 	mkdir -p pex
 	mkdir -p pex/$(SIM)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
