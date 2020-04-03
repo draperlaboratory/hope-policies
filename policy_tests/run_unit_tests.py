@@ -68,9 +68,6 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
 
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy_name]))
 
-    if debug is True:
-        test_output_dir = "-".join([test_output_dir, "debug"])
-
     if rule_cache != "":
         test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
 
