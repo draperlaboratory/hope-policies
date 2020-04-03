@@ -17,7 +17,7 @@ def policyName(policies, global_policies, debug):
     all_policies = sorted(global_policies) + sorted(policies)
     policy_name = "-".join(all_policies)
     if debug:
-        return "-".join(policy_name, "debug")
+        return "-".join([policy_name, "debug"])
     return policy_name
 
 
