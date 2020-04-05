@@ -25,8 +25,6 @@ def incompatibleReason(test, policies, arch):
 def xfailReason(test, runtime, policies, global_policies, arch):
     if test == "hello_works_2" and "testContext" in policies and not "contextswitch" in global_policies:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
-    if test in ["printf_works_1"] and "heap" in policies and "bare" in runtime and policy_test_common.is64Bit(arch):
-        return "printing pointers with the heap policy is not completely supported yet. See issue #101"
     return None
 
 
