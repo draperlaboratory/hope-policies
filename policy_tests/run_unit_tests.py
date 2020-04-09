@@ -56,8 +56,15 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     policy_dir = os.path.abspath(os.path.join("policies", policy_name))
 
     pex_dir = os.path.abspath(os.path.join("pex", sim))
+
+    processor=None
+    if extra:
+        processor = policy_test_common.getExtraArg(extra, "processor")
     
-    pex_path = os.path.join(pex_dir, policy_test_common.pexName(sim, policies, global_policies, arch, debug))
+    pex_path = os.path.join(pex_dir,
+                            policy_test_common.pexName(sim, policies, global_policies,
+                                                       arch, debug, processor=processor)
+                            )
 
     test_path = testPath(runtime, sim, arch, test)
 

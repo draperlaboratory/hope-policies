@@ -72,7 +72,7 @@ bare-vcu118_GPOLICIES =
 bare-vcu118_POLICIES = heap,stack,rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
 
@@ -86,7 +86,7 @@ bare64-vcu118_GPOLICIES =
 bare64-vcu118_POLICIES = heap,rwx
 bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare64-vcu118_TIMEOUT = 360
-bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 bare64-vcu118: CONFIG=bare64-vcu118
 bare64-vcu118: all
 
@@ -112,7 +112,7 @@ bare-vcs_MODULE = osv
 bare-vcs_ARCH = rv32
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES)
+bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+processor=P1
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
 bare-vcs: CONFIG=bare-vcs
@@ -126,7 +126,7 @@ bare64-vcs_ARCH = rv64
 bare64-vcs_MODULE = osv.bare.main
 bare64-vcs_GPOLICIES = 
 bare64-vcs_POLICIES = rwx
-bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
+bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug,+processor=P2
 bare64-vcs_XDIST = -n $(JOBS) # run in parallel
 bare64-vcs_TIMEOUT = 0
 bare64-vcs: CONFIG=bare64-vcs
@@ -155,7 +155,7 @@ frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos-vcu118_TIMEOUT = 360
-frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
 
@@ -169,7 +169,7 @@ frtos-vcs_GPOLICIES =
 frtos-vcs_POLICIES = rwx
 frtos-vcs_XDIST= -n $(JOBS) # run in parallel
 frtos-vcs_TIMEOUT = 0
-frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
+frtos-vcs_PYTEST_ARGS = --extra=+pex-debug,+processor=P1
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
 
