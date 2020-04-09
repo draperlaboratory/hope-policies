@@ -11,7 +11,7 @@ import multiprocessing
 import policy_test_common
 
 # function found automatically by pytest
-def test_install_policy(policy, global_policy, sim, arch, debug):
+def test_install_policy(policy, global_policy, sim, arch, debug, extra):
     policies = policy.split("-")
     global_policies = global_policy.split("-")
     global_policies = list(filter(None, global_policies))
@@ -19,7 +19,11 @@ def test_install_policy(policy, global_policy, sim, arch, debug):
     policy_install_path = "policies"
     pex_install_path = os.path.join("pex", sim)
 
-    pex_name = policy_test_common.pexName(sim, policies, global_policies, arch, debug)
+    processor=None
+    if extra:
+        processor = policy_test_common.getExtraArg(extra, "processor")
+
+    pex_name = policy_test_common.pexName(sim, policies, global_policies, arch, debug, processor=processor)
     if not pex_name:
         pytest.fail("invalid arguments to determine pex name")
     if os.path.exists(os.path.join(pex_install_path, pex_name)):
@@ -33,6 +37,9 @@ def test_install_policy(policy, global_policy, sim, arch, debug):
 
     if debug:
         args += ["-D"]
+
+    if extra:
+        args += ["-e"] + extra.split(",")
 
     result = subprocess.call(args, stdout=open(os.devnull, 'wb'), stderr=subprocess.STDOUT)
     if result != 0:
