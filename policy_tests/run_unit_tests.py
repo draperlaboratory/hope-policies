@@ -25,6 +25,8 @@ def incompatibleReason(test, policies, arch):
 def xfailReason(test, runtime, policies, global_policies, arch):
     if test == "hello_works_2" and "testContext" in policies and not "contextswitch" in global_policies:
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
+    if test == "float_works" and "heap" in policies and runtime == "frtos":
+        return "float_works on FreeRTOS is known to fail with the heap policy."
     return None
 
 
