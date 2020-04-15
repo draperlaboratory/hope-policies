@@ -30,7 +30,7 @@ def pytest_addoption(parser):
     parser.addoption('--composite', default='simple',
                      help='What composite policies (simple, full, else none)')
     parser.addoption('--isp_debug', default='no',
-                     help='pass debug options to testing tasks (yes/no)')
+                     help='pass debug options to testing tasks (\'debug\' to activate)')
     parser.addoption('--arch', default='rv32',
                      help='Which processor architecture to use.')
     parser.addoption('--extra', default=[],
@@ -81,6 +81,15 @@ def global_policies(request):
     return request.config.getoption('--gpolicies').split(",")
 
 def pytest_generate_tests(metafunc):
+
+    if 'runtime' in metafunc.fixturenames:
+        metafunc.parametrize("runtime", [metafunc.config.option.runtime], scope='session')
+    if 'arch' in metafunc.fixturenames:
+        metafunc.parametrize("arch", [metafunc.config.option.arch], scope='session')
+    if 'sim' in metafunc.fixturenames:
+        metafunc.parametrize("sim", [metafunc.config.option.sim], scope='session')
+    if 'debug' in metafunc.fixturenames:
+        metafunc.parametrize("debug", ['debug' == metafunc.config.option.isp_debug], scope='session')
 
     if 'policy' in metafunc.fixturenames:
         all_policies = []
