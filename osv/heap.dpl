@@ -85,6 +85,10 @@ policy:
              -> res = {}, env = env )
              
 // Any other write to pallette needs to maintain its tags
+   ^ storeGrp(   code == [+ApplyColor], mem == [+ModColor], env == _, val == {}
+              -> mem = mem[-ModColor], env = env )
+   ^ storeGrp(   code == [+RemoveColor], mem == [+ModColor], env == _, val == {}
+              -> mem = mem[-ModColor], env = env )
    ^ storeGrp(   code == _, mem == [+NewColor], env == _
               -> mem = mem, env = env )
    ^ storeGrp(   code == _, mem == [+DelColor], env == _
