@@ -200,10 +200,14 @@ dhrystone: all
 # default test config settings that aren't commonly overwritten
 COMPOSITE ?= simple
 RULE_CACHE_SIZE ?= 16
-DEBUG ?= no
+_DEBUG ?= no-debug
 MAX_CYCLES ?= 60000000
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --arch=$(ARCH) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
+ifdef DEBUG
+_DEBUG = debug
+endif
+
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(_DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --arch=$(ARCH) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py
@@ -225,7 +229,7 @@ build-ripe: $(RIPE_CONFIGS)
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(ARCH)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(ARCH)/log
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe/ripe.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe/ripe.py
 
 run-ripe: SIM ?= $($(CONFIG)_SIM)
 run-ripe: TESTS ?= $($(CONFIG)_TESTS)
@@ -238,7 +242,7 @@ run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-ripe: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-ripe:
 	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
 
 ripe: build-policies build-ripe run-ripe
 
@@ -269,7 +273,7 @@ build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-tests: build-dirs
 build-tests: build-policies
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
@@ -285,7 +289,7 @@ build-dirs:
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)/log
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
 
@@ -307,7 +311,7 @@ build-policies:
 	mkdir -p policies/log
 	mkdir -p pex
 	mkdir -p pex/$(SIM)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
 
 policies: clean-policies build-policies
 
@@ -324,7 +328,7 @@ run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-tests: build-tests
 	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) --arch=$(ARCH) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
 

@@ -66,7 +66,7 @@ def composite(request):
 
 @pytest.fixture
 def debug(request):
-    return 'yes' == request.config.getoption('--isp_debug')
+    return 'debug' == request.config.getoption('--isp_debug')
 
 @pytest.fixture
 def timeout(request):
