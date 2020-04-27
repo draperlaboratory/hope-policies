@@ -1,0 +1,28 @@
+module osv.rvtest:
+
+import:
+  osv.riscv
+
+metadata:
+  InsnCopy
+
+policy:
+  global rvtestPol =
+      storeGrp(code == [+InsnCopy], env == _, addr == _, val == _, mem == {} -> env = env, mem = val)
+    ^ storeGrp(code == [+InsnCopy], env == _, addr == _, val == _, mem == _ -> env = env, mem = mem \/ val)
+    ^ loadGrp (code == [+InsnCopy], env == _, addr == _, mem == _ -> env = env, res = mem)
+    ^ mvGrp (code == [+InsnCopy], env == _, op1 == _ -> env = env, res = op1 )
+
+group:
+  grp loadMemGrp(RS1:addr, MEM:mem -> RD:res)
+    lw
+    ld
+  grp storeMemGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
+    sw
+    sd
+  grp mvGrp(RS1:op1 -> RD:res)
+    addi
+    addiw
+
+require:
+  init rvtest.CopyCode.insncpy {InsnCopy}

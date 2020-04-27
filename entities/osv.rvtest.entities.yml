@@ -1,0 +1,6 @@
+-
+    name: rvtest.CopyCode.insncpy
+    elf_name: insncpy
+    kind: symbol
+    tag_all: true
+    optional: false
