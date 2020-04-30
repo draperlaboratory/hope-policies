@@ -1,0 +1,140 @@
+/*
+ * Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
+ * All rights reserved. 
+ *
+ * Use and disclosure subject to the following license. 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+ * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+module osv.loader:
+
+/* Load tags when loading program
+ *
+ * ELFs built for loading will have a tag section '.initial_tag_map'. ELFs
+ * built to load will have a tag section '.tag_array'. The 'initial_tag_map'
+ * contains ranges of code with a list of tags on each range. These tags
+ * correspond to indices in '.tag_array'. These sections may be included even
+ * when unneeded.
+ * 
+ * .tag_array's format:
+ *   struct {
+ *     int number_of_tags;
+ *     int tagged_zeroes[];
+ *   }
+ *
+ * .initial_tag_map's format:
+ *   struct {
+ *     int number_of_ranges;
+ *     struct {
+ *       int range_start;
+ *       int range_end;
+ *       int number_of_tags;
+ *       int tag_ids[];
+ *     }[]
+ *   }
+ *
+ * The loader code can apply tags by ORing the memory location to tag with the
+ * corresponding tagged zero in .tag_array.
+ * 
+ * 
+ * The tagging algorithm in detail:
+ * 
+ * for address a in loaded_elf:
+ *   for (range_start, range_end, number_of_tags, tag_ids) in loaded_elf.initial_tag_map:
+ *     if a in (range_start, range_end):
+ *       for tag_id in tag_ids:
+ *         a |= tag_array[tag_id]
+ * 
+ * This can be implemented more efficiently.
+ *
+ *
+ * Some notes:
+ *   - Loading a program does not clear existing tags, so loading over an
+ *     existing program would cause issues.
+ *   - The ranges in the initial_tag_map are in order. This knowledge can be
+ *     used to speed up tagging limited memory regions at a time.
+ *   - In the future, the tag_array and initial_tag_map should be themselves 
+ *     tagged to protect the integrity of the tag data.
+ *   - Functions 'add_tag_to_range' and 'tag_loaded_elf' are tagged as the Loader
+ *
+ */
+
+import:
+      osv.riscv
+
+
+metadata:
+      Loader,
+      TagArray
+
+policy:
+  global loaderPol =
+        storeMemGrp(code == [+Loader], env == _, addr == _, val == _, mem == {} -> env = env, mem = val)
+      ^ storeMemGrp(code == [+Loader], env == _, addr == _, val == _, mem == _ -> env = env, mem = mem \/ val)
+      ^ loadMemGrp (code == [+Loader], env == _, addr == _, mem == _ -> env = env, res = mem)
+      ^ composeGrp (code == [+Loader], env == _, op1 == {},  op2== _ -> env = env, res = op2)
+      ^ composeGrp (code == [+Loader], env == _, op1 == _,  op2== {} -> env = env, res = op1)
+      ^ composeGrp (code == [+Loader], env == _, op1 == _,  op2== _ -> env = env, res = op1 \/ op2)
+      ^ mvGrp (code == [+Loader], env == _, op1 == _ -> env = env, res = op1 )
+
+group:
+    grp loadMemGrp(RS1:addr, MEM:mem -> RD:res)
+        lw
+        ld
+    grp storeMemGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
+        sw
+        sd
+    grp composeGrp(RS1:op1, RS2:op2 -> RD:res)
+        or
+    grp mvGrp(RS1:op1 -> RD:res)
+        addi
+        addiw
+
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.ALT_UART_0                   {}
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.DEBUG                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.GEM0                         {}
+    init SOC.IO.AON {} /* Actually the UART */
+
+    init elf.Section.SHF_ALLOC         {}
+    init elf.Section.SHF_EXECINSTR     {}
+    init elf.Section.SHF_WRITE         {}
+
+	init loader.load                        {Loader}
+
+
