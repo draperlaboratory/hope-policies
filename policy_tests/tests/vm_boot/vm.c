@@ -183,6 +183,7 @@ void handle_trap(trapframe_t* tf)
   pop_tf(tf);
 }
 
+extern uintptr_t _stack;
 extern uintptr_t _vm_start;
 extern uintptr_t _vm_end;
 
@@ -252,14 +253,8 @@ void vm_boot(uintptr_t test_addr)
 
   trapframe_t tf;
   memset(&tf, 0, sizeof(tf));
-  uintptr_t sp, gp, tp;
-  asm volatile ("mv %0, sp;"
-                "mv %1, gp;"
-                "mv %2, tp;"
-                : "=r"(sp), "=r"(gp), "=r"(tp));
-  tf.gpr[2] = sp - DRAM_BASE;
-  tf.gpr[3] = gp - DRAM_BASE;
-  tf.gpr[4] = tp - DRAM_BASE;
+  // We don't ever expect to return here, so we can clobber the stack
+  tf.gpr[2] = (uintptr_t)&_stack - DRAM_BASE;
   tf.epc = test_addr - DRAM_BASE;
   pop_tf(&tf);
 }
