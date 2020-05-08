@@ -4,18 +4,13 @@
 
 #define MAX_TEST_PAGES 255
 
-#define PGSHIFT 12
-#define PGSIZE (1UL << PGSHIFT)
-
-#define SIZEOF_TRAPFRAME_T ((__riscv_xlen / 8) * 36)
-
 typedef unsigned long pte_t;
 #define LEVELS (sizeof(pte_t) == sizeof(uint64_t) ? 3 : 2)
-#define PTIDXBITS (PGSHIFT - (sizeof(pte_t) == 8 ? 3 : 2))
+#define PTIDXBITS (RISCV_PGSHIFT - (sizeof(pte_t) == 8 ? 3 : 2))
 #define VPN_BITS (PTIDXBITS * LEVELS)
-#define VA_BITS (VPN_BITS + PGSHIFT)
+#define VA_BITS (VPN_BITS + RISCV_PGSHIFT)
 #define PTES_PER_PT (1UL << RISCV_PGLEVEL_BITS)
-#define MEGAPAGE_SIZE (PTES_PER_PT * PGSIZE)
+#define MEGAPAGE_SIZE (PTES_PER_PT * RISCV_PGSIZE)
 
 typedef struct
 {
@@ -67,7 +62,7 @@ static void do_exit(int code)
 # define user_l3pt user_l2pt
 #define tohost_l3pt pt[2]
 #endif
-pte_t pt[NPT][PTES_PER_PT] __attribute__((aligned(PGSIZE)));
+pte_t pt[NPT][PTES_PER_PT] __attribute__((aligned(RISCV_PGSIZE)));
 
 typedef struct { pte_t addr; void* next; } freelist_t;
 
@@ -77,22 +72,22 @@ freelist_t *freelist_head, *freelist_tail;
 
 static void evict(unsigned long addr)
 {
-  assert(addr >= PGSIZE && addr < MAX_TEST_PAGES * PGSIZE);
-  addr = addr/PGSIZE*PGSIZE;
+  assert(addr >= RISCV_PGSIZE && addr < MAX_TEST_PAGES * RISCV_PGSIZE);
+  addr = addr/RISCV_PGSIZE*RISCV_PGSIZE;
 
-  freelist_t* node = &user_mapping[addr/PGSIZE];
+  freelist_t* node = &user_mapping[addr/RISCV_PGSIZE];
   if (node->addr)
   {
     // check accessed and dirty bits
-    assert(user_l3pt[addr/PGSIZE] & PTE_A);
+    assert(user_l3pt[addr/RISCV_PGSIZE] & PTE_A);
     uintptr_t sstatus = set_csr(sstatus, SSTATUS_SUM);
-    if (memcmp((void*)addr, uva2kva(addr), PGSIZE)) {
-      assert(user_l3pt[addr/PGSIZE] & PTE_D);
-      memcpy((void*)addr, uva2kva(addr), PGSIZE);
+    if (memcmp((void*)addr, uva2kva(addr), RISCV_PGSIZE)) {
+      assert(user_l3pt[addr/RISCV_PGSIZE] & PTE_D);
+      memcpy((void*)addr, uva2kva(addr), RISCV_PGSIZE);
     }
     write_csr(sstatus, sstatus);
 
-    user_mapping[addr/PGSIZE].addr = 0;
+    user_mapping[addr/RISCV_PGSIZE].addr = 0;
 
     if (freelist_tail == 0)
       freelist_head = freelist_tail = node;
@@ -114,15 +109,15 @@ void __attribute__((noinline)) insncpy(void* dest, const void* src, size_t n)
 
 void handle_fault(uintptr_t addr, uintptr_t cause)
 {
-  assert(addr >= PGSIZE && addr < MAX_TEST_PAGES * PGSIZE);
-  addr = addr/PGSIZE*PGSIZE;
+  assert(addr >= RISCV_PGSIZE && addr < MAX_TEST_PAGES * RISCV_PGSIZE);
+  addr = addr/RISCV_PGSIZE*RISCV_PGSIZE;
 
-  if (user_l3pt[addr/PGSIZE]) {
-    if (!(user_l3pt[addr/PGSIZE] & PTE_A)) {
-      user_l3pt[addr/PGSIZE] |= PTE_A;
+  if (user_l3pt[addr/RISCV_PGSIZE]) {
+    if (!(user_l3pt[addr/RISCV_PGSIZE] & PTE_A)) {
+      user_l3pt[addr/RISCV_PGSIZE] |= PTE_A;
     } else {
-      assert(!(user_l3pt[addr/PGSIZE] & PTE_D) && cause == CAUSE_STORE_PAGE_FAULT);
-      user_l3pt[addr/PGSIZE] |= PTE_D;
+      assert(!(user_l3pt[addr/RISCV_PGSIZE] & PTE_D) && cause == CAUSE_STORE_PAGE_FAULT);
+      user_l3pt[addr/RISCV_PGSIZE] |= PTE_D;
     }
     flush_page(addr);
     return;
@@ -134,18 +129,18 @@ void handle_fault(uintptr_t addr, uintptr_t cause)
   if (freelist_head == freelist_tail)
     freelist_tail = 0;
 
-  uintptr_t new_pte = (node->addr >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_U | PTE_R | PTE_W | PTE_X;
-  user_l3pt[addr/PGSIZE] = new_pte | PTE_A | PTE_D;
+  uintptr_t new_pte = (node->addr >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_U | PTE_R | PTE_W | PTE_X;
+  user_l3pt[addr/RISCV_PGSIZE] = new_pte | PTE_A | PTE_D;
   flush_page(addr);
 
-  assert(user_mapping[addr/PGSIZE].addr == 0);
-  user_mapping[addr/PGSIZE] = *node;
+  assert(user_mapping[addr/RISCV_PGSIZE].addr == 0);
+  user_mapping[addr/RISCV_PGSIZE] = *node;
 
   uintptr_t sstatus = set_csr(sstatus, SSTATUS_SUM);
-  insncpy((void*)addr, uva2kva(addr), PGSIZE);
+  insncpy((void*)addr, uva2kva(addr), RISCV_PGSIZE);
   write_csr(sstatus, sstatus);
 
-  user_l3pt[addr/PGSIZE] = new_pte;
+  user_l3pt[addr/RISCV_PGSIZE] = new_pte;
   flush_page(addr);
 }
 
@@ -158,7 +153,7 @@ void handle_trap(trapframe_t* tf)
       do_exit(tf->gpr[10]);
     default:
       for (long i = 1; i < MAX_TEST_PAGES; i++)
-        evict(i*PGSIZE);
+        evict(i*RISCV_PGSIZE);
       do_exit(tf->gpr[10]);
     }
   }
@@ -189,33 +184,33 @@ extern uintptr_t _vm_end;
 
 void vm_boot(uintptr_t test_addr)
 {
-  _Static_assert(SIZEOF_TRAPFRAME_T == sizeof(trapframe_t), "???");
-
-#if (MAX_TEST_PAGES > PTES_PER_PT) || (DRAM_BASE % MEGAPAGE_SIZE) != 0
-# error
+#if (MAX_TEST_PAGES > PTES_PER_PT)
+# error too many test pages
+#elif (DRAM_BASE % MEGAPAGE_SIZE) != 0
+# error megapage is not aligned to DRAM base
 #endif
   // map user to lowermost megapage
-  l1pt[0] = ((pte_t)user_l2pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  l1pt[0] = ((pte_t)user_l2pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   // map kernel to uppermost megapage
 #if __riscv_xlen == 64
-  l1pt[PTES_PER_PT-1] = ((pte_t)kernel_l2pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  l1pt[PTES_PER_PT-1] = ((pte_t)kernel_l2pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   kernel_l2pt[PTES_PER_PT-1] = (DRAM_BASE/RISCV_PGSIZE << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
-  user_l2pt[0] = ((pte_t)user_l3pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  user_l2pt[0] = ((pte_t)user_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   uintptr_t vm_choice = SATP_MODE_SV39;
 #else
   l1pt[PTES_PER_PT-1] = (DRAM_BASE/RISCV_PGSIZE << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_X | PTE_A | PTE_D;
   uintptr_t vm_choice = SATP_MODE_SV32;
 #endif
-  write_csr(satp, ((uintptr_t)l1pt >> PGSHIFT) |
+  write_csr(satp, ((uintptr_t)l1pt >> RISCV_PGSHIFT) |
                   (vm_choice * (SATP_MODE & ~(SATP_MODE<<1))));
 
   // map htif memory
 #if __riscv_xlen == 64
-  kernel_l2pt[0x1fe] = ((pte_t)tohost_l3pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  tohost_l3pt[0x1ff] = (HTIF_BASE >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
+  kernel_l2pt[0x1fe] = ((pte_t)tohost_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  tohost_l3pt[0x1ff] = (HTIF_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
 #else
-  l1pt[0x3fe] = ((pte_t)tohost_l3pt >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  tohost_l3pt[0x3ff] = (HTIF_BASE >> PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
+  l1pt[0x3fe] = ((pte_t)tohost_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  tohost_l3pt[0x3ff] = (HTIF_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
 #endif
 
   // Set up PMPs if present, ignoring illegal instruction trap if not.
@@ -243,10 +238,10 @@ void vm_boot(uintptr_t test_addr)
 
   freelist_head = pa2kva((void*)&freelist_nodes[0]);
   freelist_tail = pa2kva(&freelist_nodes[MAX_TEST_PAGES-1]);
-  pte_t start = ((pte_t)&_vm_start + PGSIZE - 1)/PGSIZE*PGSIZE;
+  pte_t start = ((pte_t)&_vm_start + RISCV_PGSIZE - 1)/RISCV_PGSIZE*RISCV_PGSIZE;
   for (long i = 0; i < MAX_TEST_PAGES; i++)
   {
-    freelist_nodes[i].addr = start + (i + 1)*PGSIZE;
+    freelist_nodes[i].addr = start + (i + 1)*RISCV_PGSIZE;
     freelist_nodes[i].next = pa2kva(&freelist_nodes[i+1]);
   }
   freelist_nodes[MAX_TEST_PAGES-1].next = 0;
