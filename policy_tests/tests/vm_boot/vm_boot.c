@@ -1,7 +1,9 @@
 #include <stdint.h>
+#include <unistd.h>
 
 void vm_test(void)
 {
+  write(0, "test\n", 5);
   exit(0);
 }
 

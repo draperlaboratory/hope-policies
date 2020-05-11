@@ -1,6 +1,8 @@
+#include <unistd.h>
 #include <stdint.h>
 #include <string.h>
-#include "encoding.h"
+#include "bsp/bsp.h"
+#include "bsp/encoding.h"
 
 #define MAX_TEST_PAGES 255
 
@@ -149,6 +151,8 @@ void handle_trap(trapframe_t* tf)
   if (tf->cause == CAUSE_USER_ECALL)
   {
     switch (tf->gpr[17]) {
+    case SYSCALL_WRITE:
+      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)tf->gpr[11], (size_t)tf->gpr[12]));
     case SYSCALL_EXIT:
       do_exit(tf->gpr[10]);
     default:
