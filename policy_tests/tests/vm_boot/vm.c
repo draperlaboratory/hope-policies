@@ -23,7 +23,7 @@ typedef struct
   long cause;
 } trapframe_t;
 
-void trap_entry();
+void trap_entry(void);
 void pop_tf(trapframe_t*);
 
 volatile uint64_t tohost;
@@ -101,12 +101,13 @@ static void evict(unsigned long addr)
   }
 }
 
-void __attribute__((noinline)) insncpy(void* dest, const void* src, size_t n)
+void* __attribute__((noinline)) insncpy(void* dest, const void* src, size_t n)
 {
   uint32_t* insn_dest = (uint32_t*)dest;
   uint32_t* insn_src = (uint32_t*)src;
   for (size_t i = 0; i < n/sizeof(uint32_t); i++)
     insn_dest[i] = insn_src[i];
+  return dest;
 }
 
 void handle_fault(uintptr_t addr, uintptr_t cause)
@@ -144,6 +145,8 @@ void handle_fault(uintptr_t addr, uintptr_t cause)
 
   user_l3pt[addr/RISCV_PGSIZE] = new_pte;
   flush_page(addr);
+
+  asm volatile("fence.i");
 }
 
 void handle_trap(trapframe_t* tf)
@@ -152,7 +155,9 @@ void handle_trap(trapframe_t* tf)
   {
     switch (tf->gpr[17]) {
     case SYSCALL_WRITE:
-      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)tf->gpr[11], (size_t)tf->gpr[12]));
+      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)uva2kva(tf->gpr[11]), (size_t)tf->gpr[12]));
+      write_csr(sepc, tf->epc + 4); // tf->epc points to ecall
+      break;
     case SYSCALL_EXIT:
       do_exit(tf->gpr[10]);
     default:
@@ -217,16 +222,11 @@ void vm_boot(uintptr_t test_addr)
   tohost_l3pt[0x3ff] = (HTIF_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
 #endif
 
-  // Set up PMPs if present, ignoring illegal instruction trap if not.
+  // Set up PMPs if present
   uintptr_t pmpc = PMP_NAPOT | PMP_R | PMP_W | PMP_X;
   uintptr_t pmpa = ((uintptr_t)1 << (__riscv_xlen == 32 ? 31 : 53)) - 1;
-  asm volatile ("la t0, 1f\n\t"
-                "csrrw t0, mtvec, t0\n\t"
-                "csrw pmpaddr0, %1\n\t"
-                "csrw pmpcfg0, %0\n\t"
-                ".align 2\n\t"
-                "1:"
-                : : "r" (pmpc), "r" (pmpa) : "t0");
+  write_csr(pmpaddr0, pmpa);
+  write_csr(pmpcfg0, pmpc);
 
   // set up supervisor trap handling
   write_csr(stvec, pa2kva(trap_entry));
@@ -253,6 +253,7 @@ void vm_boot(uintptr_t test_addr)
   trapframe_t tf;
   memset(&tf, 0, sizeof(tf));
   // We don't ever expect to return here, so we can clobber the stack
+  // Of course, the VM code won't ever actually write to the physical stack; only to the corresponding VM space
   tf.gpr[2] = (uintptr_t)&_stack - DRAM_BASE;
   tf.epc = test_addr - DRAM_BASE;
   pop_tf(&tf);
