@@ -1,7 +1,6 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
-#include "bsp/bsp.h"
 #include "bsp/encoding.h"
 
 #define MAX_TEST_PAGES 255
@@ -16,11 +15,11 @@ typedef unsigned long pte_t;
 
 typedef struct
 {
-  long gpr[32];
-  long sr;
-  long epc;
-  long badvaddr;
-  long cause;
+  uintptr_t gpr[32];
+  uintptr_t sr;
+  uintptr_t epc;
+  uintptr_t badvaddr;
+  uintptr_t cause;
 } trapframe_t;
 
 void trap_entry(void);
@@ -38,6 +37,7 @@ static void do_tohost(uint64_t tohost_value)
 
 #define pa2kva(pa) ((void*)(pa) - DRAM_BASE - MEGAPAGE_SIZE)
 #define uva2kva(pa) ((void*)(pa) - MEGAPAGE_SIZE)
+#define uva2pa(uva) ((void*)(uva) + DRAM_BASE)
 
 #define flush_page(addr) asm volatile ("sfence.vma %0" : : "r" (addr) : "memory")
 
@@ -155,8 +155,9 @@ void handle_trap(trapframe_t* tf)
   {
     switch (tf->gpr[17]) {
     case SYSCALL_WRITE:
-      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)uva2kva(tf->gpr[11]), (size_t)tf->gpr[12]));
-      write_csr(sepc, tf->epc + 4); // tf->epc points to ecall
+      // Repeat the write system call to machine mode for direct physical memory access
+      tf->gpr[10] = (uintptr_t)(write((int)tf->gpr[10], (const void*)uva2pa(tf->gpr[11]), (size_t)tf->gpr[12]));
+      tf->epc += 4; // tf->epc points to ecall
       break;
     case SYSCALL_EXIT:
       do_exit(tf->gpr[10]);
@@ -230,7 +231,7 @@ void vm_boot(uintptr_t test_addr)
 
   // set up supervisor trap handling
   write_csr(stvec, pa2kva(trap_entry));
-  write_csr(sscratch, pa2kva(read_csr(mscratch)));
+  write_csr(sscratch, pa2kva(read_csr(mscratch) - RISCV_PGSIZE));
   write_csr(medeleg,
     (1 << CAUSE_USER_ECALL) |
     (1 << CAUSE_FETCH_PAGE_FAULT) |
@@ -252,9 +253,7 @@ void vm_boot(uintptr_t test_addr)
 
   trapframe_t tf;
   memset(&tf, 0, sizeof(tf));
-  // We don't ever expect to return here, so we can clobber the stack
-  // Of course, the VM code won't ever actually write to the physical stack; only to the corresponding VM space
-  tf.gpr[2] = (uintptr_t)&_stack - DRAM_BASE;
+  tf.gpr[2] = (read_csr(mscratch) - 2*RISCV_PGSIZE) - DRAM_BASE;
   tf.epc = test_addr - DRAM_BASE;
   pop_tf(&tf);
 }
