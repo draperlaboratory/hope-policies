@@ -3,7 +3,6 @@ include ../isp-runtime-$(RUNTIME).mk
 
 LINKER_SCRIPT = dhrystone-baremetal.lds
 TEST_CFLAGS := -DDHRY_LOOPS=5000
-TEST_LDFLAGS := --sysroot=${ISP_PREFIX}/riscv32-unknown-elf -L${ISP_PREFIX}/riscv32-unknown-elf/lib
 TEST_HELPER_DIR = ..
 TEST_INCLUDES += -I$(TEST_HELPER_DIR)
 TEST_SOURCES := dhrystone-baremetal.c
