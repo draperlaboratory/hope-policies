@@ -173,7 +173,7 @@ frtos-vcs_PYTEST_ARGS = --extra=+pex-debug,+processor=P1
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
 
-# config for 64-bit FreeRTOS
+# config for 64-bit FreeRTOS on QEMU
 frtos64-qemu_SIM = qemu
 frtos64-qemu_TESTS = frtos64
 frtos64-qemu_RUNTIME = frtos
@@ -185,6 +185,20 @@ frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
 frtos64-qemu_TIMEOUT = 360
 frtos64-qemu: CONFIG=frtos64-qemu
 frtos64-qemu: all
+
+# config for 64-bit FreeRTOS on VCU118 board
+frtos64-vcu118_SIM = vcu118
+frtos64-vcu118_TESTS = frtos
+frtos64-vcu118_RUNTIME = frtos
+frtos64-vcu118_MODULE = osv
+frtos64-vcu118_ARCH = rv64
+frtos64-vcu118_GPOLICIES = contextswitch
+frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
+frtos64-vcu118_TIMEOUT = 360
+frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
+frtos64-vcu118: CONFIG=frtos64-vcu118
+frtos64-vcu118: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
