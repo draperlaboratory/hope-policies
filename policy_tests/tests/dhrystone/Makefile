@@ -1,7 +1,7 @@
 RUNTIME ?= bare
 include ../isp-runtime-$(RUNTIME).mk
 
-LINKER_SCRIPT = dhrystone-baremetal.lds
+LINK_TARGET = dhrystone
 TEST_CFLAGS := -DDHRY_LOOPS=5000
 TEST_HELPER_DIR = ..
 TEST_INCLUDES += -I$(TEST_HELPER_DIR)
