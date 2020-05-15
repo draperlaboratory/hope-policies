@@ -272,7 +272,7 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-tests: build-dirs
-build-tests: build-policies
+build-tests:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 build-dirs: SIM ?= $($(CONFIG)_SIM)
@@ -326,7 +326,7 @@ run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-run-tests: build-tests
+run-tests: build-tests build-policies
 	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
