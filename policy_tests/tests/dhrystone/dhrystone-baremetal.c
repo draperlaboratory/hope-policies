@@ -307,6 +307,7 @@ void dhry_proc0(void)
 	volatile uint32_t	benchtime_us;
 	uint32_t		nulltime;
 	uint32_t		endtime;
+	uint32_t		dhrystones;
 
 	starttime = isp_get_time_usec();
 	for (i = 0; i < DHRY_LOOPS; ++i)
@@ -368,7 +369,12 @@ void dhry_proc0(void)
 	t_printf("Passes: %u\n", DHRY_LOOPS);
 	t_printf("Benchtime (us): %u\n", benchtime_us);
 	t_printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
-	t_printf("Dhrystones:     %u dhrystones/second\n", DHRY_LOOPS/(benchtime_us/US_IN_SEC));
+	/*
+	 * Doing multiplication first keeps more precision in benchtime,
+	 * but requires a 64-bit value to hold DHRY_LOOPS*US_IN_SEC
+	 */
+	dhrystones = (uint64_t) DHRY_LOOPS*US_IN_SEC/(benchtime_us);
+	t_printf("Dhrystones:     %u dhrystones/second\n", dhrystones);
 
 }
 
