@@ -169,7 +169,8 @@ group:
         fld
         flq
         lr.w
-        
+        lr.d
+
     grp storeGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
         sb
         sh
@@ -179,6 +180,7 @@ group:
         fsd
         fsq
         sc.w
+        sc.d
 
 /*        
     stackMoveGrp(RS2:src -> MEM:res)
@@ -334,6 +336,8 @@ group:
     grp atomicGrp( -> ) 
         lr.w
         sc.w
+        lr.d
+        sc.d
         amoadd.w
         amoadd.w.q
         amoxor.w
@@ -539,6 +543,8 @@ group:
     // atomicGrp
         lr.w
         sc.w
+        lr.d
+        sc.d
         amoadd.w
         amoadd.w.q
         amoxor.w
@@ -732,6 +738,8 @@ group:
 //atomicGrp( -> ) 
         lr.w
         sc.w
+        lr.d
+        sc.d
         amoadd.w
         amoadd.w.q
         amoxor.w
