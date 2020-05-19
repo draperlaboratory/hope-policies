@@ -44,6 +44,7 @@ require:
    init Tools.Link.MemoryMap.UserHeap       {}
    init Tools.Link.MemoryMap.UserStack      {}
 
+   init SOC.IO.MROM                         {}
    init SOC.IO.UART_0                       {}
    init SOC.Memory.Flash_0                  {}
    init SOC.Memory.Ram_0                    {}
