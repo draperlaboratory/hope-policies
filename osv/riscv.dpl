@@ -155,6 +155,10 @@ group:
         amoxor.w
         amoor.w
         amoand.w
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
 
 
     grp loadGrp(RS1:addr, MEM:mem -> RD:res)
@@ -348,6 +352,15 @@ group:
         amominu.w
         amomaxu.w
         amoswap.w
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
+        amomin.d
+        amomax.d
+        amominu.d
+        amomaxu.d
+        amoswap.d
 
     grp allGrp( -> )
     // branchGrp(RS1:op1, RS2:op2 -> )
@@ -555,6 +568,15 @@ group:
         amominu.w
         amomaxu.w
         amoswap.w
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
+        amomin.d
+        amomax.d
+        amominu.d
+        amomaxu.d
+        amoswap.d
 
 
     grp notMemGrp( -> )
@@ -750,3 +772,12 @@ group:
         amominu.w
         amomaxu.w
         amoswap.w
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
+        amomin.d
+        amomax.d
+        amominu.d
+        amomaxu.d
+        amoswap.d
