@@ -62,7 +62,7 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {Rd, Wr}
     init Tools.Link.MemoryMap.UserStack      {Rd, Wr}
 
-    init SOC.IO.ALT_UART_0                   {Rd, Wr}
+    init SOC.IO.MROM                         {Rd, Wr}
     init SOC.IO.UART_0                       {Rd, Wr}
     init SOC.IO.UART_1                       {Rd, Wr}
     init SOC.Memory.Flash_0                  {Rd}
