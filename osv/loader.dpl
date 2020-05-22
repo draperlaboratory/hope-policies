@@ -119,7 +119,7 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.IO.ALT_UART_0                   {}
+    init SOC.IO.MROM                         {}
     init SOC.IO.UART_0                       {}
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
@@ -129,7 +129,7 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.GEM0                         {}
-    init SOC.IO.AON {} /* Actually the UART */
+    init SOC.IO.AON                          {}
 
     init elf.Section.SHF_ALLOC         {}
     init elf.Section.SHF_EXECINSTR     {}
