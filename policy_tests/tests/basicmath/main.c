@@ -36,36 +36,46 @@ int test_main(void)
   t_printf("********* CUBIC FUNCTIONS ***********\n\r");
   /* should get 3 solutions: 2, 6 & 2.5   */
   SolveCubic(a1, b1, c1, d1, &solutions, x);  
+  /*
   t_printf("Solutions:");
   for(i=0;i<solutions;i++)
     t_printf(" %f",x[i]);
   t_printf("\n\r");
+  */
   /* should get 1 solution: 2.5           */
   SolveCubic(a2, b2, c2, d2, &solutions, x);  
+  /*
   t_printf("Solutions:");
   for(i=0;i<solutions;i++)
     t_printf(" %f",x[i]);
   t_printf("\n\r");
+  */
   SolveCubic(a3, b3, c3, d3, &solutions, x);
+  /*
   t_printf("Solutions:");
   for(i=0;i<solutions;i++)
     t_printf(" %f",x[i]);
   t_printf("\n\r");
+  */
   SolveCubic(a4, b4, c4, d4, &solutions, x);
+  /*
   t_printf("Solutions:");
   for(i=0;i<solutions;i++)
     t_printf(" %f",x[i]);
   t_printf("\n\r");
+  */
   /* Now solve some random equations */
   for(a1=1;a1<10;a1+=LOOP_FRAC) {
     for(b1=10;b1>0;b1-=LOOP_FRAC) {
       for(c1=5;c1<15;c1+=0.5*LOOP_FRAC) {
 	for(d1=-1;d1>-11;d1-=LOOP_FRAC) {
 	  SolveCubic(a1, b1, c1, d1, &solutions, x);  
+    /*
 	  t_printf("Solutions:");
 	  for(i=0;i<solutions;i++)
 	    t_printf(" %f",x[i]);
 	  t_printf("\n\r");
+    */
 	}
       }
     }
@@ -78,9 +88,8 @@ int test_main(void)
     {
       usqrt(i, &q);
 			// remainder differs on some machines
-     // t_printf("sqrt(%3d) = %2d, remainder = %2d\n\r",
-     t_printf("sqrt(%3d) = %2d, remainder = %d\n\r",
-	     i, q.sqrt, q.frac);
+      // t_printf("sqrt(%3d) = %2d, remainder = %2d\n\r",
+      // t_printf("sqrt(%3d) = %2d, remainder = %d\n\r", i, q.sqrt, q.frac);
     }
   usqrt(l, &q);
   //t_printf("\n\rsqrt(%lX) = %X, remainder = %X\n\r", l, q.sqrt, q.frac);
@@ -91,10 +100,12 @@ int test_main(void)
   t_printf("********* ANGLE CONVERSION ***********\n\r");
   /* convert some rads to degrees */
   for (X = 0.0; X <= 360.0; X += LOOP_FRAC)
-    t_printf("%3.0f degrees = %.12f radians\n\r", X, deg2rad(X));
-  t_printf("\n\r");
+    // t_printf("%3.0f degrees = %.12f radians\n\r", X, deg2rad(X));
+    deg2rad(X);
+  // t_printf("\n\r");
   for (X = 0.0; X <= (2 * PI + 1e-6); X += (PI / 180) * LOOP_FRAC)
-    t_printf("%.12f radians = %3.0f degrees\n\r", X, rad2deg(X));
+    // t_printf("%.12f radians = %3.0f degrees\n\r", X, rad2deg(X));
+    rad2deg(X);
   test_print_time_interval();
   
   test_print_total_time();
