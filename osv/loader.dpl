@@ -130,6 +130,7 @@ require:
     init SOC.IO.ITIM                         {}
     init SOC.IO.GEM0                         {}
     init SOC.IO.AON {} /* Actually the UART */
+    init SOC.IO.VIRTIO                       {}
 
     init elf.Section.SHF_ALLOC         {}
     init elf.Section.SHF_EXECINSTR     {}
