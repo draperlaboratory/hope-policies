@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdio.h>
 #include "bsp/encoding.h"
 
 #define MAX_TEST_PAGES 255
@@ -55,10 +56,12 @@ static void do_exit(int code)
 #define l1pt pt[0]
 #define user_l2pt pt[1]
 #if __riscv_xlen == 64
-# define NPT 5
+# define NPT 7
 #define kernel_l2pt pt[2]
 # define user_l3pt pt[3]
 #define tohost_l3pt pt[4]
+#define phys_l2pt pt[5]
+#define phys_l3pt pt[6]
 #else
 # define NPT 3
 # define user_l3pt user_l2pt
@@ -222,6 +225,18 @@ void vm_boot(uintptr_t test_addr)
   l1pt[0x3fe] = ((pte_t)tohost_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
   tohost_l3pt[0x3ff] = (HTIF_BASE >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
 #endif
+
+  // map hard-coded physical page 0xc0080000 so that the virtual address and physical address there are the same
+  // because a subroutine of printf loads a hard-coded address in that page from memory and accesses it
+  pte_t phys_vpn[3] = {
+    DRAM_BASE >> (RISCV_PGSHIFT + 2*RISCV_PGLEVEL_BITS),
+    0x000,
+    0x080
+  };
+  l1pt[phys_vpn[0]] = ((pte_t)phys_l2pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  phys_l2pt[phys_vpn[1]] = ((pte_t)phys_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  phys_l3pt[phys_vpn[2]] = ((pte_t)((DRAM_BASE >> RISCV_PGSHIFT) + phys_vpn[2]) << PTE_PPN_SHIFT) | PTE_V | PTE_U | PTE_R | PTE_W | PTE_A | PTE_D;
+
 
   // Set up PMPs if present
   uintptr_t pmpc = PMP_NAPOT | PMP_R | PMP_W | PMP_X;
