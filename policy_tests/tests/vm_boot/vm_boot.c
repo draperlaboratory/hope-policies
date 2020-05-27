@@ -3,7 +3,7 @@
 
 void vm_test(void)
 {
-  write(0, "test\n", 5);
+  printf("test\n");
   exit(0);
 }
 
