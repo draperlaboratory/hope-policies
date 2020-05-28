@@ -158,10 +158,13 @@ void handle_trap(trapframe_t* tf)
 {
   if (tf->cause == CAUSE_USER_ECALL)
   {
+    uintptr_t sstatus;
     switch (tf->gpr[17]) {
     case SYSCALL_WRITE:
-      // Repeat the write system call to machine mode for direct physical memory access
-      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)uva2kva(tf->gpr[11]), (size_t)tf->gpr[12]));
+      // Write data is in user memory, so we have to give S-mode R/W access to it in sstatus
+      sstatus = set_csr(sstatus, SSTATUS_SUM);
+      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)tf->gpr[11], (size_t)tf->gpr[12]));
+      write_csr(sstatus, sstatus);
       tf->epc += 4; // tf->epc points to ecall
       break;
     case SYSCALL_EXIT:
