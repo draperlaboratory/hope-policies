@@ -2,7 +2,9 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include "bsp/bsp.h"
 #include "bsp/encoding.h"
+#include "bsp/handlers.h"
 
 #define MAX_TEST_PAGES 255
 
@@ -159,7 +161,7 @@ void handle_trap(trapframe_t* tf)
     switch (tf->gpr[17]) {
     case SYSCALL_WRITE:
       // Repeat the write system call to machine mode for direct physical memory access
-      tf->gpr[10] = (uintptr_t)(write((int)tf->gpr[10], (const void*)uva2pa(tf->gpr[11]), (size_t)tf->gpr[12]));
+      tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], (const void*)uva2kva(tf->gpr[11]), (size_t)tf->gpr[12]));
       tf->epc += 4; // tf->epc points to ecall
       break;
     case SYSCALL_EXIT:
@@ -228,14 +230,23 @@ void vm_boot(uintptr_t test_addr)
 
   // map hard-coded physical page 0xc0080000 so that the virtual address and physical address there are the same
   // because a subroutine of printf loads a hard-coded address in that page from memory and accesses it
-  pte_t phys_vpn[3] = {
+  pte_t printf_vpn[3] = {
     DRAM_BASE >> (RISCV_PGSHIFT + 2*RISCV_PGLEVEL_BITS),
     0x000,
     0x080
   };
-  l1pt[phys_vpn[0]] = ((pte_t)phys_l2pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  phys_l2pt[phys_vpn[1]] = ((pte_t)phys_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
-  phys_l3pt[phys_vpn[2]] = ((pte_t)((DRAM_BASE >> RISCV_PGSHIFT) + phys_vpn[2]) << PTE_PPN_SHIFT) | PTE_V | PTE_U | PTE_R | PTE_W | PTE_A | PTE_D;
+  l1pt[printf_vpn[0]] = ((pte_t)phys_l2pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  phys_l2pt[printf_vpn[1]] = ((pte_t)phys_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  phys_l3pt[printf_vpn[2]] = (((DRAM_BASE >> RISCV_PGSHIFT) + printf_vpn[2]) << PTE_PPN_SHIFT) | PTE_V | PTE_U | PTE_R | PTE_W | PTE_A | PTE_D;
+  // do the same for the UART address. They can share page tables because their page numbers don't overlap
+  pte_t uart_vpn[3] = {
+    XPAR_UARTNS550_0_BASEADDR >> (RISCV_PGSHIFT + 2*RISCV_PGLEVEL_BITS),
+    (XPAR_UARTNS550_0_BASEADDR >> (RISCV_PGSHIFT + RISCV_PGLEVEL_BITS)) & ((1 << RISCV_PGLEVEL_BITS) - 1),
+    (XPAR_UARTNS550_0_BASEADDR >> RISCV_PGSHIFT) & ((1 << RISCV_PGLEVEL_BITS) - 1)
+  };
+  l1pt[uart_vpn[0]] = ((pte_t)phys_l2pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  phys_l2pt[uart_vpn[1]] = ((pte_t)phys_l3pt >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V;
+  phys_l3pt[uart_vpn[2]] = (XPAR_UARTNS550_0_BASEADDR >> RISCV_PGSHIFT << PTE_PPN_SHIFT) | PTE_V | PTE_R | PTE_W | PTE_A | PTE_D;
 
 
   // Set up PMPs if present
