@@ -273,6 +273,10 @@ void vm_boot(uintptr_t test_addr)
   write_csr(mstatus, MSTATUS_FS | MSTATUS_XS);
   write_csr(mie, 0);
 
+  // Enable performance counters
+  set_csr(mcounteren, 0x7);
+  set_csr(scounteren, 0x7);
+
   freelist_head = pa2kva((void*)&freelist_nodes[0]);
   freelist_tail = pa2kva(&freelist_nodes[MAX_TEST_PAGES-1]);
   pte_t start = ((pte_t)&_vm_start + RISCV_PGSIZE - 1)/RISCV_PGSIZE*RISCV_PGSIZE;
