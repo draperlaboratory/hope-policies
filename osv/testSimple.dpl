@@ -73,6 +73,7 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {Nothing}
     init Tools.Link.MemoryMap.UserStack      {Nothing}
 
+    init SOC.IO.MROM                         {Nothing}
     init SOC.IO.UART_0                       {Nothing}
     init SOC.Memory.Flash_0                  {Nothing}
     init SOC.Memory.Ram_0                    {Nothing}
@@ -87,8 +88,11 @@ require:
     init SOC.IO.GPIO_0                       {Nothing}
     init SOC.IO.GPIO_1                       {Nothing}
     init SOC.IO.Ethernet_0                   {Nothing}
+    init SOC.IO.VIRTIO                       {Nothing}
 
     init SOC.IO.TEST                         {Nothing}
+    init SOC.Memory.DMA_0                    {Nothing}
+    init SOC.Memory.QSPI_1                   {Nothing}
 
     init Tools.Elf.Section.SHF_ALLOC         {Nothing}
     init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
