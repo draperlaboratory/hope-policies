@@ -6,8 +6,8 @@
 #include "test_status.h"
 #include "test.h"
 
-unsigned char edata[TESTDATALEN];
-unsigned char udata[TESTDATALEN];
+static unsigned char edata[TESTDATALEN];
+static unsigned char udata[TESTDATALEN];
 
 /*        This code illustrates a sample implementation
 *                 of the Arcfour algorithm
