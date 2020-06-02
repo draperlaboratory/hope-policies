@@ -164,7 +164,7 @@ void handle_trap(trapframe_t* tf)
         // Write data is in user memory, so we have to give S-mode R/W access to it in sstatus
         uintptr_t sstatus = set_csr(sstatus, SSTATUS_SUM);
         char buf[(size_t)tf->gpr[12] + 1];
-        strcpy(buf, tf->gpr[11]);
+        strcpy(buf, (const char*)tf->gpr[11]);
         write_csr(sstatus, sstatus);
         tf->gpr[10] = (uintptr_t)(do_write((int)tf->gpr[10], buf, (size_t)tf->gpr[12]));
         tf->epc += 4; // tf->epc points to ecall
