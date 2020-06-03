@@ -44,12 +44,6 @@ static void do_tohost(uint64_t tohost_value)
 
 #define flush_page(addr) asm volatile ("sfence.vma %0" : : "r" (addr) : "memory")
 
-static void do_exit(int code)
-{
-  do_tohost((code << 1) | 1);
-  while (1);
-}
-
 #define assert(x) do { \
   if (x) break; \
   do_exit(1); \
