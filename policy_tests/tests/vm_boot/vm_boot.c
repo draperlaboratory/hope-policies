@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "test_status.h"
-#include "vm.h"
+#include "bsp/vm.h"
 
 void vm_test(void)
 {
