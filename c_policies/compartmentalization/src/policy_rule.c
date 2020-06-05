@@ -86,6 +86,8 @@
 #include <string.h>
 
 #include "comp_ht.c"
+#include "prefetch_ht.c"
+#include "policy_prefetching.c"
 
 // Policy return codes
 const int policyERRORFailure = -2;
@@ -100,18 +102,23 @@ int enforcement_mode = 0;
 // Number of functions and objects found in the defintion files.
 // Set on initialization.
 int max_func, max_obj;
-
 int event_no = 0;
+
+// There are a couple cases where policy communicates to validator...
+extern void rule_analysis_end();
 
 // Policy initialization
 struct comp_ht * ht = NULL;
+
 int has_init = 0;
 void policy_init(){
+
   if (has_init == 0){
     printm("Init compartment policy...\n");
     ht = ht_create(HT_SIZE);
     set_max_subjs_objs();
     load_initial_CAPMAP();
+    load_prefetching_policy();
     has_init = 1;
   }
 }
@@ -528,7 +535,9 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
       if (is_remove_color){
 	if (ms_contains(ops -> op2, osv_heap_ModColor)){
 	  //printm("Freeing word with (Cell %d)", ops -> mem -> tags[CELL_COLOR_INDEX]);
-	  ms_bit_add(res -> rd, osv_heap_RawHeap);
+	  //ms_bit_add(res -> rd, osv_heap_RawHeap);
+	  ms_bit_add(res -> rd, osv_heap_Cell);
+	  res -> rd -> tags[POINTER_COLOR_INDEX] = 0;
 	  res -> rdResult = true;
 	}
       }
@@ -606,6 +615,18 @@ int eval_policy(context_t *ctx, operands_t *ops, results_t *res)
   int evalResult = policyImpFailure;
   
   evalResult = compartmentalization_policy(ctx, ops, res);
+
+  // If prefetching is enabled, and we hit a rule trigger in the lookup table, then insert the prefetched rule now too.
+  // TODO: this logic really should be asynchronous, so need to think about timing models, etc
+  if (prefetching_enabled){
+    struct prefetch_bucket * result = ht_lookup_prefetch(prefetch_ht, ops);
+    if (result != NULL){
+      //printm("Hit a prefetch!");
+      prefetch_rule(result -> prefetch_ops, result -> prefetch_res);
+    } else {
+      //printm("No prefetch.");
+    }
+  }  
   
   if (evalResult != policySuccess)
     return evalResult;
@@ -659,6 +680,9 @@ void set_max_subjs_objs(){
 
 // On program termination, dump the current CAPMAP out to result.cmap file
 void policy_terminate(){
+
+  // Trigger the rule analysis ending
+  rule_analysis_end();
   
   if (enforcement_mode){
     printm("Ran in enforcement mode. Encountered %d new CAPMAP entries compared to initial CAPMAP file.", ht -> new_additions);

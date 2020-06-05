@@ -9,6 +9,202 @@
 
 extern void printm(const char* s, ...);
 
+// Compartmentalization pretty printer! Outputs rules in a readable format
+// for later consumption in Python for the uSCOPE-style clustering tools.
+// Currently has most of the useful info about each rule, but not perfectly
+// tracking all the subtler heap maintenance and whatnot. 
+void pretty_print_rule(char * buf, const meta_set_t *ci, const meta_set_t *op1, const meta_set_t *op2, const meta_set_t *mem, const meta_set_t *pc){
+
+  int cursor = 0;
+
+  // *** First print subject ***
+  int subject_id = ci -> tags[SUBJ_INDEX];
+  sprintf(buf + cursor, "[%s],", func_defs[subject_id]);
+  cursor += strlen(func_defs[subject_id]) + 3;
+
+  // *** Then print opcode + information about the instruction ***
+  for (int i = opcode_begin; i <= opcode_end; i++){
+    int index = i / 32;
+    int bit = i % 32;
+    if (ci -> tags[index] & 1 << bit){
+      cursor += meta_to_string(i, ci, buf + cursor, 32);
+    }
+  }
+  if (ms_contains(ci, osv_threeClass_Call_Instr)){
+    sprintf(buf + cursor, "|CallInstr");
+    cursor += strlen("|CallInstr");
+  }
+  if (ms_contains(ci, osv_threeClass_Return_Instr)){
+    sprintf(buf + cursor, "|RetInstr");
+    cursor += strlen("|RetInstr");
+  }
+  if (ms_contains(ci, osv_threeClass_Call_Tgt)){
+    sprintf(buf + cursor, "|CallTgt");
+    cursor += strlen("|CallTgt");
+  }
+  if (ms_contains(ci, osv_threeClass_Return_Tgt)){
+    sprintf(buf + cursor, "|RetTgt");
+    cursor += strlen("|RetTgt");
+  }
+  if (ms_contains(ci, osv_heap_ApplyColor)){
+    sprintf(buf + cursor, "|ApplyColor");
+    cursor += strlen("|ApplyColor");
+  }
+  if (ms_contains(ci, osv_heap_RemoveColor)){
+    sprintf(buf + cursor, "|RemoveColor");
+    cursor += strlen("|RemoveColor");
+  }  
+  sprintf(buf + cursor, ",");
+  cursor += 1;
+
+  // *** Next print PC ***
+  if (pc != 0){
+    
+    // Initially detect any of the cases we are going to print out
+    int is_jumping_call = ms_contains(pc, osv_threeClass_Jumping_Call);
+    int is_jumping_ret = ms_contains(pc, osv_threeClass_Jumping_Return);    
+    int is_alloc_color = pc -> tags[POINTER_COLOR_INDEX] != 0;
+
+    if (is_jumping_call){
+      //sprintf(buf + cursor, "Jumping%03d", pc -> tags[PC_CONTROL_INDEX]);
+      //cursor += strlen("Jumping") + 3;
+      sprintf(buf + cursor, "Jumping-[%s]|", func_defs[pc -> tags[PC_CONTROL_INDEX]]);
+      cursor += strlen("Jumping-") + strlen(func_defs[pc -> tags[PC_CONTROL_INDEX]]) + 3;
+    }
+
+    if (is_jumping_ret){
+      //sprintf(buf + cursor, "Jumping%03d", pc -> tags[PC_CONTROL_INDEX]);
+      //cursor += strlen("Jumping") + 3;
+      sprintf(buf + cursor, "Jumping-[%s]|", func_defs[pc -> tags[PC_CONTROL_INDEX]]);
+      cursor += strlen("Jumping-") + strlen(func_defs[pc -> tags[PC_CONTROL_INDEX]]) + 3;
+    }    
+
+    if (is_alloc_color){
+      //sprintf(buf + cursor, "Alloc%03d", pc -> tags[POINTER_COLOR_INDEX]);
+      //cursor += strlen("Alloc") + 3;
+      sprintf(buf + cursor, "Alloc-%s", object_defs[pc -> tags[POINTER_COLOR_INDEX]]);
+      cursor += strlen("Alloc-") + strlen(object_defs[pc -> tags[POINTER_COLOR_INDEX]]);
+    }
+
+    if (is_jumping_call || is_jumping_ret || is_alloc_color){
+      sprintf(buf + cursor, ",");
+      cursor += 1;
+    } else {
+      sprintf(buf + cursor, "_,");
+      cursor += 2;
+    }
+  }
+
+  // *** Next print operands ***
+  if (op1 != 0){
+    if (ms_contains(op1, osv_heap_Pointer)){
+      sprintf(buf + cursor, "HeapPtr%03d,", op1 -> tags[POINTER_COLOR_INDEX]);
+      cursor += 11;
+    } else if (ms_contains(op1, osv_heap_ModColor)){
+      sprintf(buf + cursor, "ModColor,");
+      cursor += strlen("ModColor,");
+    } else {
+      sprintf(buf + cursor, "_,");
+      cursor += strlen("_,");
+    }
+  } else {
+    sprintf(buf + cursor, "NULL,");
+    cursor += strlen("NULL,");
+  }
+
+  if (op2 != 0){    
+    if (ms_contains(op2, osv_heap_Pointer)){
+      sprintf(buf + cursor, "HeapPtr%03d,", op2 -> tags[POINTER_COLOR_INDEX]);
+      cursor += 11;
+    } else if (ms_contains(op2, osv_heap_ModColor)){
+      sprintf(buf + cursor, "ModColor,");
+      cursor += strlen("ModColor,");      
+    } else {
+      sprintf(buf + cursor, "_,");
+      cursor += strlen("_,");
+    }    
+  } else {
+    sprintf(buf + cursor, "NULL,");
+    cursor += strlen("NULL,");
+  }
+
+  // *** Then print object ***
+  if (mem != 0){
+
+    // Print info about the object
+    unsigned int obj_id = 0;
+    int is_heap = ms_contains(mem, osv_heap_Cell);
+    int is_global = ms_contains(mem, osv_Comp_globalID);
+    int is_special_IO = ms_contains(mem, osv_Comp_special_obj_IO);
+    int is_special_RAM = ms_contains(mem, osv_Comp_special_obj_RAM);
+    int is_special_FLASH = ms_contains(mem, osv_Comp_special_obj_FLASH);
+    int is_special_UART = ms_contains(mem, osv_Comp_special_obj_UART);
+    int is_special_PLIC = ms_contains(mem, osv_Comp_special_obj_PLIC);
+    int is_special_ETHERNET = ms_contains(mem, osv_Comp_special_obj_ETHERNET);
+    int is_special = is_special_IO | is_special_RAM | is_special_FLASH | is_special_UART |
+      is_special_PLIC | is_special_ETHERNET;
+      
+    if (is_heap){
+      //sprintf(buf + cursor, "H:");
+      //cursor += 2;
+      obj_id = mem -> tags[CELL_COLOR_INDEX];
+    } else if (is_global){
+      //sprintf(buf + cursor, "G:");
+      //cursor += 2;
+      obj_id = mem -> tags[OBJ_INDEX];
+    }
+    if (obj_id != 0){
+      sprintf(buf + cursor, "%s", object_defs[obj_id]);
+      cursor += strlen(object_defs[obj_id]);
+    } else {
+      if (is_special){
+	char * special_str;
+	if (is_special_IO)
+	  special_str = "SPECIAL_IO";
+	if (is_special_RAM)
+	  special_str = "SPECIAL_RAM";
+	if (is_special_RAM)
+	  special_str = "SPECIAL_IO";
+	if (is_special_FLASH)
+	  special_str = "SPECIAL_FLASH";
+	if (is_special_UART)
+	  special_str = "SPECIAL_UART";
+	if (is_special_PLIC)
+	  special_str = "SPECIAL_PLIC";
+	if (is_special_ETHERNET)
+	  special_str = "SPECIAL_ETHERNET";		
+	   
+	sprintf(buf + cursor, special_str);
+	cursor += strlen(special_str);
+      } else {
+	sprintf(buf + cursor, " <unknown>");
+	cursor += strlen(" <unknown>");
+      }
+    }
+
+    // Then add special modifers to the mem
+    if (ms_contains(mem, osv_heap_ModColor)){
+      sprintf(buf + cursor, "|modcolor");
+      cursor += strlen("|modcolor");
+    }
+    if (ms_contains(mem, osv_heap_NewColor)){
+      sprintf(buf + cursor, "|newcolor");
+      cursor += strlen("|newcolor");
+    }
+
+    // Pointer stored in memory?
+    if (ms_contains(mem, osv_heap_Pointer)){
+      //sprintf(buf + cursor, "|storedPtr-%03d", mem -> tags[POINTER_COLOR_INDEX]);
+      //cursor += strlen("|storedPtr") + 3;
+      sprintf(buf + cursor, "|storedPtr-%s", object_defs[mem -> tags[POINTER_COLOR_INDEX]]);
+      cursor += strlen("|storedPtr-") + strlen(object_defs[mem -> tags[POINTER_COLOR_INDEX]]);
+    }
+    
+  } else {
+    sprintf(buf + cursor, "<none>");
+    cursor += strlen("<none>");
+  }
+}
 
 int meta_args_to_string(const meta_set_t *ts, int i, char *buf, size_t buf_len)
 {
