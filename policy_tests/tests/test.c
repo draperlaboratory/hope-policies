@@ -10,7 +10,7 @@ uint32_t t_instret(){
 
 int isp_main(int argc, char *argv[])
 {
-  t_printf("Running on RV%dV\n", read_mxl());
+  t_printf("Running on RV%d\n", __riscv_xlen);
   test_main();
   return 0;
 }
