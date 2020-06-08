@@ -4,16 +4,10 @@
 #include "test_status.h"
 #include "bsp/vm.h"
 
-void vm_test(void)
+int test_main(void)
 {
   test_positive(); // identify test as positive (will complete)
   printf("test\n");
   test_pass();
-  exit(test_done());
-}
-
-int test_main(void)
-{
-  vm_boot((uintptr_t)vm_test);
-  return 0;
+  return test_done();
 }
