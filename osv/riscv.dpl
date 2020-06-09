@@ -151,6 +151,7 @@ group:
         fadd.q
         fsub.q
         amoadd.w
+        amoadd.w.q
         amoxor.w
         amoor.w
         amoand.w
@@ -186,13 +187,18 @@ group:
  */
     grp mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
         mul
+        mulw
         mulh
         mulhsu
         mulhu
         div
         divu
+        divw
+        divuw
         rem
+        remw
         remu
+        remuw
         fmul.s
         fdiv.s
         fmul.d
@@ -329,6 +335,7 @@ group:
         lr.w
         sc.w
         amoadd.w
+        amoadd.w.q
         amoxor.w
         amoor.w
         amoand.w
@@ -400,13 +407,18 @@ group:
         lw
     // mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
         mul
+        mulw
         mulh
         mulhsu
         mulhu
         div
         divu
+        divw
+        divuw
         rem
         remu
+        remw
+        remuw
 
     // csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
         csrrw
@@ -524,6 +536,19 @@ group:
         fmv.w.x
         fmv.d.x
         fmv.q.x
+    // atomicGrp
+        lr.w
+        sc.w
+        amoadd.w
+        amoadd.w.q
+        amoxor.w
+        amoor.w
+        amoand.w
+        amomin.w
+        amomax.w
+        amominu.w
+        amomaxu.w
+        amoswap.w
 
 
     grp notMemGrp( -> )
@@ -575,13 +600,18 @@ group:
         lw
     // mulDivRemGrp(RS1:op1, RS2:op2 -> RD:res)
         mul
+        mulw
         mulh
         mulhsu
         mulhu
         div
         divu
+        divw
+        divuw
         rem
         remu
+        remw
+        remuw
 
     // csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
         csrrw
@@ -703,6 +733,7 @@ group:
         lr.w
         sc.w
         amoadd.w
+        amoadd.w.q
         amoxor.w
         amoor.w
         amoand.w

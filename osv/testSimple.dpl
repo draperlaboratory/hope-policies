@@ -77,6 +77,17 @@ require:
     init SOC.Memory.Flash_0                  {Nothing}
     init SOC.Memory.Ram_0                    {Nothing}
 
+    init SOC.IO.Debug                        {Nothing}
+    init SOC.IO.TEST                         {Nothing}
+    init SOC.IO.CLINT                        {Nothing}
+    init SOC.IO.ITIM                         {Nothing}
+    init SOC.IO.PLIC                         {Nothing}
+    init SOC.IO.GEM0                         {Nothing}
+    init SOC.IO.I2C_0                        {Nothing}
+    init SOC.IO.GPIO_0                       {Nothing}
+    init SOC.IO.GPIO_1                       {Nothing}
+    init SOC.IO.Ethernet_0                   {Nothing}
+
     init SOC.IO.TEST                         {Nothing}
 
     init Tools.Elf.Section.SHF_ALLOC         {Nothing}

@@ -30,7 +30,9 @@ def pytest_addoption(parser):
     parser.addoption('--composite', default='simple',
                      help='What composite policies (simple, full, else none)')
     parser.addoption('--isp_debug', default='no',
-                     help='pass debug options to testing tasks (yes/no)')
+                     help='pass debug options to testing tasks (\'debug\' to activate)')
+    parser.addoption('--arch', default='rv32',
+                     help='Which processor architecture to use.')
     parser.addoption('--extra', default=[],
                      help='extra args to pass to isp_run_app')
 
@@ -41,6 +43,10 @@ def sim(request):
 @pytest.fixture
 def runtime(request):
     return request.config.getoption('--runtime')
+
+@pytest.fixture
+def arch(request):
+    return request.config.getoption('--arch')
 
 @pytest.fixture
 def soc(request):
@@ -60,7 +66,7 @@ def composite(request):
 
 @pytest.fixture
 def debug(request):
-    return 'yes' == request.config.getoption('--isp_debug')
+    return 'debug' == request.config.getoption('--isp_debug')
 
 @pytest.fixture
 def timeout(request):
@@ -70,7 +76,20 @@ def timeout(request):
 def extra(request):
     return request.config.getoption('--extra')
 
+@pytest.fixture
+def global_policies(request):
+    return request.config.getoption('--gpolicies').split(",")
+
 def pytest_generate_tests(metafunc):
+
+    if 'runtime' in metafunc.fixturenames:
+        metafunc.parametrize("runtime", [metafunc.config.option.runtime], scope='session')
+    if 'arch' in metafunc.fixturenames:
+        metafunc.parametrize("arch", [metafunc.config.option.arch], scope='session')
+    if 'sim' in metafunc.fixturenames:
+        metafunc.parametrize("sim", [metafunc.config.option.sim], scope='session')
+    if 'debug' in metafunc.fixturenames:
+        metafunc.parametrize("debug", ['debug' == metafunc.config.option.isp_debug], scope='session')
 
     if 'policy' in metafunc.fixturenames:
         all_policies = []
@@ -87,11 +106,14 @@ def pytest_generate_tests(metafunc):
         module = metafunc.config.option.module
         if module:
             if 'simple' in metafunc.config.option.composite:
-                policies = composites(module, gpolicies, policies, True)
+                policies = composites(policies, True)
+                gpolicies = composites(gpolicies, True)
             elif 'full' in metafunc.config.option.composite:
-                policies = composites(module, gpolicies, policies, False)
-            else:
-                policies = [module + "." + p for p in (gpolicies+policies)]
+                policies = composites(policies, False)
+                gpolicies = composites(gpolicies, False)
+
+        gpolicies.append('')
+        metafunc.parametrize("global_policy", gpolicies, scope='session')
             
         # give all policies to test
         metafunc.parametrize("policy", policies, scope='session')
@@ -147,21 +169,15 @@ def permutePols(polStrs):
     return (reduce(operator.concat, combs, []))
 
 # given modules and policies, generate composite policies
-def composites(module, gpolicies, policies, simple):
+def composites(policies, simple):
 
     # generate all permutations
     r = []
-    globalPols = permuteGlobalPols(gpolicies)
-    localPols = permutePols(policies)
-    if globalPols:
-        localPols.append([])
-    if localPols:
-        globalPols.append([])
+    permuted_policies = permutePols(policies)
 
-    for p in localPols:
-        for gp in globalPols:
-            if p or gp:
-                r.append((p, module+"."+"-".join(gp+p)))
+    for p in permuted_policies:
+        if p:
+            r.append((p, "-".join(p)))
 
     # length of policy that has every member policy except none
     full_composite_len = len(policies)
@@ -183,14 +199,3 @@ def composites(module, gpolicies, policies, simple):
                 (     (not "none" in x[0])
                   and (not "testSimple" in x[0])
                   and (not "testComplex" in x[0]))]
-
-# generate the permutations of policies to compose
-def permuteGlobalPols(polStrs):
-    p = (polStrs)
-    # list of number of policies
-    ns = list(range(1,len(p)+1))
-    # list of combinations for each n
-    combs = [list(map(sorted,itertools.combinations(p, n))) for n in ns]
-    # flatten list
-    return (reduce(operator.concat, combs, []))
-

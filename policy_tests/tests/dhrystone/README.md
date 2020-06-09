@@ -27,7 +27,7 @@ test using the `isp_run_app` command:
 
 ```
 isp_run_app /repos/policies/policy_tests/build/bare/dhrystone \
-            --policy /repos/policies/policy_tests/kernels/osv.bare.main.none-debug \
+            --policy /repos/policies/policy_tests/policies/osv.bare.main.none-debug \
             --simulator qemu \
             --runtime bare \
             --gdb 1234 \

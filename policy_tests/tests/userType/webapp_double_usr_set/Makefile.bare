@@ -1,3 +1,0 @@
-include ../isp-runtime-bare.mk
-include test.mk
-include ../webapp/common.mk

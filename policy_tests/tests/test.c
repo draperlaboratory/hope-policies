@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "test.h"
 
 uint32_t t_instret(){
@@ -8,6 +10,7 @@ uint32_t t_instret(){
 
 int isp_main(int argc, char *argv[])
 {
+  t_printf("Running on RV%dV\n", read_mxl());
   test_main();
   return 0;
 }

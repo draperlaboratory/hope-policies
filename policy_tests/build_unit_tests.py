@@ -10,8 +10,6 @@ import glob
 import errno
 import re
 
-from helper_fns import *
-
 # True when test has its own Makefile
 def isMakefileTest(test):
     if os.path.isdir(os.path.join("tests", test)):
@@ -25,16 +23,17 @@ def isRipeTest(test):
     return False
 
 
-def test_copy_build_dir(test, runtime, sim):
+def test_copy_build_dir(test, runtime, sim, arch):
     if not runtime:
         pytest.fail("No target runtime provided")
 
     if not test:
         pytest.fail("No test provided to build")
 
-    output_dir = os.path.join(os.path.abspath("build"), runtime, sim, "src")
+    output_dir = os.path.join("build", runtime, sim, arch, "src")
+
     if not os.path.isdir(output_dir):
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
 
     if len(os.path.dirname(test)) != 0:
         output_test_parent_dir = os.path.join(output_dir, os.path.dirname(test))
@@ -51,23 +50,24 @@ def test_copy_build_dir(test, runtime, sim):
 
     shutil.copy(os.path.join("tests", "test.h"), output_test_dir)
     shutil.copy(os.path.join("tests", "test.c"), output_test_dir)
+    shutil.copy(os.path.join("tests", "test_asm.S"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.h"), output_test_dir)
     shutil.copy(os.path.join("tests", "test_status.c"), output_test_dir)
+    shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
 
     if isMakefileTest(test):
         shutil.copytree(os.path.join("tests", test), os.path.join(output_test_dir, os.path.basename(test)))
         if "webapp" in test:
             shutil.copytree(os.path.join("tests", "webapp"), os.path.join(output_test_dir, "webapp"))
     else:
-        shutil.copy(os.path.join("tests", "common.mk"), output_test_dir)
-        shutil.copy(os.path.join("tests", "Makefile." + runtime), output_test_dir)
+        shutil.copy(os.path.join("tests", "Makefile"), output_test_dir)
         shutil.copy(os.path.join("tests", test + ".c"), output_test_dir)
 
     subprocess.Popen(["isp_install_runtime", runtime, sim, "-b", output_test_dir]).wait()
 
 
 # function automatically found by pytest
-def test_build(test, runtime, sim, extra_args=None, extra_env=None):
+def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     if not runtime:
         pytest.fail("No target runtime provided")
 
@@ -82,11 +82,12 @@ def test_build(test, runtime, sim, extra_args=None, extra_env=None):
     if isRipeTest(test):
         test_dir = os.path.join(test_dir, "ripe")
 
-    makefile = "Makefile.{}".format(runtime)
+    makefile = "Makefile"
     if not os.path.isfile(os.path.join(test_dir, makefile)):
         pytest.fail("Test Makefile not found: {}".format(os.path.join(test_dir, makefile)))
 
-    output_dir = os.path.join(os.path.abspath("build"), runtime, sim)
+    output_dir = os.path.realpath(os.path.join("build", runtime, sim, arch))
+
     output_subdir = os.path.join(output_dir, os.path.dirname(test))
     if not os.path.isdir(output_subdir):
         os.makedirs(output_subdir, exist_ok=True)
@@ -95,7 +96,7 @@ def test_build(test, runtime, sim, extra_args=None, extra_env=None):
     if isMakefileTest(test):
         output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
 
-    make_args = ["make", "-C", output_test_dir, "-f", makefile]
+    make_args = ["make", "-C", output_test_dir, "-f", makefile, "RUNTIME={}".format(runtime), "ARCH={}".format(arch)]
     if extra_args is not None:
         make_args += extra_args
 

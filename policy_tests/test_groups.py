@@ -7,7 +7,6 @@ class AllTests:
     #positive tests go in the tests dir
     tests = [
         "printf_works_1",
-        "hello_works_1",
         "stanford_int_treesort_fixed",
         "ping_pong_works_1",
         "link_list_works_1",
@@ -21,9 +20,11 @@ class AllTests:
         "string_works_1",
         "longjump_works_1",
         "code_read_works_1",
+        "inline_asm_works_1",
         "timer_works_1",
         "function_pointer_works_1",
         "function_pointer_works_2",
+        "null_ptr_deref_fails_1",
         "rwx/code_write_fails_1",
         "rwx/data_exe_fails_1",
         "cfi/jump_data_fails_1",
@@ -32,6 +33,10 @@ class AllTests:
         "heap/malloc_fails_1",
         "heap/malloc_fails_2",
         "heap/malloc_fails_3",
+        "heap/use_after_free_fails_1",
+        "heap/use_after_free_fails_2",
+        "heap/double_free_fails_1",
+        "heap/offset_free_fails_1",
         "stack/stack_fails_1",
         "threeClass/jump_data_fails_1",
         "threeClass/call_fails_1",
@@ -44,25 +49,10 @@ class AllTests:
         "heap-ppac-userType/webapp_patient_info_leak_fails",
         "userType/webapp_double_usr_set",
         "password/webapp_password_leak",
-        "bitcount",
-        "adpcm_decode",
-        "adpcm_encode",
-        "aes",
-        "rc4",
-        "crc",
-        "fft",
-        "rsa",
-        "dijkstra",
-        "sha",
-        "qsort",
-        "randmath",
-        "lzfx",
-	"stringsearch",
-	"blowfish",
-	"limits",
-	"picojpeg",
-        "coremark",
-        "dhrystone",
+    ]
+
+    tests64 = [
+        "float_works",
     ]
 
 class webapp(AllTests):
@@ -90,6 +80,10 @@ class frtos(AllTests):
                                  )]
 
 
+class frtos64(frtos):
+    tests = frtos.tests + AllTests.tests64
+
+
 class bare(AllTests):
     tests = [test for test in AllTests.tests
                       if not any(test in s for s in
@@ -101,8 +95,45 @@ class bare(AllTests):
                                  ]
                                  )]
 
+
+class bare64(bare):
+    tests = bare.tests + AllTests.tests64
+
+
+class mibench(AllTests):
+    tests = [
+        "bitcount",
+        "adpcm_decode",
+        "adpcm_encode",
+        "aes",
+        "rc4",
+        "crc",
+        "fft",
+        "rsa",
+        "dijkstra",
+        "sha",
+        "qsort",
+        "randmath",
+        "lzfx",
+	"stringsearch",
+	"blowfish",
+	"limits",
+	"picojpeg",
+    ]
+
+
+class performance(AllTests):
+    tests = mibench.tests + [
+        "coremark",
+        "dhrystone",
+    ]
+
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
+               'frtos64' : frtos64,
                'bare' : bare,
-               'webapp' : webapp
+               'bare64' : bare64,
+               'webapp' : webapp,
+               'mibench' : mibench,
+               'performance' : performance
 }
