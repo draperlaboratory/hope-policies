@@ -123,8 +123,11 @@ def testResult(test_output_dir,xfail):
         return
 
     if not os.path.isfile(uart_log_file):
-        pytest.fail("Simulator did not produce UART log file")
-        return
+        # We get a false failure occasionally
+        time.sleep(5)
+        if not os.path.isfile(uart_log_file):
+            pytest.fail("Simulator did not produce UART log file")
+            return
 
     uart_data = open(uart_log_file, 'r', encoding='utf-8', errors='backslashreplace').read()
 
