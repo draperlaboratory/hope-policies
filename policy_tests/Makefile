@@ -196,7 +196,7 @@ frtos64-vcu118_GPOLICIES = contextswitch
 frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos64-vcu118_TIMEOUT = 360
-frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
+frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 frtos64-vcu118: CONFIG=frtos64-vcu118
 frtos64-vcu118: all
 
