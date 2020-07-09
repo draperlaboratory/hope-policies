@@ -1,0 +1,10 @@
+-
+    name: poc.var.allow_all
+    elf_name: load_elf_binary 
+    kind: symbol
+    optional: true
+-
+    name: poc.var.tag_done
+    elf_name: tag_loaded_elf_done
+    kind: symbol
+    optional: true

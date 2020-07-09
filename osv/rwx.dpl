@@ -39,12 +39,17 @@ import:
 metadata:
 	Rd,
 	Wr,
-	Ex
+	Ex,
+  allowAll,
+  tagDone
 
 
 policy:
   rwxPol =
-      loadGrp(mem == [-Rd] -> fail "read violation")
+      allGrp(code == [+allowAll], env == _ -> env = env[+allowAll])
+    ^ allGrp(code == [+tagDone], env == [+allowAll] -> env = env[-allowAll])
+    ^ allGrp(code == _, env == [+allowAll] -> env = env)
+    ^ loadGrp(mem == [-Rd] -> fail "read violation")
     ^ storeGrp(mem == [-Wr] -> fail "write violation")
     ^ allGrp(code == [-Ex] -> fail "execute violation")
     ^ loadGrp  (code == [+Ex], env == _, mem == [+Rd] -> res = {}, env = env)
@@ -84,8 +89,15 @@ require:
     init SOC.Memory.DMA_0                    {Rd, Wr}
     init SOC.Memory.QSPI_1                   {Rd}
 
-    init elf.Section.SHF_ALLOC         {Rd}
-    init elf.Section.SHF_EXECINSTR     {Ex}
-    init elf.Section.SHF_WRITE         {Rd, Wr}
+    init elf.Section.SHF_ALLOC               {Rd}
+    init elf.Section.SHF_EXECINSTR           {Ex}
+    init elf.Section.SHF_WRITE               {Rd, Wr}
+
+    init poc.var.allow_all                   {allowAll}
+    init poc.var.tag_done                    {tagDone}
+
+    init linux.section.brk                   {Rd, Wr}
+    init linux.section.stack                 {Rd, Wr}
+    init linux.section.vdso                  {Rd, Ex}
 
 
