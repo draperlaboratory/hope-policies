@@ -108,7 +108,8 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
     failed_msg = ""
     try:
         # Using PIPE for stdout sometimes prevents isp_run_app from noticing that the
-        # process has ended. Change to None for debugging
+        # process has ended. None won't hang, but will print `isp_run_app`s stdout.
+        # DEVNULL hides the output and doesn't hang.
         process = subprocess.run([run_cmd] + run_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=timeout, check=True)
     except subprocess.CalledProcessError as err:
         failed_msg = "Test errored out with error code: {}\n".format(err.returncode)
