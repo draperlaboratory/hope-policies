@@ -39,7 +39,8 @@ import:
 metadata:
 	Rd,
 	Wr,
-	Ex
+	Ex,
+  sbrk
 
 
 policy:
@@ -47,6 +48,12 @@ policy:
       loadGrp(mem == [-Rd] -> fail "read violation")
     ^ storeGrp(mem == [-Wr] -> fail "write violation")
     ^ allGrp(code == [-Ex] -> fail "execute violation")
+
+    // Initialize or delete tags for memory when sbrk allocates or deallocates it
+    ^ loadGrp(code == [+Ex], env == _, mem == [+Rd, +sbrk] -> res = {sbrk}, env = env)
+    ^ storeGrp(code == [+Ex], val == [+sbrk], env == _, mem == [-Rd, -Wr] -> mem = mem[+Rd, +Wr], env = env)
+    ^ storeGrp(code == [+Ex], val == [+sbrk], env == _, mem == [+Rd, +Wr] -> mem = {})
+
     ^ loadGrp  (code == [+Ex], env == _, mem == [+Rd] -> res = {}, env = env)
     ^ storeGrp (code == [+Ex], env == _, mem == [+Wr] -> mem = mem, env = env)
     ^ allGrp(code == [+Ex], env == _ -> env = env)
@@ -90,5 +97,7 @@ require:
     init elf.Section.SHF_ALLOC         {Rd}
     init elf.Section.SHF_EXECINSTR     {Ex}
     init elf.Section.SHF_WRITE         {Rd, Wr}
+
+    init dover.Kernel.Code.ApplyTag.sbrk_zero {Rd, sbrk}
 
 
