@@ -69,7 +69,7 @@ bare-vcu118_RUNTIME = bare
 bare-vcu118_MODULE = osv
 bare-vcu118_ARCH = rv32
 bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = heap,stack,rwx
+bare-vcu118_POLICIES = heap,stack,rwx,cfi
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
@@ -83,7 +83,7 @@ bare64-vcu118_RUNTIME = bare
 bare64-vcu118_ARCH = rv64
 bare64-vcu118_MODULE = osv
 bare64-vcu118_GPOLICIES = 
-bare64-vcu118_POLICIES = heap,rwx
+bare64-vcu118_POLICIES = heap,rwx,cfi
 bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare64-vcu118_TIMEOUT = 360
 bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
@@ -196,7 +196,7 @@ frtos64-vcu118_GPOLICIES = contextswitch
 frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos64-vcu118_TIMEOUT = 360
-frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
+frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 frtos64-vcu118: CONFIG=frtos64-vcu118
 frtos64-vcu118: all
 

@@ -105,13 +105,19 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
     if exe_dir is not "tests":
         run_args += ["-S", exe_dir]
 
-    if timeout:
-        process = subprocess.Popen(["timeout",str(timeout),run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    run_output,run_error = process.communicate()
-    if process.returncode != 0:
-        pytest.fail("Runtime failed with error: \n{}".format(run_error))
+    failed_msg = ""
+    try:
+        # Using PIPE for stdout sometimes prevents isp_run_app from noticing that the
+        # process has ended. None won't hang, but will print `isp_run_app`s stdout.
+        # DEVNULL hides the output and doesn't hang.
+        process = subprocess.run([run_cmd] + run_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=timeout, check=True)
+    except subprocess.CalledProcessError as err:
+        failed_msg = "Test errored out with error code: {}\n".format(err.returncode)
+    except subprocess.TimeoutExpired:
+        failed_msg = "Test timed out\n"
+
+    if failed_msg:
+        pytest.fail(failed_msg)
 
 
 def testResult(test_output_dir,xfail):
