@@ -164,8 +164,11 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
   // Create shorthands for the operation type
   int is_load = ms_contains(ops -> ci, osv_riscv_og_loadGrp);
   int is_store = ms_contains(ops -> ci, osv_riscv_og_storeGrp);
-  int is_return = ms_contains(ops -> ci, osv_threeClass_Return_Instr);  
-  int is_call = ms_contains(ops -> ci, osv_threeClass_Call_Instr);
+  int is_return = ms_contains(ops -> ci, osv_threeClass_Return_Instr);
+  //int is_call = ms_contains(ops -> ci, osv_threeClass_Call_Instr);
+  // CFI broken? Now using a new system to identify: is jumpGrp (only on jalr + ret)
+  // and then NOT tagged as return
+  int is_call = ms_contains(ops -> ci, osv_riscv_og_jumpGrp) && !is_return;
   int is_arith = ms_contains(ops -> ci, osv_riscv_og_immArithGrp) ||
     ms_contains(ops -> ci, osv_riscv_og_arithGrp);  
 
@@ -341,6 +344,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
       //printm("Calling an allocator! Color = %d", ops -> ci -> tags[POINTER_COLOR_INDEX]);
       res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> ci -> tags[POINTER_COLOR_INDEX];
     } else if (ops -> pc -> tags[POINTER_COLOR_INDEX] != 0){
+      //printm("Call without allocator tag!\n");
       res -> pc -> tags[POINTER_COLOR_INDEX] = ops -> pc -> tags[POINTER_COLOR_INDEX];
     }
     
@@ -480,6 +484,9 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
       int has_ModColor = ms_contains(ops -> mem, osv_heap_ModColor);
       int has_NewColor = ms_contains(ops -> mem, osv_heap_NewColor);
       int has_Pointer = ms_contains(ops -> mem, osv_heap_Pointer);
+
+      //printm("Inside apply-remove. ModColor: %d, NewColor: %d, hasPointer: %d",
+      //has_ModColor, has_NewColor, has_Pointer);
       
       // Keep ModColor
       if (has_ModColor){

@@ -2,6 +2,8 @@
 # This tool creates syntactic domains using DWARF metadata about each function
 # It creates (1) Compilation Unit, (2) Directory, and (3) File domains.
 
+from InstallDomains import *
+
 import sys
 import shutil
 import os.path
@@ -15,8 +17,20 @@ from elftools.dwarf.descriptions import describe_form_class
 
 # For the OS / Application cut, these are the tags for considering something in OS:
 OS_labels = ["FreeRTOS/Source", "FreeRTOS-Plus/Source"]
+library_labels = ["newlib"]
+compiler_labels = ["llvm-project"]
 
-compiler_labels = ["newlib"]
+def classify_OS(source):
+    for l in OS_labels:
+        if l in source:
+            return "OS"
+    for l in library_labels:
+        if l in source:
+            return "LIB"
+    for l in compiler_labels:
+        if l in source:
+            return "COMPILER"
+    return "APP"
 
 def create_syntactic_domains(cmap, elf_filename):
 
@@ -49,27 +63,28 @@ def create_syntactic_domains(cmap, elf_filename):
                 try:
                     if str(DIE.tag) == "DW_TAG_compile_unit":
                         # Get name of compilation unit
-                        current_CU = DIE.attributes["DW_AT_name"].value.decode("utf-8")
-                        current_CU = os.path.normpath(current_CU)
-
+                        comp_dir = DIE.attributes["DW_AT_comp_dir"].value.decode("utf-8")
+                        name = DIE.attributes["DW_AT_name"].value.decode("utf-8")
+                        current_CU = os.path.normpath(os.path.join(comp_dir, name))
+                        #print("Got CU: " + current_CU)
+                        
                         # Extract syntatic cut info
                         current_dir = os.path.dirname(current_CU)
                         current_file = os.path.basename(current_CU)
+                        #print("CU: " + current_CU + ", dir=" + current_dir + ",file=" + current_file)
 
-                        # For the OS cut, determine if this is application or OS
-                        current_OS = "App"
-                        for l in OS_labels:
-                            if l in current_CU:
-                                current_OS = "FreeRTOS"
-
+                        # For the OS cut, determine if this is Application, OS, or compiler
+                        current_OS = classify_OS(current_CU)
+                        #print("Type: " + current_OS)
                         is_lib = False
-                        if "newlib/libc" in current_CU:
-                            is_lib = True
-
+                        for l in compiler_labels:
+                            if l in current_CU:
+                                is_lib = True
+                            
                         # Anything that ends in .S is assembly and so doesn't actually have 'functions'...
                         # As a result, for any .S compilation unit, just insert a dummy CU func
                         # Also just making a new domain for each CU...
-                        if current_file[-2:] == ".S" or is_lib:
+                        if current_file[-2:] == ".S": # or is_lib:
                             func_name = "CU_" + current_file
                             
                             OS_domains[func_name] = current_OS
@@ -117,20 +132,6 @@ def create_syntactic_domains(cmap, elf_filename):
                          
         return domains
 
-# Install these domain files into the policy kernel directory
-def install_domains(domains, name):
-    isp_prefix = os.environ['ISP_PREFIX']
-    kernels_dir = os.path.join(isp_prefix, "kernels")
-    for f in os.listdir(kernels_dir):
-        if "compartmentalization" in f:
-            kernel_dir = os.path.join(kernels_dir, f)
-            domains_dir = os.path.join(kernel_dir, "domains")
-            if not os.path.exists(domains_dir):
-                os.mkdir(domains_dir)
-                print("Note: Created domains dir in kernel directory.")
-            domain_filename = os.path.join(domains_dir, name + ".domains")
-            print_subj_domains(domains, domain_filename)
-        
 def print_subj_domains(domains, name):
 
     # Convert the string names (e.g., "foo.c", "bar.c") into numbers (e.g., "1", "2")
@@ -153,9 +154,10 @@ def print_subj_domains(domains, name):
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print("Usage: run with one argument, the program to create syntacic domains from.")
+        print("Usage: run with two argument, the program to create syntacic domains from, and a privilege cmap file")
         sys.exit()
 
+    cmap = CAPMAP(sys.argv[1])        
     prog = sys.argv[1]
     
     if not os.path.exists(prog):
@@ -163,6 +165,5 @@ if __name__ == '__main__':
         sys.exit()
 
     print("Creating syntactic domains...")    
-    domains = create_syntactic_domains(prog)
+    domains = create_syntactic_domains(cmap, prog)
     print("Done.")
-       

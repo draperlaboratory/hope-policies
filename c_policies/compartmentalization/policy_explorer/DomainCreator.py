@@ -352,6 +352,7 @@ class DomainCreator:
         
         return data_PS + call_PS
 
+
     # Calculate the cost and benefit of a code merge for the CLUSTER_SIZE algorithm   
     def consider_code_merge_size(self, c1, c2, cluster_size):
 
@@ -381,6 +382,7 @@ class DomainCreator:
         # Skip this merge if didn't meet cutoff
         if merge_score < cutoff_ratio:
             merge_score = None
+            
         return (merge_score, cost, benefit)
 
     def consider_code_merge_rules(self, c1, c2):
@@ -390,7 +392,7 @@ class DomainCreator:
         return (merge_score, cost, benefit)
         
     
-    def cluster_functions(self, cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None):
+    def cluster_functions(self, cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None):
         
         # Banner for this clustering run. Display the chosen config options.
         print("Running code clustering algorithm. Parameters:")
@@ -403,8 +405,9 @@ class DomainCreator:
         elif strategy == ClusterStrategy.CLUSTER_RATIO:
             print("Clustering strategy: cluster_ratio")
             cutoff_ratio = strategy_param
-            condition_name = "R" + str(cutoff_ratio)
-            print("Ratio_minimum=" + str(cutoff_ratio))
+            cutoff_ratio_str = '{0:.10f}'.format(strategy_param)
+            condition_name = "R" + cutoff_ratio_str
+            print("Ratio_minimum=" + cutoff_ratio_str)
         elif strategy == ClusterStrategy.CLUSTER_RULES:
             max_rules = strategy_param
             self.cache_size = max_rules
@@ -415,6 +418,13 @@ class DomainCreator:
             self.current_working_sets = []
             for ws in working_sets:
                 self.current_working_sets.append(ws.copy())
+        else:
+            raise Exception("Unknown strategy.")
+
+        if merge_constraint == cmap.func_to_file:
+            condition_name += "fileConstr"
+        elif merge_constraint == cmap.func_to_dir:
+            condition_name += "dirConstr"
 
         # Resets data structures and builds called_funcs, accessed_objs, and object sizes
         self.prepare_clustering(cmap)
@@ -448,6 +458,12 @@ class DomainCreator:
 
                     if not c2 in still_can_merge:
                         continue
+
+                    if merge_constraint != None:
+                        constraint1 = merge_constraint[self.clusters[c1][0]]
+                        constraint2 = merge_constraint[self.clusters[c2][0]]
+                        if constraint1 != constraint2:
+                            continue
 
                     # For FreeRTOS case, *must* keep OS code and application code separate
                     c1_is_os = self.clusters[c1][0] in cmap.os_functions
@@ -514,7 +530,11 @@ class DomainCreator:
             #print("This merge has expected calls saved: " + str(best_benefit) + " with total score = " + str(best_merge_score))
             if working_sets != None:
                 self.working_set_replace(self.current_working_sets, c1, c2)
-                
+                for ws in list(self.current_working_sets):
+                    if len(ws) <= self.cache_size:
+                        print("Finished a working set! Deleting. Num working sets = " + str(len(self.current_working_sets)))
+                        self.current_working_sets.remove(ws)
+                        
             self.merge_clusters(c1,c2)
 
             self.finished_clusters.add(c2)
@@ -593,6 +613,7 @@ class DomainCreator:
                 clusterfile.write("\tContains these functions: (count=" + str(len(self.clusters[c])) + ",size=" + str(self.cluster_sizes[c]) +" bytes)\n")
                 for f in sorted(self.clusters[c]):
                     clusterfile.write("\t\t" + f + " (" + str(int(self.cmap.instr_count_map[f]["size"])) +" bytes)")
+                    clusterfile.write("\t(src=" + cmap.func_to_dir[f] + "/" + cmap.func_to_file[f]+")")
                     if f in self.cmap.os_functions:
                         clusterfile.write(" [OS]\n")
                     else:
@@ -695,7 +716,7 @@ class DomainCreator:
         return delta            
 
 # Wrapper around making a new clustering object and using it once as a possible use case.
-def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None):
+def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None):
 
     # Make sure output dir exists
     if not os.path.exists("cluster_output"):
@@ -704,9 +725,46 @@ def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_set
     clusterer = DomainCreator(cmap)
 
     subj_clusters = clusterer.cluster_functions(cmap, strategy, strategy_param, extra_name=extra_name,
-                                                working_sets = working_sets, cache_target = cache_target)
+                                                working_sets = working_sets, cache_target = cache_target,
+                                                merge_constraint = merge_constraint)
 
     return subj_clusters
+
+
+
+# One way to reduce the number of working sets we have to crunch at runtime
+# is to only take "unique" working sets, say that don't overlap 90% with
+# an existing ws.
+def add_working_set_if_unique(working_sets, new_ws):
+
+    # One precheck: any WS with "CU_start" we are going to skip
+    # This WS will be huge and only runs once
+    for rule in new_ws:
+        if "[CU_start.S]" in rule:
+            return
+
+    if len(new_ws) == 0:
+        return
+
+    # Next, we will try to prune out repetitive WSs
+    
+    # How picky are we about saying a ws is "new"?
+    cutoff_ratio = 0.75
+    
+    is_unique = True
+
+    for ws in working_sets:
+        total = len(new_ws)
+        overlapping = 0
+        for rule in new_ws:
+            if rule in ws:
+                overlapping += 1
+        ratio = float(overlapping) / total
+        if float(overlapping) / total >= cutoff_ratio:
+            is_unique = False
+
+    if is_unique:
+        working_sets.append(new_ws)
 
 
 # Load in a working sets file.
@@ -716,24 +774,44 @@ def load_working_sets(filename):
     print("Loading working sets from " + filename)
     f = open(filename, "r")
     current_set = None
-    working_sets = []    
+    working_sets = []
+    working_set_lengths = []
+    read_sets = 0
     for l in f.readlines():
         l = l.strip()
         if l == "BEGIN":
             if current_set != None:
-                working_sets.append(current_set)            
+                working_set_lengths.append(len(current_set))
+                add_working_set_if_unique(working_sets, current_set)
+                #working_sets.append(current_set)            
             current_set = set()
+            read_sets += 1
             continue
         current_set.add(l)
 
+    num_sets = len(working_sets)
+    print("We read " + str(read_sets) + " working sets, taking " + str(num_sets) + " as unique WSs.")
+
+    print("Length of WSs: " + str(sorted(working_set_lengths)))
+    print(" **** serious pruning and refining of WSs needed! *** ")
+    
+    '''
+    for ws in working_sets:
+        print("A working set: " + str(len(ws)))
+        for rule in sorted(ws):
+            print("\t" + rule)
+    '''
+    return working_sets
+
+    '''
     if len(working_sets) > 2:
         return working_sets[len(working_sets)-2:len(working_sets)-1]    
     else:
         return working_sets
-
+    '''
 if __name__ == '__main__':
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 2:
 
         # Check for working sets file
         working_sets_filename = sys.argv[1] + ".working_sets"
@@ -745,7 +823,7 @@ if __name__ == '__main__':
             working_sets = None
 
         # Load in CAPMAP            
-        cmap = CAPMAP(sys.argv[1], sys.argv[2])
+        cmap = CAPMAP(sys.argv[1])
         
         # Run the rule clustering variant
         for cache_size in [1024]:

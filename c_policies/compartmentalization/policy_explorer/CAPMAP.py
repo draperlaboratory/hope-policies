@@ -73,13 +73,13 @@ class CAPMAP:
     # 1) It extracts info from the prog_binary using "nm", "objdump", etc
     # 2) It parses a single cmap file or a whole directory of cmap files
     # 3) It does some post-processing and cleaning
-    def __init__(self, prog_binary, kmap_file, verbose=1):
+    def __init__(self, prog_binary, verbose=1):
 
         ### Define some class variables ###
         self.prog_binary = prog_binary
         self.prog_binary_name = os.path.basename(prog_binary)
         self.re_kernel = re.compile('.*/hope-src[a-z\-]*/(.*)$')
-        self.kmap_file = kmap_file
+        self.kmap_file = prog_binary + ".weighted.cmap"
         self.kmap_name = os.path.basename(self.kmap_file)
         self.kmap_dir = os.path.dirname(self.prog_binary)
         #self.symbol_table = {}
@@ -94,7 +94,6 @@ class CAPMAP:
         self.os_functions = set()
         self.instr_count_map = {}
         self.dg = nx.DiGraph();
-        self.addr_list = set()
         self.clear_maps()
 
         ### Extract info about prog_binary ###
@@ -103,10 +102,11 @@ class CAPMAP:
         ### Parse cmap files ###
         # If passed a specific cmap file, load that file.
         # If passed a directory, iterate over all cmaps in that directory.
-        if os.path.isfile(kmap_file):
-            print("Loading from one file: " + kmap_file)
+        print("File: " + self.kmap_file)
+        if os.path.isfile(self.kmap_file):
+            print("Loading from one file: " + self.kmap_file)
             self.from_single_file = True
-            self.parse_to_digraph(kmap_file)
+            self.parse_to_digraph(self.kmap_file)
         else:
             print("Currently does not support multiple files!")
             sys.exit()
@@ -290,19 +290,6 @@ class CAPMAP:
         asm_output = prog_binary + ".asm"
         if not os.path.isfile(asm_output):
             os.system(objdump + " -d " + prog_binary + " > " + asm_output)
-
-        # Read .asm once to collect all functions
-        self.addr_list = set()
-        with open(asm_output) as fh:
-            for line in fh:
-                line = line.strip()
-                if line == "":
-                    continue
-                
-                if ">:" in line:
-                    addr = line.split()[0]
-                    self.addr_list.add(addr)
-                    continue
                     
         # Populate some of the metadata maps from DWARF metadata
         self.get_dwarf_info()
@@ -326,7 +313,7 @@ class CAPMAP:
                     break                
                 
                 # Each new function, lookup metadata from addr2line
-                if ">:" in line:
+                if ">:" in line and "<." not in line:
                     addr = line.split()[0]
                     #funcname = self.ip_to_func[addr]
                     funcname = line.split()[1][1:-2]
@@ -334,6 +321,7 @@ class CAPMAP:
                     #dirname = self.ip_to_dir[addr]
                     #topdirname = self.ip_to_topdir[addr]
                     self.functions.add(funcname)
+                    #print("Parsing new function:" + funcname)                    
 
                     if not funcname in self.instr_count_map:
                         self.instr_count_map[funcname] = {}
@@ -348,7 +336,6 @@ class CAPMAP:
                     continue
 
                 if line == "":
-                    funcname = None
                     continue
                 
                 if funcname != None:
@@ -370,7 +357,11 @@ class CAPMAP:
                     # Parse line into addr, bytes, opcode, regs
                     line_chunks = line.split("\t")
                     num_chunks = len(line_chunks)
-                    if num_chunks == 3:
+                    # First skip some garbage:
+                    if num_chunks == 1 and ("<." in line) or ("Disassembly of" in line):
+                        pass
+                    # Then parse out the valid line types:
+                    elif num_chunks == 3:
                         addr = line_chunks[0][:-1]
                         instr_bytes = line_chunks[1]
                         opcode = line_chunks[2]
@@ -381,7 +372,7 @@ class CAPMAP:
                         opcode = line_chunks[2]
                         operands = line_chunks[3]
                     else:
-                        raise Exception("Could not parse line: " + line.strip())
+                        raise Exception("Could not parse line: " + line.strip() + str(line_chunks))
 
                     # Count up op types. Muuuch easier for RISC ISA :)
                     if opcode in ["sb", "sh", "sw"]:
@@ -738,8 +729,8 @@ class CAPMAP:
     
 if __name__ == '__main__':
 
-    if len(sys.argv) > 2:
-        print("Opening for binary " + sys.argv[1] + " cmap file: " + sys.argv[2])
-        cmap = CAPMAP(sys.argv[1], sys.argv[2])
+    if len(sys.argv) > 1:
+        print("Opening CAPMAP for " + sys.argv[1])
+        cmap = CAPMAP(sys.argv[1])
     else:
         print("python CAPMAP.py <binary> <kmap>")
