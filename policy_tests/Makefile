@@ -18,6 +18,18 @@ all: build-dirs run-tests
 BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
 STOCK_BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_p1.bit
 
+# Virtual environment setup
+VENV_DIR := venv/
+VENV_DONE := $(VENV_DIR)/.done
+VENV := . $(VENV_DIR)/bin/activate &&
+PYTHON_REQUIREMENTS := python-requirements.txt
+
+$(VENV_DONE):
+	rm -rf $(VENV_DIR)
+	virtualenv -p $(PYTHON) $(VENV_DIR)
+	$(VENV) pip3 install -r $(PYTHON_REQUIREMENTS)
+	touch $@
+
 # Standard build configurations can be listed here:
 #   variable format: {config_name}_{VAR}
 #   minimum variables (probably) needed: SIM, TESTS, RUNTIME, GPOLICIES, POLICIES
@@ -239,11 +251,11 @@ build-ripe: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 build-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-ripe: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-build-ripe: $(RIPE_CONFIGS)
+build-ripe: $(RIPE_CONFIGS) $(VENV_DONE)
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(ARCH)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(ARCH)/log
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe/ripe.py
+	$(VENV) $(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(XDIST) -k test_build_ripe ripe/ripe.py
 
 run-ripe: SIM ?= $($(CONFIG)_SIM)
 run-ripe: TESTS ?= $($(CONFIG)_TESTS)
@@ -254,9 +266,9 @@ run-ripe: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 run-ripe: POLICIES ?= $($(CONFIG)_POLICIES)
 run-ripe: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-ripe: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-run-ripe:
+run-ripe: $(VENV_DONE)
 	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
-	$(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
+	$(VENV) $(PYTHON) -m pytest $(PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(XDIST) -k test_run_ripe ripe/ripe.py
 
 ripe: build-policies build-ripe run-ripe
 
@@ -286,8 +298,8 @@ build-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 build-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-tests: build-dirs
-build-tests:
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
+build-tests: $(VENV_DONE)
+	$(VENV) $(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
 build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
@@ -297,13 +309,13 @@ build-dirs: MODULE ?= $($(CONFIG)_MODULE)
 build-dirs: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-build-dirs:
+build-dirs: $(VENV_DONE)
 	mkdir -p $(TEST_BUILD_DIR)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)
 	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)/log
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
+	$(VENV) $(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
 
@@ -321,11 +333,11 @@ build-policies: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-policies: POLICIES ?= $($(CONFIG)_POLICIES)
 build-policies: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 build-policies: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-build-policies:
+build-policies: $(VENV_DONE)
 	mkdir -p policies/log
 	mkdir -p pex
 	mkdir -p pex/$(SIM)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
+	$(VENV) $(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
 
 policies: clean-policies build-policies
 
@@ -340,9 +352,9 @@ run-tests: POLICIES ?= $($(CONFIG)_POLICIES)
 run-tests: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
-run-tests: build-tests build-policies
+run-tests: build-tests build-policies $(VENV_DONE)
 	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+	$(VENV) $(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) --arch=$(ARCH) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
 
@@ -357,7 +369,7 @@ performance-report: POLICIES ?= $($(CONFIG)_POLICIES)
 performance-report: XDIST ?= $($(CONFIG)_XDIST) # run in parallel
 performance-report: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 performance-report: TIMEOUT ?= 0
-performance-report:
+performance-report: $(VENV_DONE)
 	TESTS=$(TESTS) TIMEOUT=$(TIMEOUT) $(MAKE) run-tests
 	$(PYTHON) performance_report.py $(PERFORMANCE_REPORT_ARGS)
 
@@ -365,3 +377,4 @@ clean: clean-policies clean-tests
 	rm -rf $(TEST_BUILD_DIR) $(TEST_OUTPUT_DIR) $(RIPE_CONFIGS) debug prof broken __pycache__ ripe/__pycache__ *.pyc assets report.html *report.xml prof_results.log .cache \
 		tests/isp-runtime-frtos* tests/isp-runtime-bare*
 	find tests/ -type f -name '*.o' -delete
+	rm -rf $(VENV_DIR)
