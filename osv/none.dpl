@@ -59,6 +59,8 @@ require:
    init SOC.IO.GPIO_1                       {}
    init SOC.IO.Ethernet_0                   {}
 
+   init SOC.MAILBOX                         {}
+
    init SOC.Memory.BRAM_CTRL_0              {}
    init SOC.Memory.DMA_0                    {}
    init SOC.Memory.QSPI_1                   {}
