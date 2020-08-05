@@ -62,11 +62,15 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {Rd, Wr}
     init Tools.Link.MemoryMap.UserStack      {Rd, Wr}
 
-    init SOC.IO.ALT_UART_0                   {Rd, Wr}
+    init SOC.IO.MROM                         {Rd, Wr}
     init SOC.IO.UART_0                       {Rd, Wr}
     init SOC.IO.UART_1                       {Rd, Wr}
     init SOC.Memory.Flash_0                  {Rd}
     init SOC.Memory.Ram_0                    {Rd, Wr}
+    init SOC.Memory.Code_1                   {Rd, Wr}
+    init SOC.Memory.Code_2                   {Rd, Wr}
+    init SOC.Memory.Code_3                   {Rd, Wr}
+    init SOC.Memory.Code_4                   {Rd, Wr}
 
     init SOC.IO.Debug                        {Rd, Wr, Ex}
     init SOC.IO.TEST                         {Rd, Wr}
