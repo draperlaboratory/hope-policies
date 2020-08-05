@@ -10,6 +10,9 @@ import glob
 import errno
 import policy_test_common
 
+# If the last test didn't end cleanly, we need to push the bitstream again
+push_bitstream = True
+
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
@@ -33,7 +36,6 @@ def xfailReason(test, runtime, policies, global_policies, arch):
 
 def testPath(runtime, sim, arch, test):
     return os.path.join("build", runtime, sim, arch, test)
-
 
 # test function found automatically by pytest. Pytest calls
 #   pytest_generate_tests in conftest.py to determine the
@@ -88,6 +90,7 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
 
 
 def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
+    global push_bitstream
     run_cmd = "isp_run_app"
     run_args = [test, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir, "--arch", arch]
     if rule_cache != "":
@@ -98,7 +101,11 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
 
     if extra:
         extra_args = extra.split(",")
-        run_args += ["-e"] + extra_args
+        if not push_bitstream:
+            run_args += ["-e"] + list(filter(lambda arg: not "bitstream" in arg, extra_args))
+        else:
+            run_args += ["-e"] + extra_args
+            push_bitstream = False
 
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test)))
@@ -113,14 +120,17 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
         process = subprocess.run([run_cmd] + run_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=timeout, check=True)
     except subprocess.CalledProcessError as err:
         failed_msg = "Test errored out with error code: {}\n".format(err.returncode)
+        push_bitstream = True
     except subprocess.TimeoutExpired:
         failed_msg = "Test timed out\n"
+        push_bitstream = True
 
     if failed_msg:
         pytest.fail(failed_msg)
 
 
 def testResult(test_output_dir,xfail):
+    global push_bitstream
     uart_log_file = os.path.join(test_output_dir, "uart.log")   
     pex_log_file = os.path.join(test_output_dir, "pex.log")
 
@@ -138,6 +148,7 @@ def testResult(test_output_dir,xfail):
     uart_data = open(uart_log_file, 'r', encoding='utf-8', errors='backslashreplace').read()
 
     if "PASS: test passed." not in uart_data:
+        push_bitstream = True
         if "MSG: Negative test." in uart_data:
             message = open(pex_log_file, 'r').read()
             if any(s in message for s in ["Policy Violation", "TMT miss"]):
