@@ -200,6 +200,20 @@ frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 frtos64-vcu118: CONFIG=frtos64-vcu118
 frtos64-vcu118: all
 
+# config for 64-bit bare-metal on VCU118 board
+vm64-vcu118_SIM = vcu118
+vm64-vcu118_TESTS = vm64
+vm64-vcu118_RUNTIME = vm
+vm64-vcu118_ARCH = rv64
+vm64-vcu118_MODULE = osv
+vm64-vcu118_GPOLICIES = 
+vm64-vcu118_POLICIES = heap,rwx,cfi
+vm64-vcu118_XDIST = -n $(JOBS) # run in parallel
+vm64-vcu118_TIMEOUT = 360
+vm64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
+vm64-vcu118: CONFIG=vm64-vcu118
+vm64-vcu118: all
+
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
 dhrystone_RUNTIME = bare
