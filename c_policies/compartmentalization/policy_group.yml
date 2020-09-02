@@ -126,7 +126,7 @@ Groups:
   sd:
   - osv.riscv.og.storeGrp
   jal:
-  - osv.riscv.og.jumpGrp
+  - osv.riscv.og.arithGrp
   ecall:
   - osv.riscv.og.arithGrp
   bltu:

@@ -82,8 +82,8 @@ void pretty_print_rule(char * buf, const meta_set_t *ci, const meta_set_t *op1, 
     if (is_alloc_color){
       //sprintf(buf + cursor, "Alloc%03d", pc -> tags[POINTER_COLOR_INDEX]);
       //cursor += strlen("Alloc") + 3;
-      sprintf(buf + cursor, "Alloc-%s", object_defs[pc -> tags[POINTER_COLOR_INDEX]]);
-      cursor += strlen("Alloc-") + strlen(object_defs[pc -> tags[POINTER_COLOR_INDEX]]);
+      sprintf(buf + cursor, "Alloc-[%s]", object_defs[pc -> tags[POINTER_COLOR_INDEX]]);
+      cursor += strlen("Alloc-[]") + strlen(object_defs[pc -> tags[POINTER_COLOR_INDEX]]);
     }
 
     if (is_jumping_call || is_jumping_ret || is_alloc_color){
@@ -154,31 +154,31 @@ void pretty_print_rule(char * buf, const meta_set_t *ci, const meta_set_t *op1, 
       obj_id = mem -> tags[OBJ_INDEX];
     }
     if (obj_id != 0){
-      sprintf(buf + cursor, "%s", object_defs[obj_id]);
-      cursor += strlen(object_defs[obj_id]);
+      sprintf(buf + cursor, "[%s]", object_defs[obj_id]);
+      cursor += strlen(object_defs[obj_id]) + 2;
     } else {
       if (is_special){
 	char * special_str;
 	if (is_special_IO)
-	  special_str = "SPECIAL_IO";
+	  special_str = "[SPECIAL_IO]";
 	if (is_special_RAM)
-	  special_str = "SPECIAL_RAM";
+	  special_str = "[SPECIAL_RAM]";
 	if (is_special_RAM)
-	  special_str = "SPECIAL_IO";
+	  special_str = "[SPECIAL_IO]";
 	if (is_special_FLASH)
-	  special_str = "SPECIAL_FLASH";
+	  special_str = "[SPECIAL_FLASH]";
 	if (is_special_UART)
-	  special_str = "SPECIAL_UART";
+	  special_str = "[SPECIAL_UART]";
 	if (is_special_PLIC)
-	  special_str = "SPECIAL_PLIC";
+	  special_str = "[SPECIAL_PLIC]";
 	if (is_special_ETHERNET)
-	  special_str = "SPECIAL_ETHERNET";		
+	  special_str = "[SPECIAL_ETHERNET]";		
 	   
 	sprintf(buf + cursor, special_str);
 	cursor += strlen(special_str);
       } else {
-	sprintf(buf + cursor, " <unknown>");
-	cursor += strlen(" <unknown>");
+	sprintf(buf + cursor, " [<unknown>]");
+	cursor += strlen(" [<unknown>]");
       }
     }
 
@@ -196,13 +196,13 @@ void pretty_print_rule(char * buf, const meta_set_t *ci, const meta_set_t *op1, 
     if (ms_contains(mem, osv_heap_Pointer)){
       //sprintf(buf + cursor, "|storedPtr-%03d", mem -> tags[POINTER_COLOR_INDEX]);
       //cursor += strlen("|storedPtr") + 3;
-      sprintf(buf + cursor, "|storedPtr-%s", object_defs[mem -> tags[POINTER_COLOR_INDEX]]);
-      cursor += strlen("|storedPtr-") + strlen(object_defs[mem -> tags[POINTER_COLOR_INDEX]]);
+      sprintf(buf + cursor, "|storedPtr-[%s]", object_defs[mem -> tags[POINTER_COLOR_INDEX]]);
+      cursor += strlen("|storedPtr-[]") + strlen(object_defs[mem -> tags[POINTER_COLOR_INDEX]]);
     }
     
   } else {
-    sprintf(buf + cursor, "<none>");
-    cursor += strlen("<none>");
+    sprintf(buf + cursor, "[<none>]");
+    cursor += strlen("[<none>]");
   }
 }
 
@@ -217,7 +217,7 @@ int meta_args_to_string(const meta_set_t *ts, int i, char *buf, size_t buf_len)
         // Parsing bug in quasiquoter requires this
         ;
         //printed += snprintf(buf, buf_len - printed, " 0x%x", (unsigned int) ts->tags[3]);
-        printed += snprintf(buf, buf_len - printed, " %s", object_defs[ts -> tags[3]]);	
+        printed += snprintf(buf, buf_len - printed, " [%s]", object_defs[ts -> tags[3]]);	
         if (printed >= buf_len)
             return printed;
         break;
@@ -584,7 +584,7 @@ int meta_to_string(meta_t tag, const meta_set_t * ts, char *buf, size_t buf_len)
     case osv_Comp_globalID:
       // If we have global defs, us those. Otherwise just print ID.
       if (object_defs != 0){
-	sprintf(buf, "%s", object_defs[ts -> tags[2]]);	
+	sprintf(buf, "[%s]", object_defs[ts -> tags[2]]);	
       } else {
 	sprintf(buf, "global-%d", ts -> tags[2]);
       }

@@ -6,10 +6,13 @@
 #
 # This is a port of the uSCOPE DomainCreator for the PIPE variant of the compartmentalizations.
 
-from CAPMAP import *
-from calculate_PS import *
 import random
 import copy
+import itertools
+
+from CAPMAP import *
+from calculate_PS import *
+from WorkingSets import *
 
 # There are three supported clustering strategies for the subject clusterer:
 # 1) CLUSTER_SIZE, in which clusters are build targetting a maximum code size per cluster
@@ -34,6 +37,9 @@ class DomainCreator:
 
         # A set of current clusters, stored as lists e.g., clusters[c] = [f1, f2 ... fn]
         self.clusters = {}
+
+        # A map that records which cluster each object is in
+        self.obj_assignment = {}
 
         # A map of which objects are accessed by each function per op type
         self.accessed_objs = {}
@@ -386,13 +392,19 @@ class DomainCreator:
         return (merge_score, cost, benefit)
 
     def consider_code_merge_rules(self, c1, c2):
-        benefit = self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2)
+        #benefit = self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2)
+        benefit = self.WS.CalcSaved_SubjMerge(c1,c2)
+        #if benefit2 > 0:
+        #    print("Guessed " + str(benefit2) + " for current " + str(benefit))
+        #if benefit != benefit2:
+            #self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2, debug=True)
+            #raise Exception("Disagreement!")
         cost = self.calc_PS_delta_code_merge(c1, c2)
         merge_score = float(benefit) / cost
         return (merge_score, cost, benefit)
         
     
-    def cluster_functions(self, cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None):
+    def cluster_functions(self, cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None, WS=None):
         
         # Banner for this clustering run. Display the chosen config options.
         print("Running code clustering algorithm. Parameters:")
@@ -418,6 +430,9 @@ class DomainCreator:
             self.current_working_sets = []
             for ws in working_sets:
                 self.current_working_sets.append(ws.copy())
+            if WS != None:
+                self.WS = WS
+                self.WS.Reset(self.cache_size)
         else:
             raise Exception("Unknown strategy.")
 
@@ -425,6 +440,10 @@ class DomainCreator:
             condition_name += "fileConstr"
         elif merge_constraint == cmap.func_to_dir:
             condition_name += "dirConstr"
+        elif merge_constraint == None:
+            pass
+        else:
+            raise Exception("Unknown merge constraint.")
 
         # Resets data structures and builds called_funcs, accessed_objs, and object sizes
         self.prepare_clustering(cmap)
@@ -434,6 +453,7 @@ class DomainCreator:
         for c in self.clusters:
             still_can_merge.add(c)        
 
+        print("Len of still_can_merge: " + str(len(still_can_merge)))
         # Inefficient implementation: consider all merges, keep track of best merge.
         # Then make one best merge, recalculate, and repeat.
         # Each possible merge must produce: cost, benefit, and merge_score
@@ -502,6 +522,20 @@ class DomainCreator:
                         best_cost = cost
                         best_merge = (c1, c2)
 
+            # Loop over all possible clusters to look at pairs of objects we might want to merge
+            number_obj_merges = 0
+            for c in still_can_merge:
+                #print("Inside " + c)
+                for op in ["read", "write"]:
+                    #print("\tOp=" + op)
+                    # Grab all the combinations of pairs of objects that we could merge
+                    obj_pairs = list(itertools.combinations(self.reachable_objects_cache[op][c], r=2))
+                    for (o1,o2) in obj_pairs:
+                        #print("\t\tPair: "  + o1 + " " + o2)
+                        number_obj_merges += 1
+
+            print("Considered " + str(number_obj_merges) + " merges.")
+            print("Considered " + str(options_considered) + " subj merges.")
             if best_merge == None:
                 print("No more valid merges! Done with greedy code clustering.")
                 break
@@ -529,13 +563,28 @@ class DomainCreator:
 
             #print("This merge has expected calls saved: " + str(best_benefit) + " with total score = " + str(best_merge_score))
             if working_sets != None:
+                current_over = 0
+                for ws in self.current_working_sets:
+                    if len(ws) > self.cache_size:
+                        current_over += len(ws) - self.cache_size
+                print("Total over, before: " + str(current_over))
+                print("Savings guess new algo: " + str(self.WS.CalcSaved_SubjMerge(c1,c2)))
+                print("Savings guess current algo: " + str(self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2)))
                 self.working_set_replace(self.current_working_sets, c1, c2)
+                over_after = 0
+                for ws in self.current_working_sets:
+                    if len(ws) > self.cache_size:
+                        over_after += len(ws) - self.cache_size
+                saved = current_over - over_after
+                print("Total after: " + str(over_after) + ", saved=" + str(saved))
                 for ws in list(self.current_working_sets):
                     if len(ws) <= self.cache_size:
                         print("Finished a working set! Deleting. Num working sets = " + str(len(self.current_working_sets)))
                         self.current_working_sets.remove(ws)
                         
             self.merge_clusters(c1,c2)
+            if WS != None:
+                self.WS.PerformSubjMerge(c1,c2)
 
             self.finished_clusters.add(c2)
 
@@ -555,6 +604,8 @@ class DomainCreator:
                         print("Cluster " + c1 + " is full.")
                         still_can_merge.remove(c1)
                         self.finished_clusters.add(c1)
+
+            #raise Exception("Finished one code clustering step, stopping here.")
 
         # Add in the dead functions now, one per cluster. We skipped these earlier to not slow
         # down the clustering. However, we want final map to be complete.
@@ -631,11 +682,12 @@ class DomainCreator:
                     clusterfile.write(name)
                     clusterfile.write("\n")
                 clusterfile.write("\n")
-                
-        print("Average size: " + str(round(sum(sizes) / len(sizes), 3)))
-        print("Maximum size: " + str(max_size))
-        sizes = sorted(sizes, reverse=True)
-        print("Top sizes: " + str(sizes[0:10]))
+
+        if len(sizes) > 0:
+            print("Average size: " + str(round(sum(sizes) / len(sizes), 3)))
+            print("Maximum size: " + str(max_size))
+            sizes = sorted(sizes, reverse=True)
+            print("Top sizes: " + str(sizes[0:10]))
 
         # Sanity check: functions in clusters are right number (i.e., we accounted for all functions)
         total_funcs = 0
@@ -676,15 +728,37 @@ class DomainCreator:
         for f in sorted(list(self.function_assignment)):
             domain_label = self.function_assignment[f]
             domain_id = domain_ids[domain_label]
-            fh.write(f + " " + str(domain_id) + "\n")
+            fh.write("S " + f + " " + str(domain_id) + "\n")
+
+    def print_obj_domains(self, domain_filename, obj_clusters):
+        domain_ids = {}
+        current_id = 1
+        for o in obj_clusters:
+            label = obj_clusters[o]
+            if not label in domain_ids:
+                domain_ids[label] = current_id
+                current_id += 1
+
+        fh = open(domain_filename, "a")
+
+        for o in sorted(list(obj_clusters)):
+            domain_label = obj_clusters[o]
+            domain_id = domain_ids[domain_label]
+            fh.write("O" + f + " " + str(domain_id) + "\n")        
             
-    def working_set_replace(self, working_sets, new_name, old_name):
+    def working_set_replace(self, working_sets, new_name, old_name, debug=False):
         #print("Replacing " + old_name + " with " + new_name)
         number_replaced = 0
         rule_delta = 0
+        ws_id = 0
         for ws in working_sets:
+
+            ws_id += 1
             current_size = len(ws)
 
+            if debug:
+                ws_backup = set(ws)
+                
             # Figure out which rules are going to be replaced
             replacements = set()
             for rule in ws:
@@ -699,24 +773,29 @@ class DomainCreator:
                 number_replaced += 1
                 
             updated_size = len(ws)
+
+            if debug:
+                rules_removed = ws_backup.difference(set(ws))
+                for r in rules_removed:
+                    print("Removed this rule " + r + " in WS " + str(ws_id))
             #if updated_size != current_size:
             #    print("This replacement caused size of working set " + str(current_size) + "->" + str(updated_size))
             rule_delta += (current_size - updated_size)
 
         return rule_delta
 
-    def calc_working_set_savings_from_merge(self, working_sets, c1, c2):
+    def calc_working_set_savings_from_merge(self, working_sets, c1, c2, debug=False):
         # First make a copy of the current working sets
         temp_working_sets = []
         for ws in working_sets:
             temp_working_sets.append(ws.copy())
 
         # Then calculate delta
-        delta = self.working_set_replace(temp_working_sets, c1, c2)
+        delta = self.working_set_replace(temp_working_sets, c1, c2, debug)
         return delta            
 
 # Wrapper around making a new clustering object and using it once as a possible use case.
-def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None):
+def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None, WS=None):
 
     # Make sure output dir exists
     if not os.path.exists("cluster_output"):
@@ -726,7 +805,7 @@ def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_set
 
     subj_clusters = clusterer.cluster_functions(cmap, strategy, strategy_param, extra_name=extra_name,
                                                 working_sets = working_sets, cache_target = cache_target,
-                                                merge_constraint = merge_constraint)
+                                                merge_constraint = merge_constraint, WS=WS)
 
     return subj_clusters
 
@@ -750,6 +829,7 @@ def add_working_set_if_unique(working_sets, new_ws):
     
     # How picky are we about saying a ws is "new"?
     cutoff_ratio = 0.75
+    cutoff_ratio = 1.0
     
     is_unique = True
 
@@ -782,33 +862,31 @@ def load_working_sets(filename):
         if l == "BEGIN":
             if current_set != None:
                 working_set_lengths.append(len(current_set))
-                add_working_set_if_unique(working_sets, current_set)
-                #working_sets.append(current_set)            
+                #add_working_set_if_unique(working_sets, current_set)
+                working_sets.append(current_set)            
             current_set = set()
             read_sets += 1
             continue
         current_set.add(l)
 
+    # Add the last set too
+    if current_set != None and len(current_set) > 0:
+        working_sets.append(current_set)
+        
     num_sets = len(working_sets)
     print("We read " + str(read_sets) + " working sets, taking " + str(num_sets) + " as unique WSs.")
 
-    print("Length of WSs: " + str(sorted(working_set_lengths)))
-    print(" **** serious pruning and refining of WSs needed! *** ")
-    
     '''
     for ws in working_sets:
         print("A working set: " + str(len(ws)))
         for rule in sorted(ws):
             print("\t" + rule)
     '''
+    
     return working_sets
 
-    '''
-    if len(working_sets) > 2:
-        return working_sets[len(working_sets)-2:len(working_sets)-1]    
-    else:
-        return working_sets
-    '''
+
+
 if __name__ == '__main__':
 
     if len(sys.argv) == 2:
@@ -817,26 +895,28 @@ if __name__ == '__main__':
         working_sets_filename = sys.argv[1] + ".working_sets"
         if os.path.exists(working_sets_filename):
             working_sets = load_working_sets(working_sets_filename)
+            WS = WorkingSets(working_sets_filename)
         else:
             print("Could not find " + working_sets_filename)
             print("Running with no working sets. Can't use rule clustering.")
             working_sets = None
+            WS=None
 
         # Load in CAPMAP            
         cmap = CAPMAP(sys.argv[1])
-        
-        # Run the rule clustering variant
-        for cache_size in [1024]:
-            for cache_target in [0.76, 0.8, 0.85, 0.9, 0.95, 1.0]:
-                working_set_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size,
-                                                         working_sets = working_sets, cache_target=cache_target)
 
-        # Run the basic rule clustering algorithm
-        for cache_size in [1024, 1100, 1200, 1300, 1400, 1500, 1600]:
-                working_set_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size,
-                                                         working_sets = working_sets)
-                
+        '''
+        print("Creating cluster size domains...")
+        for size in [4096]:
+                condition_name = "C" + str(size)                
+                subj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_SIZE, size, WS=WS)
+        '''
+
+        print("Creating rule-cluster domains...")
+        for cache_size in [1024]:
+                condition_name = "Rules" + str(cache_size)
+                subj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size, working_sets=working_sets, WS=WS)
         
     else:
 
-        print("Run with ./DomainCreator.py <vmlinux> <kmap> <working_set_file>")
+        print("Run with ./DomainCreator.py <vmlinux>")

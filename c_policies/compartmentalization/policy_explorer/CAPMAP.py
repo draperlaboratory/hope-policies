@@ -116,6 +116,8 @@ class CAPMAP:
         self.build_object_ownership_maps()
         self.calc_live_functions()
 
+        #self.print_capmap()
+
     # Helper function for clearing class variables
     def clear_maps(self):
         self.ip_to_file = {}
@@ -245,6 +247,7 @@ class CAPMAP:
 
                 # Lines with only 3 fields are call/ret
                 else:
+                    print(line)
                     raise Exception("Invalid line type while parsing. Make sure to run on weighted cmap.")
 
         # Add this graph onto running total
@@ -507,7 +510,7 @@ class CAPMAP:
                     name = parts[3]
                     #src = parts[4] # some don't have src field... for now we are not using anyways
 
-                    if symbol_kind in ["b", "B", "d", "D", "r", "R"]:
+                    if symbol_kind in ["b", "B", "d", "D", "r", "R", "g", "G"]:
                         size = int(size, 16)
                         #print("Found global " + name + " at addr " + addr + " of size " + str(size))
                         loaded_globals["global_" + name] = size
@@ -684,6 +687,15 @@ class CAPMAP:
             print("Total functions: " + str(len(self.functions)))
             print("Live functions: " + str(len(self.live_functions)))
 
+    def print_capmap(self):
+        for node in self.dg:
+            if node[0] == NodeType.SUBJECT:
+                func_name = self.get_node_label(node)
+                print(func_name)
+                for obj_node in self.dg.successors(node):
+                    obj_label = self.get_node_label(obj_node)
+                    print("\t" + obj_label)
+                    
     # Only building no clustering map for the PIPE variant
     def build_object_ownership_maps(self):
         for node in self.dg:

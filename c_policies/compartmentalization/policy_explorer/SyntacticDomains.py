@@ -132,24 +132,6 @@ def create_syntactic_domains(cmap, elf_filename):
                          
         return domains
 
-def print_subj_domains(domains, name):
-
-    # Convert the string names (e.g., "foo.c", "bar.c") into numbers (e.g., "1", "2")
-    domain_ids = {}
-    current_id = 1
-    for f in domains:
-        label = domains[f]
-        if not label in domain_ids:
-            domain_ids[label] = current_id
-            current_id += 1
-    
-    fh = open(name, "w")
-
-    for f in sorted(list(domains)):
-        domain_label = domains[f]
-        domain_id = domain_ids[domain_label]
-        fh.write(f + " " + str(domain_id) + " " + str(domain_label) + "\n")
-                    
 
 if __name__ == '__main__':
 
