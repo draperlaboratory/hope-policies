@@ -111,10 +111,10 @@ if __name__ == '__main__':
                 condition_name = "C" + str(size)                
                 if constraint != None:
                     condition_name += "_" + name                    
-                subj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_SIZE, size, merge_constraint=constraint, WS=None)
+                subj_clusters, obj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_SIZE, size, merge_constraint=constraint, WS=None)
                 PSR = calc_PSR_cut(cmap, subj_clusters)
                 ps_result_file.write(prog_name + " " + condition_name + " PSR " + str(PSR) + "\n") 
-                install_domains(subj_clusters, cmap.obj_no_cluster, binary_name + "." + condition_name)
+                install_domains(subj_clusters, obj_clusters, binary_name + "." + condition_name)
                 ps_result_file.flush()
 
         
@@ -122,10 +122,10 @@ if __name__ == '__main__':
         print("Creating ratio domains...")
         for ratio in [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0.0000001]:
             condition_name = "R" + str(ratio)
-            subj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RATIO, ratio)
+            subj_clusters, obj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RATIO, ratio)
             PSR = calc_PSR_cut(cmap, subj_clusters)
             ps_result_file.write(prog_name + " " + condition_name + " PSR " + str(PSR) + "\n") 
-            install_domains(subj_clusters, cmap.obj_no_cluster, binary_name + "." + condition_name)
+            install_domains(subj_clusters, obj_clusters, binary_name + "." + condition_name)
             ps_result_file.flush()
         
         # Run the basic rule clustering algorithm
@@ -136,11 +136,11 @@ if __name__ == '__main__':
                     if constraint != None:
                         condition_name += "_" + name
                     print("Running " + condition_name)    
-                    clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size,
+                    subj_clusters, obj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size,
                                                  working_sets = working_sets, merge_constraint=constraint, WS=WS)
-                    PSR = calc_PSR_cut(cmap, clusters)
+                    PSR = calc_PSR_cut(cmap, subj_clusters)
                     ps_result_file.write(prog_name + " " + condition_name + " PSR " + str(PSR) + "\n") 
-                    install_domains(clusters, cmap.obj_no_cluster, binary_name + "." + condition_name)
+                    install_domains(subj_clusters, obj_clusters, binary_name + "." + condition_name)
                     ps_result_file.flush()
         
 

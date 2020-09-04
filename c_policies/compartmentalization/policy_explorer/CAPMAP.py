@@ -466,12 +466,13 @@ class CAPMAP:
         #    print(line)
         
         # NUKE: set all sizes to 1
+        '''
         print("Warning: using size of 1")
         for node in self.dg:
             if node[0] == NodeType.OBJECT:
                 obj_name = self.get_node_ip(node)
                 self.dg.node[node]["size"] = 1
-
+        '''
         
     # Load sizes of all global objects from the symbol table using nm
     def load_sizes_symbol_table(self):
