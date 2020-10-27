@@ -366,7 +366,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 
   /****** Handling context switching ******/  
 
-  /*
+  
   int is_context_switch = ms_contains(ops -> ci, osv_Comp_context_switch);
   
   // Handle context swithing. Save PC tags to memory, then try to load them back later.
@@ -433,7 +433,7 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
     return policySuccess;
   }
 
-  */
+  
   
   /****** Heap color maintenance ******/
 
@@ -523,7 +523,8 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
       }
 
       // Finally, the actual setup rule for an allocated word!
-      // Addr must be a colored pointer, value must be ModColor      
+      // Addr must be a colored pointer, value must be ModColor
+      // Nick: test, can we clear the PC now? Once we get here we got what we need
       if (is_apply_color){
 	if (ms_contains(ops -> op1, osv_heap_Pointer) &&
 	    ms_contains(ops -> op2, osv_heap_ModColor)){
@@ -535,6 +536,11 @@ int compartmentalization_policy(context_t *ctx, operands_t *ops, results_t *res)
 	  ms_bit_add(res -> rd, osv_heap_Cell);
 	  res -> rd -> tags[CELL_COLOR_INDEX] = ops -> op1 -> tags[POINTER_COLOR_INDEX];
 	  res -> rdResult = true;
+	  
+	  // Now trying to clear PC here
+	  res -> pc -> tags[POINTER_COLOR_INDEX] = 0; // saved_alloc_id;	
+	  res -> pc -> tags[PC_CONTROL_INDEX] = 0; //saved_jumping_color;	
+	  res -> rdResult = true;	  
 	}
       }
 

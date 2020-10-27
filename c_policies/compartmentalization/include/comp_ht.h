@@ -13,7 +13,7 @@
  * reasonable. Too small will impact performance, too large wasteful
  * of memory for HT array. TODO automatically resizing based on use
  * obviosly better. */
-#define HT_SIZE 4096
+#define HT_SIZE 32768
 
 struct comp_bucket {
   int src, dest, edge_type;

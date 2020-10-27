@@ -98,8 +98,9 @@ void pretty_print_rule(char * buf, const meta_set_t *ci, const meta_set_t *op1, 
   // *** Next print operands ***
   if (op1 != 0){
     if (ms_contains(op1, osv_heap_Pointer)){
-      sprintf(buf + cursor, "HeapPtr%03d,", op1 -> tags[POINTER_COLOR_INDEX]);
-      cursor += 11;
+      // Nick: this was just printing the raw number, switching to object_defs[] to print label for rule clustering
+      sprintf(buf + cursor, "HeapPtr-[%s],", object_defs[op1 -> tags[POINTER_COLOR_INDEX]]);
+      cursor += strlen("HeapPtr-[],") + strlen(object_defs[op1 -> tags[POINTER_COLOR_INDEX]]);
     } else if (ms_contains(op1, osv_heap_ModColor)){
       sprintf(buf + cursor, "ModColor,");
       cursor += strlen("ModColor,");
@@ -114,8 +115,9 @@ void pretty_print_rule(char * buf, const meta_set_t *ci, const meta_set_t *op1, 
 
   if (op2 != 0){    
     if (ms_contains(op2, osv_heap_Pointer)){
-      sprintf(buf + cursor, "HeapPtr%03d,", op2 -> tags[POINTER_COLOR_INDEX]);
-      cursor += 11;
+      // Like above, this is now printing the full label for rule clustering logic
+      sprintf(buf + cursor, "HeapPtr-[%s],", object_defs[op2 -> tags[POINTER_COLOR_INDEX]]);
+      cursor += strlen("HeapPtr-[],") + strlen(object_defs[op2 -> tags[POINTER_COLOR_INDEX]]);      
     } else if (ms_contains(op2, osv_heap_ModColor)){
       sprintf(buf + cursor, "ModColor,");
       cursor += strlen("ModColor,");      
