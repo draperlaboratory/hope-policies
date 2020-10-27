@@ -13,8 +13,11 @@ import itertools
 from CAPMAP import *
 from calculate_PS import *
 from WorkingSets import *
+from SyntacticDomains import *
 
-# DomainCreator supports three strategiies
+MERGE_OBJECTS = True
+
+# DomainCreator supports three strategies
 class ClusterStrategy(Enum):
     CLUSTER_SIZE = 1
     CLUSTER_RATIO = 2
@@ -103,6 +106,7 @@ class DomainCreator:
         self.smallest_cluster_size = None        
         for f in self.cmap.live_functions:
             cluster_name = "[" + f + "]"
+            #print("Initializing cluster " + cluster_name)
             self.clusters[cluster_name] = [f]
             self.function_assignment[f] = cluster_name
             function_size = int(self.cmap.instr_count_map[f]["size"])
@@ -112,10 +116,9 @@ class DomainCreator:
             self.cluster_free_ops[cluster_name] = self.cmap.instr_count_map[f]["free"]
             self.cluster_call_ops[cluster_name] = self.cmap.instr_count_map[f]["call"] + \
                                                   self.cmap.instr_count_map[f]["return"]
-            if self.smallest_cluster_size == None or function_size < self.smallest_cluster_size:
-                self.smallest_cluster_size = function_size
+            #if self.smallest_cluster_size == None or function_size < self.smallest_cluster_size:
+            #    self.smallest_cluster_size = function_size
         print("Minimum cluster size: " + str(self.smallest_cluster_size))
-
 
         ###########################################################
         ###   Build called_funcs, accessed_objs and obj_sizes   ###
@@ -149,7 +152,13 @@ class DomainCreator:
                         called_func = obj_label
                         if not called_func in self.called_funcs[this_func]:
                             self.called_funcs[this_func][called_func] = 0
+                        if not called_func in self.called_funcs:
+                            self.called_funcs[called_func] = {}
+                        if not this_func in self.called_funcs[called_func]:
+                            self.called_funcs[called_func][this_func] = 0
+                            
                         self.called_funcs[this_func][called_func] += edge["call"] + edge["return"]
+                        self.called_funcs[called_func][this_func] += edge["call"] + edge["return"]
                         self.total_calls += edge["call"] + edge["return"]
                     elif obj_node[0] == NodeType.OBJECT:
                         for op in ["read", "write", "free"]:
@@ -258,6 +267,12 @@ class DomainCreator:
         #print("Merging obj cluster " + o1 + " with " + o2)
         #print(o1 + " size=" + str(len(self.obj_cluster_to_objs[o1])))
         #print(o2 + " size=" + str(len(self.obj_cluster_to_objs[o2])))        
+
+        # Due to the free object clustering batch mechanism, it's possible
+        # to request merging a cluster that is now gone. If so, just do nothing.
+        if o1 not in self.obj_cluster_to_objs or o2 not in self.obj_cluster_to_objs:
+            #print("Could not merge in " + o2 + ", that is gone now.")
+            return False
         
         # Transfer over the objects
         for o in self.obj_cluster_to_objs[o2]:
@@ -280,6 +295,8 @@ class DomainCreator:
             for op in ["read", "write", "free"]:            
                 if o1 in self.reachable_object_clusters_cache[op][c] or o2 in self.reachable_object_clusters_cache[op][c]:
                     self.reachable_object_clusters_cache[op][c] = self.reachable_obj_clusters(c, op)
+
+        return True
         
     # Merge two clusters. Logically put c2 into c1.
     # 1) Remove c2 from cluster list, add those functions into c1
@@ -519,7 +536,10 @@ class DomainCreator:
                 return (None, None, None)
 
         # This merge is a valid candidate merge. Calculate benefit.
-        benefit = self.external_calls_saved[c1][c2]
+        benefit = self.external_calls_saved[c1][c2] * 1000.0
+
+        # Benefit is per byte of what is coming in
+        benefit = float(benefit) / self.cluster_sizes[c2]
 
         if benefit <= 0:
             return (None, None, 0)
@@ -567,22 +587,27 @@ class DomainCreator:
         return (merge_score, cost, benefit)
 
     
-    def cluster_functions(self, cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None, WS=None):
+    def cluster_functions(self, cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = (None,None), WS=None, param_list=None):
         
         # Banner for this clustering run. Display the chosen config options.
         print("Running code clustering algorithm. Parameters:")
-        
+
+        # Set to false if we fail to meet target
+        self.successful_pack = True
+
         if strategy == ClusterStrategy.CLUSTER_SIZE:
             print("Clustering strategy: cluster_size")
             cluster_size = strategy_param
             condition_name = "C" + str(cluster_size)
             print("Cluster_size=" + str(cluster_size))
+            self.WS = None
         elif strategy == ClusterStrategy.CLUSTER_RATIO:
             print("Clustering strategy: cluster_ratio")
             cutoff_ratio = strategy_param
             cutoff_ratio_str = '{0:.10f}'.format(strategy_param)
             condition_name = "R" + cutoff_ratio_str
             print("Ratio_minimum=" + cutoff_ratio_str)
+            self.WS = None
         elif strategy == ClusterStrategy.CLUSTER_RULES:
             max_rules = strategy_param
             self.cache_size = max_rules
@@ -596,14 +621,26 @@ class DomainCreator:
             if WS != None:
                 self.WS = WS
                 self.WS.Reset(self.cache_size)
+                if param_list != None:
+                    target = param_list.pop()
+                    print("Starting off with rule target " + str(target))
+                    self.WS.SetLimit(target)
+                if self.WS.full_pack:
+                    print("Domain creator, loaded up the full pack case.")
+                    condition_name += "_fullpack"
+            else:
+                self.WS = None
         else:
             raise Exception("Unknown strategy.")
 
-        if merge_constraint == cmap.func_to_file:
+        subj_constr, obj_constr = merge_constraint
+        if subj_constr == cmap.func_to_file:
             condition_name += "fileConstr"
-        elif merge_constraint == cmap.func_to_dir:
+        elif subj_constr == cmap.func_to_dir:
             condition_name += "dirConstr"
-        elif merge_constraint == None:
+        elif subj_constr == cmap.func_to_OS:
+            condition_name += "OSConstr"            
+        elif subj_constr == None:
             pass
         else:
             raise Exception("Unknown merge constraint.")
@@ -616,98 +653,149 @@ class DomainCreator:
         for c in self.clusters:
             still_can_merge.add(c)        
 
-        print("Len of still_can_merge: " + str(len(still_can_merge)))
+        # This is the main clustering loop.
         # Inefficient implementation: consider all merges, keep track of best merge.
-        # Then make one best merge, recalculate, and repeat.
+        # Then make one best merge, recalculate, and repeat...
         # Each possible merge must produce: cost, benefit, and merge_score
         merge_step = 0
         while True:
             merge_step += 1
             print("Clustering step " + str(merge_step) + ". Available domains for merging: " + str(len(still_can_merge)))
+            
+            if WS != None:
+                print("\tWorking sets over: " + str(WS.ReportWorkingSetsOver()))
 
             # Keep track of best merge we've found this step.
             # At the end, we take the best.
             best_merge = None
             merge_type = None
             merge_score = None
-            best_benefit = -1            
-            best_cost = -1            
+            best_benefit = -1
+            best_cost = -1
             best_merge_score = -1
             benefit = -1
 
             # Loop over all possible clusters to look at pairs of objects we might want to merge
-            # Note: we don't actually have to get this list from still_can_merge... that has some assumptions
             obj_merges_considered = 0
-            for c in still_can_merge:
+            obj_pairs_considered = set()
+            for c in self.clusters:
                 
                 # Exit early if we get a free move
-                if merge_score == float('inf'):
-                    break
+                #if merge_score == float('inf'):
+                #    break
 
                 ###############################################
                 ######### Consider merging objects ############
                 ###############################################
-                for op in ["read", "write"]:
+                # Currently, object merges only done for the rule clustering algo.
+                # To add to ratio / cluster_size, need a heuristic for perf improvement
+                if strategy != ClusterStrategy.CLUSTER_RULES:
+                    continue
 
-                    # Currently, object merges only done for the rule clustering algo.
-                    # To add to ratio / cluster_size, need a heuristic for perf improvement
-                    if strategy != ClusterStrategy.CLUSTER_RULES:
-                        continue
+                if not MERGE_OBJECTS:
+                    continue
+
+                # Grab all the combinations of pairs of objects that we could merge
+                reachable_obj_clusters = self.reachable_object_clusters_cache["read"][c].union(
+                    self.reachable_object_clusters_cache["write"][c])
+
+                # Prune out objects not in working sets (these can't save us anything)
+                # Also prune out non-globals, currently tagging tools do not support.
+                for o in list(reachable_obj_clusters):
+                    if not WS.PresentInWorkingSets(o):
+                        reachable_obj_clusters.remove(o)
+                    elif not (o[0:8] == "[global_" or o[0:6] == "[heap_"):
+                    #elif not o[0:6] == "[heap_":
+                        reachable_obj_clusters.remove(o)
+                
+                # Then, construct all pairs of pruned list and check stats
+                obj_pairs = list(itertools.combinations(reachable_obj_clusters, r=2))
+
+                # 5k max pairs per cluster per merge. Only hit for a few big clusters
+                if len(obj_pairs) > 5000:
+                    print("\tCluster=" + c)
+                    print("\tNumber of combinations: " + str(len(obj_pairs)))
+                    random.shuffle(obj_pairs)
+                    obj_pairs = obj_pairs[0:5000]
                     
-                    # Grab all the combinations of pairs of objects that we could merge
-                    reachable_obj_clusters = self.reachable_object_clusters_cache[op][c]
+                for (o1,o2) in obj_pairs:
 
-                    # Prune out objects not in working sets (these can't save us anything)
-                    # Also prune out non-globals, currently tagging tools do not support.
-                    for o in list(reachable_obj_clusters):
-                        if not WS.PresentInWorkingSets(o):
-                            reachable_obj_clusters.remove(o)
-                        elif not o[0:8] == "[global_":
-                            reachable_obj_clusters.remove(o)
+                    if (o1,o2) in obj_pairs_considered:
+                        continue
 
-                    # Then, construct all pairs of pruned list and check stats
-                    obj_pairs = list(itertools.combinations(reachable_obj_clusters, r=2))
-                    for (o1,o2) in obj_pairs:
-                        # Tagging tools currently only support merging two globals together
-                        #if o1[0:8] == "[global_" and o2[0:8] == "[global_":
-                            
-                        (merge_score, cost, benefit) = self.consider_object_merge_rules(o1, o2)
-                            
-                        obj_merges_considered += 1
+                    # Can only merge two globals or two heaps
+                    o1_type = o1.split("_")[0]
+                    o2_type = o2.split("_")[0]
+                    
+                    if o1_type != o2_type:
+                        continue
 
-                        # If this merge is better than anything we have yet, update best
-                        if merge_score != None and \
-                           (best_merge == None or merge_score > best_merge_score) and \
-                           benefit > 0:
-                            merge_type = MergeType.MERGE_OBJ
-                            best_merge_score = merge_score
-                            best_benefit = benefit
-                            best_cost = cost
-                            best_merge = (o1, o2)
-                            if merge_score == float('inf'):
-                                #print("\tFound a free move, early exit.")
-                                break            
+                    # If obj constraint is set, then must have same obj_constr lookup
+                    if obj_constr != None:
+                        o1_examplar = list(self.obj_cluster_to_objs[o1])[0]
+                        o2_examplar = list(self.obj_cluster_to_objs[o2])[0]
+                        if o1_examplar not in obj_constr:
+                            continue
+                        if o2_examplar not in obj_constr:
+                            continue
+                        if obj_constr[o1_examplar] != obj_constr[o2_examplar]:
+                            continue
+                        
+                    obj_pairs_considered.add((o1,o2))
+
+                    #print("Considering " + o1 + "," + o2)
+                    (merge_score, cost, benefit) = self.consider_object_merge_rules(o1, o2)
+
+                    # Forcing heap merges to test it out
+                    '''
+                    if "heap" in o1_type and merge_score != None:
+                        print("Big boost to " + o1)
+                        print("Heap situation was: " + str(benefit) + "/" + str(cost))
+                        benefit *= 10000000
+                        cost /= 100
+                        cost += 1
+                        merge_score = benefit / cost
+                    '''
+                    
+                    #print("Benefit=" + str(benefit))
+                    obj_merges_considered += 1
+
+                    # If this merge is better than anything we have yet, update best
+                    if merge_score != None and \
+                       (best_merge == None or merge_score > best_merge_score) and \
+                       benefit > 0:
+                        merge_type = MergeType.MERGE_OBJ
+                        best_merge_score = merge_score
+                        best_benefit = benefit
+                        best_cost = cost
+                        best_merge = [(o1, o2)]
+                        #if merge_score == float('inf'):
+                            #print("\tFound a free move, early exit.")
+                            #break
+                    # Object special case: we'll just take all the free moves and do them now
+                    elif merge_score == float('inf') and best_merge_score == float('inf'):
+                        best_merge.append((o1,o2))
 
             ###############################################
             ######### Consider merging subjects ###########
             ###############################################
                                 
             # Loop over all possible cluster to cluster merges
-            subj_merges_considered = 0            
+            subj_merges_considered = 0
             for c1 in still_can_merge:
 
                 # Exit early if we get a free move
-                if merge_score == float('inf'):
-                    break
+                #if best_merge_score == float('inf'):
+                #    break
                 
                 for c2 in self.reachable_clusters_cache[c1]:
 
                     if not c2 in still_can_merge:
                         continue
 
-                    if merge_constraint != None:
-                        constraint1 = merge_constraint[self.clusters[c1][0]]
-                        constraint2 = merge_constraint[self.clusters[c2][0]]
+                    if subj_constr != None:
+                        constraint1 = subj_constr[self.clusters[c1][0]]
+                        constraint2 = subj_constr[self.clusters[c2][0]]
                         if constraint1 != constraint2:
                             continue
 
@@ -715,8 +803,8 @@ class DomainCreator:
                     c1_is_os = self.clusters[c1][0] in cmap.os_functions
                     c2_is_os = self.clusters[c2][0] in cmap.os_functions
 
-                    if c1_is_os != c2_is_os:
-                        continue
+                    #if c1_is_os != c2_is_os:
+                    #    continue
 
                     subj_merges_considered += 1
                     
@@ -724,7 +812,7 @@ class DomainCreator:
                     # merge_score is computed as a function of calls between clusters
                     if strategy == ClusterStrategy.CLUSTER_SIZE:
                         
-                        (merge_score, cost, benefit) = self.consider_code_merge_size(c1, c2, cluster_size)
+                        (merge_score, cost, benefit) = self.consider_code_merge_size(c1, c2, cluster_size)                            
                         if merge_score == None:
                             continue
 
@@ -748,14 +836,34 @@ class DomainCreator:
                         best_benefit = benefit
                         best_cost = cost
                         best_merge = (c1, c2)
-
-
+                        
             #######################################################
             ######### Pick the best move and perform it ###########
             #######################################################
-                
+
+            
+            
+            if best_merge == None and param_list != None and len(param_list) > 1:
+                next_target = param_list.pop()
+                if next_target > max_rules: 
+                    print("Reached a target, updating to new target of " + str(next_target))
+                    self.WS.SetLimit(next_target)
+                    continue
+                else:
+                    self.WS.SetLimit(max_rules)
+                    print("Reached next param list target; now switching to actual target of " + str(max_rules))
+                    param_list = None
+                    continue
+            
             if best_merge == None:
-                print("\tNo more valid merges! Done with greedy code clustering.")
+                print("\tNo more valid merges! Done with clustering.")                
+                if WS != None:
+                    ws_over = WS.ReportWorkingSetsOver()
+                    if ws_over > 0:
+                        print("Failed to pack to WS target!")
+                        self.successful_pack = False
+                    else:
+                        print("Succeeded in packing.")
                 break
 
             if best_benefit <= 0:
@@ -773,41 +881,21 @@ class DomainCreator:
                 #print("\t(score = " + str(best_merge_score) +")")
                 #print("\tSavings: " + str(best_benefit))            
                 
-                rules_saved = self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2)
-                print("\tBenefit: " + str(best_benefit) + ",cost=" + str(best_cost) + " saving " + str(rules_saved) + " rules for a score of " + str(best_merge_score))
-                #print(c1 + "=")
-                #for f in sorted(self.clusters[c1]):
-                #    print("\t" + f)
-                #    print(c2 + "=")
-                #    for f in sorted(self.clusters[c2]):
-                #        print("\t" + f)
-
-                #print("This merge has expected calls saved: " + str(best_benefit) + " with total score = " + str(best_merge_score))
-                '''
-                if working_sets != None:
-                    current_over = 0
-                    for ws in self.current_working_sets:
-                        if len(ws) > self.cache_size:
-                            current_over += len(ws) - self.cache_size
-                    print("Total over, before: " + str(current_over))
-                    print("Savings guess new algo: " + str(self.WS.CalcSaved_Merge(c1,c2)))
-                    print("Savings guess current algo: " + str(self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2)))
-                    self.working_set_replace(self.current_working_sets, c1, c2)
-                    over_after = 0
-                    for ws in self.current_working_sets:
-                        if len(ws) > self.cache_size:
-                            over_after += len(ws) - self.cache_size
-                    saved = current_over - over_after
-                    print("Total after: " + str(over_after) + ", saved=" + str(saved))
-                    for ws in list(self.current_working_sets):
-                        if len(ws) <= self.cache_size:
-                            print("Finished a working set! Deleting. Num working sets = " + str(len(self.current_working_sets)))
-                            self.current_working_sets.remove(ws)
-                '''
+                #rules_saved = self.calc_working_set_savings_from_merge(self.current_working_sets, c1, c2)
+                print("\tBenefit: " + str(best_benefit) + ",cost=" + str(best_cost) + " for a score of " + str(best_merge_score))
                 
                 self.merge_clusters(c1,c2)
                 if WS != None:
+                    rules_before = WS.ReportRulesOver()
+                    print("\tCurrent rules over: " + str(rules_before))
                     self.WS.PerformMerge(c1,c2)
+                    actual_rules_saved =  rules_before - WS.ReportRulesOver()
+                    print("\tSaved from this merge: " + str(actual_rules_saved))
+                    if actual_rules_saved != best_benefit:
+                        # On the errors: I think we fixed them, but the param_list causes confusion
+                        # in which WS are actually eliminated or not, so that is responsible for these now
+                        print("\t\t(error in estimate, okay if small or after WS removal)")
+                    
 
                 self.finished_clusters.add(c2)
 
@@ -823,20 +911,29 @@ class DomainCreator:
                             still_can_merge.remove(c1)
                             self.finished_clusters.add(c1)
                     if self.SIZE_METRIC == "instr":
-                        if (self.cluster_sizes[c1] + self.smallest_cluster_size) >= cluster_size:
+                        if self.cluster_sizes[c1] >= cluster_size:
                             print("Cluster " + c1 + " is full.")
                             still_can_merge.remove(c1)
                             self.finished_clusters.add(c1)
 
             elif merge_type == MergeType.MERGE_OBJ:
-                (o1,o2) = best_merge
-                print("\tPicked an object merge that cycle. Considered " + str(obj_merges_considered) + " such options.")
-                print("\tMerging " + o1 + " with " + o2)
-                rules_saved = self.calc_working_set_savings_from_merge(self.current_working_sets, o1, o2)
-                print("\tBenefit: " + str(best_benefit) + ",cost=" + str(best_cost) + " saving " + str(rules_saved) + " rules for a score of " + str(best_merge_score))
-                self.merge_object_clusters(o1,o2)
-                if WS != None:
-                    self.WS.PerformMerge(o1,o2)
+                if len(best_merge) == 1:
+                    print("\tPicked an object merge that cycle. Considered " + str(obj_merges_considered) + " such options.")
+                else:
+                    print("\tPicked " + str(len(best_merge)) + " free object moves.")
+                for (o1,o2) in best_merge:
+                    print("\tMerging " + o1 + " with " + o2)
+                    #rules_saved = self.calc_working_set_savings_from_merge(self.current_working_sets, o1, o2)
+                    print("\tBenefit: " + str(best_benefit) + ",cost=" + str(best_cost) + " for a score of " + str(best_merge_score))
+                    merge_success = self.merge_object_clusters(o1,o2)
+                    if WS != None and merge_success:
+                        rules_before = WS.ReportRulesOver()
+                        print("\tCurrent rules over: " + str(rules_before))
+                        self.WS.PerformMerge(o1,o2)
+                        actual_rules_saved =  rules_before - WS.ReportRulesOver()                        
+                        print("\tSaved from this merge: " + str(actual_rules_saved))
+                        if actual_rules_saved != best_benefit:
+                            print("\t\t(calculation error)")
             else:
                 raise Exception("Merge_type error.")
                 
@@ -866,7 +963,7 @@ class DomainCreator:
             self.reachable_clusters_cache[cluster_name] = self.reachable_clusters(cluster_name)
             
         # Write out these clusters to an output file for future reference
-        self.write_clusters(condition_name, extra_name)
+        self.write_clusters(self.cmap, condition_name, extra_name, subj_constr, obj_constr)
 
         # Sanity check: functions in clusters are right number (i.e., we accounted for all functions)
         total_funcs = 0
@@ -879,7 +976,7 @@ class DomainCreator:
         # Done! Make and return our domains
         
         # Make subj domains
-        print("Done clustering.")        
+        print("Done clustering.")
         func_to_cluster = {}
         for f in self.cmap.functions:
             cluster = self.function_assignment[f]
@@ -898,20 +995,36 @@ class DomainCreator:
             cluster = self.obj_assignment[o]
             obj_to_cluster[o] = cluster
 
-        return (func_to_cluster, obj_to_cluster)
+        return (func_to_cluster, obj_to_cluster, self.successful_pack)
 
     
-    def write_clusters(self, condition_name, extra_name):
+    def write_clusters(self, cmap, condition_name, extra_name, subj_constr, obj_constr):
 
-        # Make sure output dir exists
-        if not os.path.exists("cluster_output"):
-            os.mkdir("cluster_output")
+        print("Writing clusters...")
         
-        clusterfile_name = "cluster_output/" + self.cmap.prog_binary_name + "_" + condition_name
+        # Make sure output dir exists
+        #if cmap.USE_WEIGHTS:
+        #    cluster_dir = "cluster_output_weighted/"
+        #else:
+        #    cluster_dir = "cluster_output_unweighted/"
+
+        cluster_dir = "cluster_output/"
+        if not os.path.exists(cluster_dir):
+            os.mkdir(cluster_dir)
+
+        clusterfile_name = cluster_dir + self.cmap.prog_binary_name + "_" + condition_name
         if extra_name != "":
             clusterfile_name += "_" + extra_name        
         clusterfile = open(clusterfile_name, "w")
 
+        print("Writing to " + clusterfile_name)
+        
+        if self.WS != None:
+            if self.successful_pack:
+                clusterfile.write("Packing_successful: yes\n")
+            else:
+                clusterfile.write("Packing_successful: no\n")
+                
         clusterfile.write("Final clusters:\n")
         index = 0
         sizes = []
@@ -935,16 +1048,16 @@ class DomainCreator:
                     sizes.append(self.cluster_sizes[c])
                 if self.cluster_sizes[c] > max_size:
                     max_size = self.cluster_sizes[c]
-                index += 1            
+                index += 1
                 clusterfile.write("Compartment " + str(index) + "\n")
                 clusterfile.write("\tContains these functions: (count=" + str(len(self.clusters[c])) + ",size=" + str(self.cluster_sizes[c]) +" bytes)\n")
                 for f in sorted(self.clusters[c]):
                     clusterfile.write("\t\t" + f + " (" + str(int(self.cmap.instr_count_map[f]["size"])) +" bytes)")
                     clusterfile.write("\t(src=" + self.cmap.func_to_dir[f] + "/" + self.cmap.func_to_file[f]+")")
-                    if f in self.cmap.os_functions:
-                        clusterfile.write(" [OS]\n")
+                    if subj_constr != None:
+                        clusterfile.write(" " + subj_constr[f] + "\n")
                     else:
-                        clusterfile.write(" [APP]\n")
+                        clusterfile.write("\n")
                         
                 clusterfile.write("\tHas privilege to access these objects: (" + str(len(objs)) + ")\n")
 
@@ -982,8 +1095,11 @@ class DomainCreator:
                 size = self.object_cluster_sizes["read"][obj_cluster]
                 clusterfile.write("\tObject cluster " + str(index) + ", size=" + str(size) + "\n")
                 for o in self.obj_cluster_to_objs[obj_cluster]:
-                    clusterfile.write("\t\t" + o + "\n")
-                    
+                    if obj_constr != None and o in obj_constr:
+                        clusterfile.write("\t\t" + o + "\t" + obj_constr[o] + "\n")
+                    else:
+                        clusterfile.write("\t\t" + o + "\n")
+                        
         if len(sizes) > 0:
             print("Average size: " + str(round(sum(sizes) / len(sizes), 3)))
             print("Maximum size: " + str(max_size))
@@ -1023,66 +1139,92 @@ class DomainCreator:
             domain_label = obj_clusters[o]
             domain_id = domain_ids[domain_label]
             fh.write("O" + f + " " + str(domain_id) + "\n")        
-            
-    def working_set_replace(self, working_sets, new_name, old_name, debug=False):
-        #print("Replacing " + old_name + " with " + new_name)
-        number_replaced = 0
-        rule_delta = 0
-        ws_id = 0
-        for ws in working_sets:
-
-            ws_id += 1
-            current_size = len(ws)
-
-            if debug:
-                ws_backup = set(ws)
-                
-            # Figure out which rules are going to be replaced
-            replacements = set()
-            for rule in ws:
-                if old_name in rule:
-                    replacements.add(rule)
-
-            # Perform the replacements
-            for rule in replacements:
-                ws.remove(rule)
-                new_rule = rule.replace(old_name, new_name)
-                ws.add(new_rule)
-                number_replaced += 1
-                
-            updated_size = len(ws)
-
-            if debug:
-                rules_removed = ws_backup.difference(set(ws))
-                for r in rules_removed:
-                    print("Removed this rule " + r + " in WS " + str(ws_id))
-            #if updated_size != current_size:
-            #    print("This replacement caused size of working set " + str(current_size) + "->" + str(updated_size))
-            rule_delta += (current_size - updated_size)
-
-        return rule_delta
-
-    def calc_working_set_savings_from_merge(self, working_sets, c1, c2, debug=False):
-        # First make a copy of the current working sets
-        temp_working_sets = []
-        for ws in working_sets:
-            temp_working_sets.append(ws.copy())
-
-        # Then calculate delta
-        delta = self.working_set_replace(temp_working_sets, c1, c2, debug)
-        return delta            
 
 # Wrapper around making a new clustering object and using it once as a possible use case.
-def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = None, WS=None):
+def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = (None, None), WS=None, param_list=None):
     
     clusterer = DomainCreator(cmap)
 
-    subj_clusters, obj_clusters = clusterer.cluster_functions(cmap, strategy, strategy_param, extra_name=extra_name,
-                                                working_sets = working_sets, cache_target = cache_target,
-                                                merge_constraint = merge_constraint, WS=WS)
+    subj_clusters, obj_clusters, success = clusterer.cluster_functions(cmap, strategy, strategy_param, extra_name=extra_name,
+                                                              working_sets = working_sets, cache_target = cache_target,
+                                                                       merge_constraint = merge_constraint, WS=WS, param_list=param_list)
 
-    return (subj_clusters, obj_clusters)
+    return (subj_clusters, obj_clusters, success)
 
+
+        
+# This is a handy little stand-alone function that automatically groups together
+# objects that have identical permission classes to achieve the same security
+# with lower overhead. Used in the syntactic and domain-size algorithms to
+# pack objects down to their minimal required set.
+def optimize_object_mapping(cmap, subj_clusters, obj_clusters):
+
+    # Objects can be read or written by functions.
+    # For each object, compute its "key" which is its complete
+    # permission classes
+    object_equivalence_classes = {}
+
+    for node in cmap.dg:
+        if node[0] == NodeType.OBJECT:
+            obj = cmap.get_node_label(node)
+
+            # Only merge two like-type objects
+            obj_type = None
+            if "global_" in obj:
+                obj_type = "global"
+            elif "heap_" in obj:
+                obj_type = "heap"
+            elif "special" in obj:
+                obj_type = "special"
+            else:
+                obj_type = "other"
+                
+            # Collect signature of this object
+            readers = set()
+            writers = set()
+            for pred in cmap.dg.predecessors(node):
+                if pred[0] == NodeType.SUBJECT:
+                    func = cmap.get_node_label(pred)
+                    subj = subj_clusters[func]
+                    edge = cmap.dg.get_edge_data(pred, node)
+                    if edge["read"] > 0:
+                        readers.add(subj)
+                    if edge["write"] > 0:
+                        writers.add(subj)
+            readers = sorted(list(readers))
+            writers = sorted(list(writers))
+            signature = obj_type + ".".join(readers) + "_" + ".".join(writers)
+            #print("Object " + obj + " has signature: " + signature)
+            if signature not in object_equivalence_classes:
+                object_equivalence_classes[signature] = set()
+            object_equivalence_classes[signature].add(obj)
+
+    # Optionally print out the interesting object equivalence classes
+    '''
+    print("Here are some equal objects: " )
+    for sig in object_equivalence_classes:
+        if len(object_equivalence_classes[sig]) > 1:
+            print(sig + ":")
+            for o in object_equivalence_classes[sig]:
+                print("\t" + o)
+    '''
+    
+    # Lastly, construct a new mapping based on the equivalence classes
+    new_obj_clusters = {}
+    new_obj_id = 0
+    for sig in object_equivalence_classes:
+        new_obj_id += 1
+        for o in object_equivalence_classes[sig]:
+            new_obj_clusters[o] = "objcluster_" + str(new_obj_id)
+
+    # Then add all the missing objects in
+    for o in obj_clusters:
+        if o not in new_obj_clusters:
+            new_obj_id += 1
+            new_obj_clusters[o] = "objcluster_" + str(new_obj_id)
+
+    return new_obj_clusters
+        
 # Load in a working sets file.
 # The format for this file is a token BEGIN and then all the rules in that set
 # Right now we just take the last few sets, too slow to run on all
@@ -1137,20 +1279,21 @@ if __name__ == '__main__':
             working_sets = None
             WS=None
 
-        # Load in CAPMAP            
-        cmap = CAPMAP(sys.argv[1])
+        # Load in CAPMAP
+        cmap = CAPMAP(sys.argv[1],weight=True)
 
-        '''
+        # Install the OS cuts into cmap
+        domains = create_syntactic_domains(cmap, sys.argv[1])
+
         print("Creating cluster size domains...")
-        for size in [4096]:
-                condition_name = "C" + str(size)                
-                subj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_SIZE, size, WS=WS)
-        '''
-
-        print("Creating rule-cluster domains...")
-        for cache_size in [2000]: #[1024]:
-            condition_name = "Rules" + str(cache_size)
-            subj_clusters, obj_clusters = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size, working_sets=working_sets, WS=WS)
+        for size in [70000]:
+                condition_name = "C" + str(size)
+                subj_clusters, obj_clusters, success = cluster_functions(cmap, ClusterStrategy.CLUSTER_SIZE, size)
+                OR = calc_OR_cut(cmap, subj_clusters, obj_clusters, domains["func"])
+                print("OR for this cut: " + str(OR))
+                obj_clusters = pack_to_eight_objects(obj_clusters)
+                OR = calc_OR_cut(cmap, subj_clusters, obj_clusters, domains["func"])
+                print("Updated OR: " + str(OR))
         
     else:
 

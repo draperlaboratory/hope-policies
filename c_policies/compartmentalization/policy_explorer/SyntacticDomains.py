@@ -15,23 +15,6 @@ from elftools.dwarf.locationlists import LocationEntry
 from elftools.dwarf.descriptions import describe_form_class
 
 
-# For the OS / Application cut, these are the tags for considering something in OS:
-OS_labels = ["FreeRTOS/Source", "FreeRTOS-Plus/Source"]
-library_labels = ["newlib"]
-compiler_labels = ["llvm-project"]
-
-def classify_OS(source):
-    for l in OS_labels:
-        if l in source:
-            return "OS"
-    for l in library_labels:
-        if l in source:
-            return "LIB"
-    for l in compiler_labels:
-        if l in source:
-            return "COMPILER"
-    return "APP"
-
 def create_syntactic_domains(cmap, elf_filename):
 
     # Open ELF
@@ -51,12 +34,14 @@ def create_syntactic_domains(cmap, elf_filename):
         dir_domains = {}
         file_domains = {}
         func_domains = {}
+        mono_domains = {}
         
         for CU in dwarfinfo.iter_CUs():
             current_CU = ""
             current_dir = ""
             current_file = ""
             current_OS = ""
+            current_mono = "1"
             
             for DIE in CU.iter_DIEs():
                 #print(str(DIE))
@@ -67,6 +52,9 @@ def create_syntactic_domains(cmap, elf_filename):
                         name = DIE.attributes["DW_AT_name"].value.decode("utf-8")
                         current_CU = os.path.normpath(os.path.join(comp_dir, name))
                         #print("Got CU: " + current_CU)
+
+                        if "hope-src/" in current_CU:
+                            current_CU = current_CU.split("hope-src/")[1]
                         
                         # Extract syntatic cut info
                         current_dir = os.path.dirname(current_CU)
@@ -86,12 +74,16 @@ def create_syntactic_domains(cmap, elf_filename):
                         # Also just making a new domain for each CU...
                         if current_file[-2:] == ".S": # or is_lib:
                             func_name = "CU_" + current_file
-                            
+
+                            mono_domains[func_name] = current_mono
                             OS_domains[func_name] = current_OS
                             CU_domains[func_name] = current_CU                            
                             dir_domains[func_name] = current_dir
                             file_domains[func_name] = current_file
                             func_domains[func_name] = func_name
+
+                            # Insert the OS domain into the cmap
+                            cmap.func_to_OS[func_name] = current_OS
                             
                     # We only care about functions (subprograms)
                     if str(DIE.tag) == "DW_TAG_subprogram":
@@ -104,12 +96,15 @@ def create_syntactic_domains(cmap, elf_filename):
                         func_name = DIE.attributes["DW_AT_name"].value.decode("utf-8")
                         declared_file = DIE.attributes["DW_AT_decl_file"]
                         func_display_name = str(func_name)
-                        
+
+                        mono_domains[func_name] = current_mono                        
                         CU_domains[func_name] = current_CU
                         dir_domains[func_name] = current_dir
                         file_domains[func_name] = current_file
                         OS_domains[func_name] = current_OS
                         func_domains[func_name] = func_name
+                        
+                        cmap.func_to_OS[func_name] = current_OS
                         
                 except Exception as e:
                     print(e)
@@ -117,6 +112,7 @@ def create_syntactic_domains(cmap, elf_filename):
                     #print("error: " + str(Exception.print_exc()))
 
         domains = {}
+        domains["mono"] = mono_domains
         domains["func"] = func_domains
         domains["file"] = file_domains        
         domains["dir"] = dir_domains
@@ -136,9 +132,10 @@ def create_syntactic_domains(cmap, elf_filename):
 if __name__ == '__main__':
 
     if len(sys.argv) != 2:
-        print("Usage: run with two argument, the program to create syntacic domains from, and a privilege cmap file")
+        print("Usage: run with one argument, the program to create syntactic domains from.")
         sys.exit()
 
+    print("RUnning on : " + sys.argv[1])
     cmap = CAPMAP(sys.argv[1])        
     prog = sys.argv[1]
     

@@ -71,7 +71,7 @@ def calculate_PSmin(cmap):
 
             #PS_min["readwrite"] += size if (edge["write"] > 0 or edge["read"] > 0) else 0
 
-    '''
+
     # Optional print top psmin read sources
     ps_min_read = PS_min["read"]
     print("PS_min_read:" + str(ps_min_read))
@@ -107,7 +107,6 @@ def calculate_PSmin(cmap):
         index += 1
         if index > 20:
             break    
-    '''
 
     return PS_min
             
@@ -197,8 +196,13 @@ def calculate_PSmono(cmap):
     PS_mono["read"] = num_reads * total_data_size
     PS_mono["write"] = num_writes * total_data_size
     PS_mono["free"] = 0 # TODO: add privilege for freeing?
-    PS_mono["call"] = num_calls * total_entry_points
-    PS_mono["return"] = num_returns * total_return_points
+    if cmap.USE_WEIGHTS:    
+        PS_mono["call"] = num_calls * total_entry_points
+        PS_mono["return"] = num_returns * total_return_points
+    else:
+        PS_mono["call"] = num_calls * total_instr_size
+        PS_mono["return"] = num_returns * total_instr_size
+
     return PS_mono
 
 # Calculate the PS of a particular set of subj and obj groups
@@ -225,6 +229,7 @@ def calculate_PScut(cmap, subject_clusters, object_clusters, return_sum = True):
     #### Step 1: Calculate the number of entry and return points per cluster ###
     entry_points_per_cluster = {}
     return_points_per_cluster = {}
+    code_size_per_cluster = {}
     for f in cmap.functions:
 
         # Add to cluster size
@@ -232,9 +237,11 @@ def calculate_PScut(cmap, subject_clusters, object_clusters, return_sum = True):
         if not cluster in entry_points_per_cluster:
             entry_points_per_cluster[cluster] = 0
             return_points_per_cluster[cluster] = 0
-
+            code_size_per_cluster[cluster] = 0
+            
         entry_points_per_cluster[cluster] += 1
         return_points_per_cluster[cluster] += cmap.instr_count_map[f]["call"]
+        code_size_per_cluster[cluster] += cmap.instr_count_map[f]["total"]
 
     ### Step 2: Calculate size of each object cluster ###
     # Next, build a size map for each object cluster
@@ -297,12 +304,20 @@ def calculate_PScut(cmap, subject_clusters, object_clusters, return_sum = True):
 
                     # For read/write/free, the size is the sum of the object cluster
                     # For call/return, the size is the size of the code
-                    if op in ["read", "write", "free"]:
-                        accessible_size[subj_cluster][op] += obj_cluster_sizes[obj_cluster]
-                    elif op == "call":
-                        accessible_size[subj_cluster][op] += entry_points_per_cluster[obj_cluster]
-                    elif op == "return":
-                        accessible_size[subj_cluster][op] += return_points_per_cluster[obj_cluster]
+                    if cmap.USE_WEIGHTS:
+                        if op in ["read", "write", "free"]:
+                            accessible_size[subj_cluster][op] += obj_cluster_sizes[obj_cluster]
+                        elif op == "call":
+                            accessible_size[subj_cluster][op] += code_size_per_cluster[obj_cluster]
+                        elif op == "return":
+                            accessible_size[subj_cluster][op] += code_size_per_cluster[obj_cluster]
+                    else:
+                        if op in ["read", "write", "free"]:
+                            accessible_size[subj_cluster][op] += obj_cluster_sizes[obj_cluster]
+                        elif op == "call":
+                            accessible_size[subj_cluster][op] += entry_points_per_cluster[obj_cluster]
+                        elif op == "return":
+                            accessible_size[subj_cluster][op] += return_points_per_cluster[obj_cluster]
                         
                 #accessible_size[subj_cluster]["readwrite"] += accessible_size[subj_cluster]["read"] + accessible_size[subj_cluster]["write"]
 
@@ -386,12 +401,18 @@ def calculate_PScut(cmap, subject_clusters, object_clusters, return_sum = True):
     else:
         return PS_cut
     
-def calc_PSR_cut(cmap, cut):
+def calc_PSR_cut(cmap, subj_clusters, obj_clusters):
     PS_mono = calc_PS_total(calculate_PSmono(cmap))
-    PS_cut = calc_PS_total(calculate_PScut(cmap, cut, cmap.obj_no_cluster, return_sum=True))
+    PS_cut = calc_PS_total(calculate_PScut(cmap, subj_clusters, obj_clusters, return_sum=True))
     PSR = float(PS_cut) / PS_mono
     return PSR
-    
+
+def calc_OR_cut(cmap, subj_clusters, obj_clusters, func_domains):
+    PS_min = calc_PS_total(calculate_PScut(cmap, func_domains, cmap.obj_no_cluster, return_sum=True))
+    PS_cut = calc_PS_total(calculate_PScut(cmap, subj_clusters, obj_clusters, return_sum=True))
+    OR = float(PS_cut) / PS_min
+    return OR
+
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         # Default behavior for this file: read a kmap and compute: mono,min,dirs,files,funcs

@@ -25,19 +25,6 @@ from elftools.elf.elffile import ELFFile
 # checks for a prog_binary_plain file which should be a kernel compiled
 # without memorizer. This file is optional but used for accurate
 # instruction counts.
-#
-# If the .cmap file also has a .funcs file or a .baseline file, these
-# are optionally read in as function counts and baseline cycles for
-# future scaling and overhead calculations.
-#
-# The first time a .cmap file is loaded, it will automatically be
-# compressed into a .cmap.comp file. In future loads, these will
-# automatically be detected and loaded instead. This saves a
-# tremendous amount of time.
-#
-# Lots of this file was added bit-by-bit to handle increasing
-# complexity as research progressed, some larger refactoring would be
-# good now that scope is more known.
 
 # List of operations in uSCOPE; used by this file and others
 ops = ["read", "write", "call", "return", "free"]
@@ -62,6 +49,26 @@ class MemType(Enum):
     HEAP = 1
     GLOBAL = 2
     SPECIAL = 3
+
+# Given a source label, determine if OS or not
+OS_labels = ["FreeRTOS/Source", "FreeRTOS-Plus/Source"]
+library_labels = ["newlib"]
+compiler_labels = ["llvm-project"]
+
+def classify_OS(source):
+    for l in OS_labels:
+        if l in source:
+            return "OS"
+    return "APP"
+
+    # Unfortunately, we want to make this obvious is a 2-way cut... so trimming out these
+    for l in library_labels:
+        if l in source:
+            return "LIB"
+    for l in compiler_labels:
+        if l in source:
+            return "COMPILER"
+    return "APP"
     
 # CAPMAP represented as a digraph. Nodes are either:
 #   - A kernel object, as denoted by the tuple of (NodeType.OBJECT, MemType, alloc_ip)
@@ -73,7 +80,7 @@ class CAPMAP:
     # 1) It extracts info from the prog_binary using "nm", "objdump", etc
     # 2) It parses a single cmap file or a whole directory of cmap files
     # 3) It does some post-processing and cleaning
-    def __init__(self, prog_binary, verbose=1):
+    def __init__(self, prog_binary, verbose=1, weight=None):
 
         ### Define some class variables ###
         self.prog_binary = prog_binary
@@ -82,12 +89,6 @@ class CAPMAP:
         self.kmap_file = prog_binary + ".weighted.cmap"
         self.kmap_name = os.path.basename(self.kmap_file)
         self.kmap_dir = os.path.dirname(self.prog_binary)
-        #self.symbol_table = {}
-        #self.symbol_table_sizes = {}
-        #self.symbol_table_names = {}
-        #self.symbol_table_src_files = {}
-        #self.object_names = {}
-        #self.object_names_display = {}        
         self.verbose = verbose
         self.functions = set()
         self.live_functions = set()
@@ -95,6 +96,12 @@ class CAPMAP:
         self.instr_count_map = {}
         self.dg = nx.DiGraph();
         self.clear_maps()
+
+        if weight != None:
+            print("Made a weighted CAPMAP!")
+            self.USE_WEIGHTS=True
+        else:
+            self.USE_WEIGHTS=False
 
         ### Extract info about prog_binary ###
         self.read_instructions_and_get_info()
@@ -129,16 +136,15 @@ class CAPMAP:
         self.func_to_file = {}        
         self.func_to_func = {}        
         self.func_to_dir = {}
-        self.func_to_topdir = {}
+        self.func_to_OS = {}
         self.func_to_mono = {}
         self.file_to_funcs = {}        
         self.file_to_dir = {}
         self.file_to_topdir = {}
         self.obj_no_cluster = {}
-        #self.obj_owner_func = {}
-        #self.obj_owner_file = {}
-        #self.obj_owner_dir = {}
-        #self.obj_owner_topdir = {}
+        self.obj_owner_file = {}
+        self.obj_owner_dir = {}
+        self.obj_owner_OS = {}
                 
     # This is the core logic for reading in a .cmap file. Has been
     # growing steadily to handle increasing complexity in Memorizer
@@ -284,7 +290,7 @@ class CAPMAP:
         self.func_to_func = {}
         self.func_to_file = {}
         self.func_to_dir = {}
-        self.func_to_topdir = {}
+        self.func_to_OS = {}
         self.func_to_mono = {}
         self.file_to_funcs = {}        
         self.file_to_dir = {}
@@ -400,6 +406,24 @@ class CAPMAP:
                 print("\t" + str(self.instr_count_map[f][op]) + " " + op)
         '''
 
+    def set_manual_object_size(self, obj):
+
+        manual_sizes = {}
+        # general
+        manual_sizes["global_ucHeap"] = 1000
+        # webserver
+        manual_sizes["global_prvCreateDiskAndExampleFiles.ucRAMDisk"] = 10000
+        manual_sizes["global_vNetworkInterfaceAllocateRAMToBuffers.ucNetworkPackets"] = 10000
+        # libXML
+        manual_sizes["global_XML_INPUT"] = 1000
+
+        for o in manual_sizes:
+            if obj == o:
+                print("Setting manual size for " + o)
+                return manual_sizes[o]
+            
+        return None
+        
     # Set sizes for all objects
     def set_object_sizes(self):
 
@@ -420,12 +444,14 @@ class CAPMAP:
                 size = self.dg.node[node]["size"]
                 new_size = None
 
-                # One special case is that in our FreeRTOS, the heap is drawn from globals.
-                # We don't want to double-count, so set this as a moderate sized object
-                if obj_name == "global_ucHeap":
-                    self.dg.node[node]["size"] = 1000
-
-                # Otherwise set size based on some simple logic
+                # Override any size with a manual size if there is one
+                manual_size = self.set_manual_object_size(obj_name)
+                if manual_size != None:
+                    new_size = manual_size
+                    self.dg.node[node]["size"] = new_size
+                    continue
+                
+                # Otherwise, if we still don't have size, use some simple heuristics
                 if size == 0:
 
                     if "heap_" in obj_name:
@@ -443,9 +469,11 @@ class CAPMAP:
                         raise Exception("Failed to set size for obj " + obj_name)
 
                     self.dg.node[node]["size"] = new_size
+                    continue
+                    
 
-        # Print out the object sizes
-        print("Printing object sizes!")
+        # Print out the largest 10 objects and their percent of data size
+        # This is good for getting a feeling from where PS is coming from.
         output = set()
         total_size = 0
         for node in self.dg:
@@ -455,24 +483,36 @@ class CAPMAP:
                 total_size += size
                 #output.add(obj_name + " " + str(size))
 
-        # Print object sizes and percents
-        #for node in self.dg:
-        #    if node[0] == NodeType.OBJECT:
-        #        obj_name = self.get_node_ip(node)
-        #        size = self.dg.node[node]["size"]
-        #        percent = str(float(size) / total_size * 100.0)[0:8] + "%"
-        #        output.add((size, str(size) + " " + percent + " " + obj_name))
-        #for (size, line) in sorted(output, reverse=True):
-        #    print(line)
-        
-        # NUKE: set all sizes to 1
-        '''
-        print("Warning: using size of 1")
         for node in self.dg:
             if node[0] == NodeType.OBJECT:
                 obj_name = self.get_node_ip(node)
-                self.dg.node[node]["size"] = 1
-        '''
+                size = self.dg.node[node]["size"]
+                percent = str(float(size) / total_size * 100.0)[0:8] + "%"
+                output.add((size, str(size) + " " + percent + " " + obj_name))
+
+        printed_lines = 0
+        for (size, line) in sorted(output, reverse=True):
+            print(line)
+            printed_lines += 1
+            if printed_lines >= 10:
+                break
+
+        # Now that we have all the function sizes, set func weights to size
+        if self.USE_WEIGHTS:
+            for node in self.dg:
+                if node[0] == NodeType.SUBJECT:
+                    func = self.get_node_ip(node)
+                    new_size = self.instr_count_map[func]["total"]
+                    self.dg.node[node]["size"] = new_size
+                    #print("Set size of " + func + " to " + str(new_size))
+  
+        # If we are not using weights, set object sizes to 0
+        if not self.USE_WEIGHTS:
+            print("Warning: using size of 1")
+            for node in self.dg:
+                if node[0] == NodeType.OBJECT:
+                    obj_name = self.get_node_ip(node)
+                    self.dg.node[node]["size"] = 1
         
     # Load sizes of all global objects from the symbol table using nm
     def load_sizes_symbol_table(self):
@@ -500,6 +540,13 @@ class CAPMAP:
             name = ""
             src = ""
 
+            # static variables get a name like "func.obj1" and do not have separate nm entries
+            # Instead, do a first pass, and then try to match these with funcs after
+            static_vars_retry = []
+            func_OS = {}
+            func_dir = {}
+            func_file = {}
+
             for line in fh:
                 line = line.strip()
 
@@ -509,15 +556,48 @@ class CAPMAP:
                     size = parts[1]
                     symbol_kind = parts[2]
                     name = parts[3]
-                    #src = parts[4] # some don't have src field... for now we are not using anyways
+                    if len(parts) > 4 and ":" in parts[4]:
+                        src_raw = parts[4]
+                        src = os.path.normpath(src_raw).split(":")[0]
+                        if "hope-src" in src:
+                            src = src.split("hope-src")[1]
+                        else:
+                            src = ""
+                    else:
+                        src = ""
 
+                    # Save function in a special place to resolve the static vars.
+                    # This is *not* actually where we are defining syntactic compartments,
+                    # rather this is just for resolving static global vars.
+                    if symbol_kind in ["t", "T"]:
+                        func_OS[name] = classify_OS(src)
+                        func_dir[name] = os.path.dirname(src)
+                        func_file[name] = src
+                        #print("Saved info for " + name)
+                        
                     if symbol_kind in ["b", "B", "d", "D", "r", "R", "g", "G"]:
                         size = int(size, 16)
                         #print("Found global " + name + " at addr " + addr + " of size " + str(size))
-                        loaded_globals["global_" + name] = size
+                        obj_name = "global_" + name
+                        loaded_globals[obj_name] = size
+                        if src != "":
+                            self.obj_owner_file[obj_name] = src
+                            self.obj_owner_dir[obj_name] = os.path.dirname(src)
+                            self.obj_owner_OS[obj_name] = classify_OS(src)
+                        elif "." in obj_name:
+                            # Special case for getting metadata for globals declared "static"
+                            # Take a symbol name like "global_funcname.obj1", extract the filename.o
+                            func = obj_name.split(".")[0][7:]
+                            if func in func_file:
+                                #print("Created a mapping for static global " + obj_name + " to " + func_file[func])
+                                self.obj_owner_file[obj_name] = func_file[func]
+                                self.obj_owner_dir[obj_name] = func_dir[func]
+                                self.obj_owner_OS[obj_name] = func_OS[func]
 
         # Now scan the graph and set sizes!
         set_sizes = 0
+        have_owner = 0
+        no_owner = 0
         for node in self.dg:
             if node[0] == NodeType.OBJECT:
                 obj_name = self.get_node_ip(node)
@@ -526,8 +606,15 @@ class CAPMAP:
                     #print("Setting size of " + obj_name + " in graph to " + str(size))
                     self.dg.node[node]["size"] = size
                     set_sizes += 1
+
+                if obj_name in self.obj_owner_OS:
+                    have_owner += 1
+                else:
+                    no_owner += 1
+                    #print("Object with no owner: " + obj_name)
                     
         print("Set the sizes of " + str(set_sizes) + " globals!")
+        print("Have owner: " + str(have_owner) + ", no owner: " + str(no_owner))
             
     # Instead of using addr2line like uSCOPE variant, use DWARF for more reliable data scraping.
     # Populates the ip_to_X maps.
@@ -571,7 +658,7 @@ class CAPMAP:
                                 func_name = "CU_" + current_file
                                 self.func_to_func[func_name] = func_name
                                 self.func_to_file[func_name] = current_file
-                                self.func_to_dir[func_name ] = current_dir
+                                self.func_to_dir[func_name] = current_dir
                                 for label in OS_labels:
                                     if label in current_dir:
                                         self.os_functions.add(func_name)
@@ -589,10 +676,12 @@ class CAPMAP:
                             self.func_to_func[func_name] = func_name
                             self.func_to_file[func_name] = current_file
                             self.func_to_dir[func_name] = current_dir
+                            self.func_to_OS[func_name] = "APP"
                             for label in OS_labels:
                                 if label in current_dir:
                                     self.os_functions.add(func_name)
                                     #print("OS func: " + func_name + " in " + current_dir)
+                                    self.func_to_OS[func_name] = "OS"
                             
 
                     except Exception as e:
@@ -674,6 +763,7 @@ class CAPMAP:
     # 1) to be able to calculate PS effects of removing dead code,
     # 2) As an optimization for the code clusterer to save compute time
     def calc_live_functions(self):
+        live_objects = set()
         for node in self.dg:
             if node[0] == NodeType.SUBJECT:
                 func_name = self.get_node_label(node)
@@ -684,9 +774,15 @@ class CAPMAP:
                         self.live_functions.add(dest_func)
                     else:
                         self.live_functions.add(func_name)
+            elif node[0] == NodeType.OBJECT:
+                num_pred = len(list(self.dg.predecessors(node)))
+                if num_pred > 0:
+                    live_objects.add(self.get_node_label(node))
+                    
         if self.verbose:
             print("Total functions: " + str(len(self.functions)))
             print("Live functions: " + str(len(self.live_functions)))
+            print("Live objects: " + str(len(live_objects)))            
 
     def print_capmap(self):
         for node in self.dg:
@@ -697,12 +793,32 @@ class CAPMAP:
                     obj_label = self.get_node_label(obj_node)
                     print("\t" + obj_label)
                     
-    # Only building no clustering map for the PIPE variant
+    # The file and dir cuts are built in the nm parsing
+    # Also make the OS cut
     def build_object_ownership_maps(self):
         for node in self.dg:
             if node[0] == NodeType.OBJECT:
                 obj_name = self.get_node_ip(node)
-                self.obj_no_cluster[obj_name] = obj_name            
+                self.obj_no_cluster[obj_name] = obj_name
+
+                if obj_name[0:5] == "heap_":
+                    
+                    func_name = "_".join(obj_name.split("_")[1:])
+                    if func_name not in self.func_to_func:
+                        if func_name[:-1] in self.func_to_func:
+                            #print("Stripping away last digit.")
+                            func_name = func_name[:-1]
+                        elif func_name[:-2] in self.func_to_func:
+                            #print("Stripping away last two digit.")
+                            func_name = func_name[:-2]
+                    
+                    file_lookup = self.func_to_file[func_name]
+                    dir_lookup = self.func_to_dir[func_name]
+                    OS_lookup = self.func_to_OS[func_name]
+                    self.obj_owner_file[obj_name] = file_lookup
+                    self.obj_owner_dir[obj_name] = dir_lookup
+                    self.obj_owner_OS[obj_name] = OS_lookup
+                    #print("Setting maps for " + obj_name)
 
     # Returns a set of all the subject clusters given a clustering map
     def get_subjects(self, subj_clusters):
