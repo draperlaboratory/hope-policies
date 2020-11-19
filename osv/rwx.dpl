@@ -90,7 +90,7 @@ require:
     init SOC.IO.GPIO_1                       {Rd, Wr}
     init SOC.IO.Ethernet_0                   {Rd, Wr}
 
-    init SOC.MAILBOX                         {Rd, Wr}
+    init SOC.IO.MAILBOX                         {Rd, Wr}
 
     init SOC.Memory.BRAM_CTRL_0              {Rd, Wr}
     init SOC.Memory.DMA_0                    {Rd, Wr}
