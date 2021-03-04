@@ -18,12 +18,12 @@ struct prefetch_bucket * ht_lookup_prefetch(struct prefetch_ht * ht, operands_t 
 
   // Compute index
   unsigned int index = (unsigned int) key -> pc;
-  index = index ^ (unsigned int) key -> ci;  
-  index = index ^ (unsigned int) key -> op1;
-  index = index ^ (unsigned int) key -> op2;
-  index = index ^ (unsigned int) key -> op3;
-  index = index ^ (unsigned int) key -> mem;  
-  index = (index >> 4) % ht -> num_buckets;
+  index = index ^ (((unsigned int) key -> ci) << 1);  
+  index = index ^ (((unsigned int) key -> op1) << 2);
+  index = index ^ (((unsigned int) key -> op2) << 3);
+  index = index ^ (((unsigned int) key -> op3) << 4);
+  index = index ^ (((unsigned int) key -> mem) << 5);
+  index = (index >> 2) % ht -> num_buckets;
 
   struct prefetch_bucket * curr = ht -> buckets[index];
   
@@ -43,22 +43,27 @@ struct prefetch_bucket * ht_lookup_prefetch(struct prefetch_ht * ht, operands_t 
   return NULL;
 }
 
-void ht_insert_prefetch(struct prefetch_ht * ht, operands_t * key, operands_t * prefetch_ops, results_t * prefetch_res){
+void ht_insert_prefetch(struct prefetch_ht * ht, operands_t * key, operands_t ** prefetch_ops, results_t ** prefetch_res, int num_target_rules){
 
   // Compute index
   unsigned int index = (unsigned int) key -> pc;
-  index = index ^ (unsigned int) key -> ci;  
-  index = index ^ (unsigned int) key -> op1;
-  index = index ^ (unsigned int) key -> op2;
-  index = index ^ (unsigned int) key -> op3;
-  index = index ^ (unsigned int) key -> mem;  
-  index = (index >> 4) % ht -> num_buckets;
+  index = index ^ (((unsigned int) key -> ci) << 1);
+  index = index ^ (((unsigned int) key -> op1) << 2);
+  index = index ^ (((unsigned int) key -> op2) << 3);
+  index = index ^ (((unsigned int) key -> op3) << 4);
+  index = index ^ (((unsigned int) key -> mem) << 5);
+  index = (index >> 2) % ht -> num_buckets;
   
   // Make new bucket
   struct prefetch_bucket * new_bucket = malloc(sizeof(struct prefetch_bucket));
   new_bucket -> key = key;
-  new_bucket -> prefetch_ops = prefetch_ops;
-  new_bucket -> prefetch_res = prefetch_res;
+  new_bucket -> num_rules = num_target_rules;
+  new_bucket -> prefetch_ops = malloc(sizeof(operands_t*) * num_target_rules);
+  new_bucket -> prefetch_res = malloc(sizeof(results_t*) * num_target_rules);  
+  for (int i = 0; i < num_target_rules; i++){
+    new_bucket -> prefetch_ops[i] = prefetch_ops[i];
+    new_bucket -> prefetch_res[i] = prefetch_res[i];
+  }
   new_bucket -> next = NULL;
   //new_bucket -> count = 1;
 

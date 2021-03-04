@@ -8,7 +8,7 @@ struct comp_ht * ht_create(int size){
   memset(new_ht, 0, sizeof(struct comp_ht));
   new_ht -> num_buckets = size;
   new_ht -> buckets = malloc(sizeof(struct comp_bucket *) * new_ht -> num_buckets);
-  memset(new_ht -> buckets, 0, sizeof(struct comp_buckt *) * new_ht -> num_buckets);
+  memset(new_ht -> buckets, 0, sizeof(struct comp_bucket *) * new_ht -> num_buckets);
   return new_ht;
 }
 
@@ -63,10 +63,12 @@ void ht_insert(struct comp_ht * ht, int src, int dest, int edge_type){
 
   // Print new count if not loading from CAPMAP file
   if (ht -> initialized){
-    
+
+#ifdef DEBUG
     printm("Total interactions captured = %d", ht -> stored_objects);
     printm("Reads=%d, writes=%d, calls=%d, returns=%d",
 	   ht -> reads, ht -> writes, ht -> calls, ht -> returns);
+#endif
   }
 
   // Case 1: that bucket is empty. Insert and return.

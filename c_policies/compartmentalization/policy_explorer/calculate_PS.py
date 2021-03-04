@@ -374,13 +374,34 @@ def calculate_PScut(cmap, subject_clusters, object_clusters, return_sum = True):
     PS_cut["return"] = {}
     PS_cut["free"] = {} 
 
+    PS_sources = []
+    PS_total = 0
+    
     # The PS from each cluster is the number of operations of that type multiplied by the size as calculated above
     for subj_cluster in cluster_op_counts:
-        PS_cut["read"][subj_cluster] = cluster_op_counts[subj_cluster]["read"] * accessible_size[subj_cluster]["read"]
-        PS_cut["write"][subj_cluster] = cluster_op_counts[subj_cluster]["write"] *accessible_size[subj_cluster]["write"]
-        PS_cut["free"][subj_cluster] = cluster_op_counts[subj_cluster]["free"] * accessible_size[subj_cluster]["free"]
-        PS_cut["call"][subj_cluster] = cluster_op_counts[subj_cluster]["call"] * accessible_size[subj_cluster]["call"]
-        PS_cut["return"][subj_cluster] = cluster_op_counts[subj_cluster]["return"] * accessible_size[subj_cluster]["return"]        
+        read_PS = cluster_op_counts[subj_cluster]["read"] * accessible_size[subj_cluster]["read"]
+        write_PS = cluster_op_counts[subj_cluster]["write"] * accessible_size[subj_cluster]["write"]
+        free_PS = cluster_op_counts[subj_cluster]["free"] * accessible_size[subj_cluster]["free"]
+        call_PS = cluster_op_counts[subj_cluster]["call"] * accessible_size[subj_cluster]["call"]
+        return_PS = cluster_op_counts[subj_cluster]["return"] * accessible_size[subj_cluster]["return"]
+        PS_total += read_PS + write_PS + free_PS + call_PS + return_PS
+        PS_cut["read"][subj_cluster] = read_PS
+        PS_cut["write"][subj_cluster] = write_PS
+        PS_cut["free"][subj_cluster] = free_PS
+        PS_cut["call"][subj_cluster] = call_PS
+        PS_cut["return"][subj_cluster] = return_PS
+        PS_sources.append((read_PS, "read", subj_cluster))
+        PS_sources.append((write_PS, "write", subj_cluster))
+        PS_sources.append((free_PS, "free", subj_cluster))
+        PS_sources.append((call_PS, "call", subj_cluster))
+        PS_sources.append((return_PS, "return", subj_cluster))
+
+    print("Top sources of PS for this cut: ")
+    PS_sources = sorted(PS_sources, reverse=True)
+    for i in range(0,40):
+        (PS, op, subj) = PS_sources[i]
+        percent = float(PS) / PS_total * 100.0
+        print(str(PS_sources[i]) + " " + str(percent) + "%") 
     
     # We now have PS_cut calculated broken down by subj_cluster
     # We can either return this raw, or sum up all subj together
@@ -420,11 +441,11 @@ if __name__ == '__main__':
         print("PS min: " + str(calculate_PSmin(cmap)))
         print("PS mono: " + str(calculate_PSmono(cmap)))
 
-        syntactic_domains = create_syntactic_domains(sys.argv[1])
+        syntactic_domains = create_syntactic_domains(cmap, sys.argv[1])
 
         # Print out PSRs for the syntactic cuts
         for cut in syntactic_domains:
-            PSR = calc_PSR_cut(cmap, syntactic_domains[cut])
+            PSR = calc_PSR_cut(cmap, syntactic_domains[cut], cmap.obj_no_cluster)
             print("PSR for " + cut + ":" + str(PSR))
         
     else:
