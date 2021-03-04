@@ -9,6 +9,7 @@
 import random
 import copy
 import itertools
+import time
 
 from CAPMAP import *
 from calculate_PS import *
@@ -16,6 +17,9 @@ from WorkingSets import *
 from SyntacticDomains import *
 
 MERGE_OBJECTS = True
+
+# What if we are okay leaving 1% of working sets over? Make sure 99% fit.
+RULE_CLUSTERING_RELAXED = False
 
 # DomainCreator supports three strategies
 class ClusterStrategy(Enum):
@@ -621,6 +625,10 @@ class DomainCreator:
             if WS != None:
                 self.WS = WS
                 self.WS.Reset(self.cache_size)
+                if RULE_CLUSTERING_RELAXED:
+                    # Half a percent of WS can be over and we still good
+                    self.WS_target = 0.0085 * WS.ReportWorkingSetsOver()
+                    print("One percent of the WS target is: " + str(self.WS_target))
                 if param_list != None:
                     target = param_list.pop()
                     print("Starting off with rule target " + str(target))
@@ -843,7 +851,7 @@ class DomainCreator:
 
             
             
-            if best_merge == None and param_list != None and len(param_list) > 1:
+            if best_merge == None and param_list != None and len(param_list) > 0:
                 next_target = param_list.pop()
                 if next_target > max_rules: 
                     print("Reached a target, updating to new target of " + str(next_target))
@@ -865,6 +873,11 @@ class DomainCreator:
                     else:
                         print("Succeeded in packing.")
                 break
+
+            if RULE_CLUSTERING_RELAXED and WS != None:
+                if WS.ReportWorkingSetsOver() < self.WS_target:
+                    print("Reached the relaxed target! This is easier than fully packing.")
+                    break
 
             if best_benefit <= 0:
                 print("WARNING: best benefit is " + str(best_benefit))
@@ -1140,6 +1153,55 @@ class DomainCreator:
             domain_id = domain_ids[domain_label]
             fh.write("O" + f + " " + str(domain_id) + "\n")        
 
+    '''
+    def working_set_replace(self, working_sets, new_name, old_name, debug=False):
+        #print("Replacing " + old_name + " with " + new_name)
+        number_replaced = 0
+        rule_delta = 0
+        ws_id = 0
+        for ws in working_sets:
+
+            ws_id += 1
+            current_size = len(ws)
+
+            if debug:
+                ws_backup = set(ws)
+                
+            # Figure out which rules are going to be replaced
+            replacements = set()
+            for rule in ws:
+                if old_name in rule:
+                    replacements.add(rule)
+
+            # Perform the replacements
+            for rule in replacements:
+                ws.remove(rule)
+                new_rule = rule.replace(old_name, new_name)
+                ws.add(new_rule)
+                number_replaced += 1
+                
+            updated_size = len(ws)
+
+            if debug:
+                rules_removed = ws_backup.difference(set(ws))
+                for r in rules_removed:
+                    print("Removed this rule " + r + " in WS " + str(ws_id))
+            #if updated_size != current_size:
+            #    print("This replacement caused size of working set " + str(current_size) + "->" + str(updated_size))
+            rule_delta += (current_size - updated_size)
+
+        return rule_delta
+
+    def calc_working_set_savings_from_merge(self, working_sets, c1, c2, debug=False):
+        # First make a copy of the current working sets
+        temp_working_sets = []
+        for ws in working_sets:
+            temp_working_sets.append(ws.copy())
+
+        # Then calculate delta
+        delta = self.working_set_replace(temp_working_sets, c1, c2, debug)
+        return delta            
+    '''
 # Wrapper around making a new clustering object and using it once as a possible use case.
 def cluster_functions(cmap, strategy, strategy_param, extra_name="", working_sets = None, cache_target = None, merge_constraint = (None, None), WS=None, param_list=None):
     
@@ -1285,6 +1347,7 @@ if __name__ == '__main__':
         # Install the OS cuts into cmap
         domains = create_syntactic_domains(cmap, sys.argv[1])
 
+        '''
         print("Creating cluster size domains...")
         for size in [70000]:
                 condition_name = "C" + str(size)
@@ -1294,6 +1357,30 @@ if __name__ == '__main__':
                 obj_clusters = pack_to_eight_objects(obj_clusters)
                 OR = calc_OR_cut(cmap, subj_clusters, obj_clusters, domains["func"])
                 print("Updated OR: " + str(OR))
+        '''
+        '''
+        print("funcs: ")
+        for f in cmap.func_to_OS:
+            print(f + "\t" + cmap.func_to_OS[f])
+
+        print("objs:")
+        for o in cmap.obj_owner_OS:
+            print(o + "\t" + cmap.obj_owner_OS[o])
+        '''
+        
+        #print("Creating rule-cluster domains...")
+        #merge_constraint=(cmap.func_to_OS, cmap.obj_owner_OS)
+        #merge_constraint=(None, None)
+        #for cache_size in [2700]: #[1024]:
+        #    condition_name = "Rules" + str(cache_size)
+        #    subj_clusters, obj_clusters, success = cluster_functions(cmap, ClusterStrategy.CLUSTER_RULES, cache_size, working_sets=working_sets, WS=WS, merge_constraint=merge_constraint)
+
+        print("Running timing run...")
+        ms1 = time.time()
+        subj_clusters, obj_clusters, success = cluster_functions(cmap, ClusterStrategy.CLUSTER_SIZE, 1024)
+        ms2 = time.time()
+        diff = ms2 - ms1
+        print("Time taken: " + str(diff))
         
     else:
 

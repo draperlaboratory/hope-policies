@@ -26,6 +26,9 @@ from elftools.elf.elffile import ELFFile
 # without memorizer. This file is optional but used for accurate
 # instruction counts.
 
+# Set to rule-based instead of instruction-based
+use_rules = False
+
 # List of operations in uSCOPE; used by this file and others
 ops = ["read", "write", "call", "return", "free"]
 
@@ -122,6 +125,7 @@ class CAPMAP:
         self.set_object_sizes()
         self.build_object_ownership_maps()
         self.calc_live_functions()
+        self.switch_to_rules()
 
         #self.print_capmap()
 
@@ -506,7 +510,7 @@ class CAPMAP:
                     self.dg.node[node]["size"] = new_size
                     #print("Set size of " + func + " to " + str(new_size))
   
-        # If we are not using weights, set object sizes to 0
+        # If we are not using weights, set object sizes to 1
         if not self.USE_WEIGHTS:
             print("Warning: using size of 1")
             for node in self.dg:
@@ -792,6 +796,17 @@ class CAPMAP:
                 for obj_node in self.dg.successors(node):
                     obj_label = self.get_node_label(obj_node)
                     print("\t" + obj_label)
+
+    # In simpler privilege model, use rules instead of instruction counts
+    def switch_to_rules(self):
+        
+        if use_rules:
+            print("**Using rules instead of instruction privileges**")
+
+        for f in self.functions:
+            for op in ["read", "write", "call", "return", "free"]:
+                if self.instr_count_map[f][op] > 1:
+                    self.instr_count_map[f][op] = 1
                     
     # The file and dir cuts are built in the nm parsing
     # Also make the OS cut
