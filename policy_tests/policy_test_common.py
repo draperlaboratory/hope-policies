@@ -7,7 +7,7 @@ def pexName(sim, policies, global_policies, arch, debug, processor=None):
 
     if sim == "qemu":
         return "-".join([arch, policy_name, "validator.so"])
-    if sim == "vcu118":
+    if sim == "vcu118" or sim == "iveia":
         if not processor:
             return None
         return "-".join(["kernel", "gfe", processor, policy_name])

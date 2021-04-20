@@ -69,7 +69,7 @@ bare-vcu118_RUNTIME = bare
 bare-vcu118_MODULE = osv
 bare-vcu118_ARCH = rv32
 bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = heap,stack,rwx,cfi
+bare-vcu118_POLICIES = heap,stack,rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
@@ -83,12 +83,27 @@ bare64-vcu118_RUNTIME = bare
 bare64-vcu118_ARCH = rv64
 bare64-vcu118_MODULE = osv
 bare64-vcu118_GPOLICIES = 
-bare64-vcu118_POLICIES = heap,rwx,cfi
+bare64-vcu118_POLICIES = heap,rwx
 bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare64-vcu118_TIMEOUT = 360
 bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 bare64-vcu118: CONFIG=bare64-vcu118
 bare64-vcu118: all
+
+# config for 64-bit bare-metal on Iveia board
+bare64-iveia_SIM = iveia
+bare64-iveia_TESTS = hello_works_1
+bare64-iveia_RUNTIME = bare
+bare64-iveia_ARCH = rv64
+bare64-iveia_MODULE = osv
+bare64-iveia_GPOLICIES =
+bare64-iveia_POLICIES = rwx
+bare64-iveia_XDIST = -n $(JOBS) # run in parallel
+bare64-iveia_TIMEOUT = 360
+bare64-iveia_SOC_CFG = $(ISP_PREFIX)/soc_cfg/iveia_cfg.yml
+bare64-iveia_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2,+ap-address="0x78040000",+kernel-address="0x40000000"
+bare64-iveia: CONFIG=bare64-iveia
+bare64-iveia: all
 
 # config for bare-metal on VCU118 board without PIPE
 bare-stock_SIM = vcu118
@@ -196,7 +211,7 @@ frtos64-vcu118_GPOLICIES = contextswitch
 frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos64-vcu118_TIMEOUT = 360
-frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
+frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
 frtos64-vcu118: CONFIG=frtos64-vcu118
 frtos64-vcu118: all
 
