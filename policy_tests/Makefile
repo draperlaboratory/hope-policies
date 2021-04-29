@@ -101,7 +101,7 @@ bare64-iveia_POLICIES = rwx
 bare64-iveia_XDIST = -n $(JOBS) # run in parallel
 bare64-iveia_TIMEOUT = 360
 bare64-iveia_SOC_CFG = $(ISP_PREFIX)/soc_cfg/iveia.yml
-bare64-iveia_PYTEST_ARGS = --extra=+processor=P2,+ap-address="0x78040000",+kernel-address="0x40000000"
+bare64-iveia_PYTEST_ARGS = --extra=+processor=P2,+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
 bare64-iveia: CONFIG=bare64-iveia
 bare64-iveia: all
 
