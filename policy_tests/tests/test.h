@@ -30,4 +30,4 @@ int t_setrlim(int r, long lim);
 
 uint32_t t_instret(void);
 
-int read_mxl(void);
+// int read_mxl(void);
