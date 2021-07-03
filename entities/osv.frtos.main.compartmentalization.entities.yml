@@ -1,0 +1,41 @@
+-
+    name: dover.Kernel.Code.ApplyTag.ucHeap
+    elf_name: ucHeap
+    kind: symbol
+    tag_all: true
+    optional: true
+- 
+    name: dover.Kernel.Code.ApplyTag.dover_ptr_zero
+    elf_name: dover_ptr_zero
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.pvPortMalloc
+    elf_name: pvPortMalloc
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.dover_tag
+    elf_name: dover_tag
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.dover_untag
+    elf_name: dover_untag
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.dover_remove_tag
+    elf_name: dover_remove_tag
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.dover_ptr_tag
+    elf_name: dover_ptr_tag
+    kind: symbol
+    tag_all: true
+-
+    name: dover.Kernel.Code.ApplyTag.dover_ptr_untag
+    elf_name: dover_ptr_untag
+    kind: symbol
+    tag_all: true
