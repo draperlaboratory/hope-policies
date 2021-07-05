@@ -39,14 +39,21 @@ import:
 metadata:
 	Rd,
 	Wr,
-	Ex
+	Ex,
+  sbrk
 
 
 policy:
   rwxPol =
-      loadGrp(mem == [-Rd] -> fail "read violation")
+      // Initialize or delete tags for memory when sbrk allocates or deallocates it
+      storeGrp(code == [+Ex], val == [+sbrk], env == _, mem == [-Rd, -Wr] -> mem = mem[+Rd, +Wr], env = env)
+    ^ loadGrp(code == [+Ex], env == _, mem == [+Rd, +sbrk] -> res = {sbrk}, env = env)
+    ^ storeGrp(code == [+Ex], val == [+sbrk], env == _, mem == [+Rd, +Wr] -> mem = {})
+
+    ^ loadGrp(mem == [-Rd] -> fail "read violation")
     ^ storeGrp(mem == [-Wr] -> fail "write violation")
     ^ allGrp(code == [-Ex] -> fail "execute violation")
+
     ^ loadGrp  (code == [+Ex], env == _, mem == [+Rd] -> res = {}, env = env)
     ^ storeGrp (code == [+Ex], env == _, mem == [+Wr] -> mem = mem, env = env)
     ^ allGrp(code == [+Ex], env == _ -> env = env)
@@ -83,6 +90,8 @@ require:
     init SOC.IO.GPIO_1                       {Rd, Wr}
     init SOC.IO.Ethernet_0                   {Rd, Wr}
 
+    init SOC.IO.MAILBOX                         {Rd, Wr}
+
     init SOC.Memory.BRAM_CTRL_0              {Rd, Wr}
     init SOC.Memory.DMA_0                    {Rd, Wr}
     init SOC.Memory.QSPI_1                   {Rd}
@@ -90,5 +99,7 @@ require:
     init elf.Section.SHF_ALLOC         {Rd}
     init elf.Section.SHF_EXECINSTR     {Ex}
     init elf.Section.SHF_WRITE         {Rd, Wr}
+
+    init dover.Kernel.Code.ApplyTag.sbrk_zero {Rd, sbrk}
 
 

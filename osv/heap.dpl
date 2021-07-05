@@ -151,6 +151,8 @@ require:
     init SOC.Memory.BRAM_CTRL_0              {}
     init SOC.Memory.DMA_0                    {}
     init SOC.Memory.QSPI_1                   {}
+
+    init SOC.MAILBOX                         {}
     
     init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
     init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}

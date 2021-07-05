@@ -1,0 +1,6 @@
+-
+    name: dover.Kernel.Code.ApplyTag.sbrk_zero
+    elf_name: sbrk_zero
+    kind: symbol
+    tag_all: true
+    optional: true
