@@ -50,7 +50,7 @@ int test_main(void)
 
   test_begin(); // everything should work up to here
 
-  free(heap_buffer+4); // invalid chunk, should fail
+  free(heap_buffer+sizeof(uintptr_t)); // invalid chunk, should fail
 
   test_error("test_offset_free_fails_1: Error this should not execute\n");  
 
