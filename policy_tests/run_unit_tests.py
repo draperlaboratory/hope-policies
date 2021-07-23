@@ -8,6 +8,7 @@ import shutil
 import time
 import glob
 import errno
+import signal
 import policy_test_common
 
 # If the last test didn't end cleanly, we need to push the bitstream again
@@ -113,17 +114,26 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
         run_args += ["-S", exe_dir]
 
     failed_msg = ""
-    try:
+#    try:
         # Using PIPE for stdout sometimes prevents isp_run_app from noticing that the
         # process has ended. None won't hang, but will print `isp_run_app`s stdout.
         # DEVNULL hides the output and doesn't hang.
-        process = subprocess.run([run_cmd] + run_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=timeout, check=True)
+
+        # the run_cmd (e.g. the parent process) will spawn multiple children subprocesses - to ensure that they
+        # can be killed when their parent exits (due to a time out), make sure that you associate a new session id to
+        # the parent (e.g. run_cmd) process. That will make the parent the group leader of all the processes it (recursively) spawns
+        # So now, when a signal is sent to the process group leader, it's transmitted to all of the child processes of this group.
+    process = subprocess.Popen([run_cmd] + run_args, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=os.setsid)
+    try:
+        outs, errs = process.communicate(timeout=timeout)
     except subprocess.CalledProcessError as err:
         failed_msg = "Test errored out with error code: {}\n".format(err.returncode)
         push_bitstream = True
     except subprocess.TimeoutExpired:
         failed_msg = "Test timed out\n"
         push_bitstream = True
+        # parent timed out, kill all the children processes in the group
+        os.killpg(os.getpgid(process.pid), signal.SIGKILL)
 
     if failed_msg:
         pytest.fail(failed_msg)
