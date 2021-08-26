@@ -136,7 +136,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
         os.killpg(os.getpgid(process.pid), signal.SIGKILL)
 
     if failed_msg:
-        pytest.fail(failed_msg)
+        pytest.fail(failed_msg + "\n".join(run_cmd) + "\n\twith args:\b" + "\n".join(run_args))
 
 
 def testResult(test_output_dir,xfail):

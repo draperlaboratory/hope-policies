@@ -44,7 +44,7 @@ def test_copy_build_dir(test, runtime, sim, arch):
     output_test_dir = os.path.join(output_dir, test)
 
     if os.path.isdir(output_test_dir):
-        pytest.skip("Using previously copied build directory")
+        pytest.skip("Using previously copied build directory {}".format(output_test_dir))
 
     os.mkdir(output_test_dir)
 
