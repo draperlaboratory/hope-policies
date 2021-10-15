@@ -124,3 +124,7 @@ require:
     init Tools.Elf.Section.SHF_ALLOC         {}
     init Tools.Elf.Section.SHF_EXECINSTR     {}
     init Tools.Elf.Section.SHF_WRITE         {}
+
+	init elf.Section.SHF_ALLOC               {}
+	init elf.Section.SHF_EXECINSTR           {}
+	init elf.Section.SHF_WRITE               {}
