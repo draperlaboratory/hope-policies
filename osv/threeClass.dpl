@@ -54,12 +54,15 @@ metadata:
   //get out of jail free
   NoCFI,
   Jumping-NoCFI,
+  Inline,
+  Jumping-Inline,
   None
 
 policy:
     threeClassPol =
          // Case for not checking cfi (asm code)
     allGrp    (code == [+NoCFI], env == _ -> env = {Jumping-NoCFI})
+    ^ allGrp    (code == [+Inline], env == _ -> env = {Jumping-Inline})
 
          // cases for landing on a jump (bounce)
     ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr], env == [Jumping-Branch] -> env = {Jumping-Branch})
@@ -82,6 +85,9 @@ policy:
          // Case for landing on a target -- has to be allGrp
     ^ allGrp    (code == [Call-Tgt], env == [+Jumping-Call] -> env = env[-Jumping-Call])
     ^ allGrp    (code == [Call-Tgt], env == [+Jumping-NoCFI] -> env = env[-Jumping-NoCFI])
+    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-NoCFI] -> env = env[-Jumping-NoCFI])
+    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-Inline] -> env = env[-Jumping-Inline])
+    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-Inline] -> env = env[-Jumping-Inline])
     ^ allGrp    (code == [Return-Tgt], env == [+Jumping-Return] -> env = env[-Jumping-Return])
     ^ allGrp    (code == [Branch-Tgt], env == [+Jumping-Branch] -> env = env[-Jumping-Branch])
 
@@ -106,6 +112,7 @@ require:
     init llvm.CFI_Branch-Instr               {Branch-Instr}
     init llvm.CFI_Return-Instr               {Return-Instr}
     init llvm.NoCFI                          {NoCFI}
+    init llvm.Inline                         {Inline}
 
     init Tools.Link.MemoryMap.Default        {}
     init Tools.Link.MemoryMap.UserHeap       {}

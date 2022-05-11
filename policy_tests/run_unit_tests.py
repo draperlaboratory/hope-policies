@@ -30,8 +30,6 @@ def xfailReason(test, runtime, policies, global_policies, arch):
         return "hello_works_2 should fail with testContext unless the contextswitch policy is also there."
     if test == "float_works" and "heap" in policies and runtime == "frtos":
         return "float_works on FreeRTOS is known to fail with the heap policy."
-    if test == "inline_asm_works_1" and ("cfi" in policies or runtime == "bare" and "threeClass" in policies):
-        return "tagging of inline assembly is currently broken."
     return None
 
 
