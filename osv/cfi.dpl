@@ -40,8 +40,6 @@ metadata:
   None,
   Jumping,
   Inline,
-  Prologue,
-  Epilogue,
   NoCFI
 
 policy:
@@ -64,8 +62,6 @@ policy:
     ^ allGrp    (code == [+Target], env == [+Jumping] -> env = env[-Jumping])
        // Case for normal execution
     ^ allGrp    (env == [-Jumping] -> env = env)
-    ^ allGrp    (env == [Prologue] -> env = env)
-    ^ allGrp    (env == [Epilogue] -> env = env)
     ^ allGrp (-> fail "cfi: Illegal control flow detected")
 
     main = cfiPol
@@ -83,8 +79,6 @@ require:
     init llvm.CFI_Call-Instr                 {NoCFI}
     init llvm.CFI_Branch-Instr               {NoCFI}
     init llvm.CFI_Return-Instr               {NoCFI}
-    init llvm.Prologue            {Prologue}
-    init llvm.Epilogue            {Epilogue}
     init llvm.Inline                         {Inline}
     init llvm.NoCFI                          {NoCFI}
     
