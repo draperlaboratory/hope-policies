@@ -52,13 +52,13 @@ policy:
     // Explicit failure for using Secret data in memory addreses
     ^ loadGrp(mem == _, addr == [+Secret], env == _ 
              -> fail "Data labeled as Secret used in address for load operation")
-    ^ storeGrp(mem == _, addr == [+Secret], val == _, env == _ -> 
+    ^ storeGrp(mem == _, addr == [+Secret], val == _, env == _ 
               -> fail "Data labeled as Secret used in address for load operation")
 
     // Explicit failure for using Secret Data in code flow evaluations
-    ^ branchGrp(code == _, env == _, op1 == [+Secret], op2 == _ ->
+    ^ branchGrp(code == _, env == _, op1 == [+Secret], op2 == _
                -> fail "Data labeled as Secret used as input for branch calculation") 
-    ^ branchGrp(code == _, env == _, op1 == _, op2 == [+Secret] ->
+    ^ branchGrp(code == _, env == _, op1 == _, op2 == [+Secret]
                -> fail "Data labeled as Secret used as input for branch calculation") 
     
     // Clear memory is always clear
