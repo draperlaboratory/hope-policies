@@ -1,5 +1,5 @@
 -
-    name: poc.var.secret
+    name: var.secret
     elf_name: secret
     kind: symbol
     tag_all: true

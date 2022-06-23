@@ -33,87 +33,78 @@ module osv.constTime:
 import:
   osv.riscv
 
-
 metadata:
-  Secret, // data we want to track for causing potential timing side channels
-  Clear   // anything else
-
+  Secret // data like secret keys that should only be used in constant time execution
 
 policy:
   constTimePol =
-  
-    // Explicit failure for using instructions that MAY vary in execution time
-    // based on inputs
-    mulDivRemGrp(code == _, env == _, op1 == [+Secret], op2 == _ 
-                  -> fail "Data labeled as Secret used as operand to mul/div insn")
-    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == [+Secret] 
-                  -> fail "Data labeled as Secret used as operand to mul/div insn")
+
+   // Explicit failures for using instructions that can cause time variations
+   // NB: Currently only concerned with branch and mem ops with secret based addr
+   // mulDivRemGrp(code == _, env == _, op1 == [+Secret], op2 == _ 
+   //               -> fail "Data labeled as Secret used as operand to mul/div insn")
+   // ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == [+Secret] 
+   //               -> fail "Data labeled as Secret used as operand to mul/div insn")
 
     // Explicit failure for using Secret data in memory addreses
-    ^ loadGrp(mem == _, addr == [+Secret], env == _ 
-             -> fail "Data labeled as Secret used in address for load operation")
-    ^ storeGrp(mem == _, addr == [+Secret], val == _, env == _ -> 
+    loadGrp(mem == _, addr == [+Secret], env == _ 
+            -> fail "Data labeled as Secret used in address for load operation")
+    ^ storeGrp(mem == _, addr == [+Secret], val == _, env == _
               -> fail "Data labeled as Secret used in address for load operation")
 
     // Explicit failure for using Secret Data in code flow evaluations
-    ^ branchGrp(code == _, env == _, op1 == [+Secret], op2 == _ ->
+    ^ branchGrp(code == _, env == _, op1 == [+Secret], op2 == _
                -> fail "Data labeled as Secret used as input for branch calculation") 
-    ^ branchGrp(code == _, env == _, op1 == _, op2 == [+Secret] ->
+    ^ branchGrp(code == _, env == _, op1 == _, op2 == [+Secret]
                -> fail "Data labeled as Secret used as input for branch calculation") 
     
-    // Clear memory is always clear
-    ^ storeGrp(   mem == [+Clear], addr == _, val == _, env == _ -> env = env, mem = mem)
+   // Propogate secret
+   ^ arithGrp(env == _, op1 == [+Secret], op2 == _ -> env = env, res = op1)
+   ^ arithGrp(env == _, op1 == _, op2 == [+Secret] -> env = env, res = op2)
+   ^ mulDivRemGrp(code == _, env == _, op1 == [+Secret], op2 == _ -> env = env, res = op1) 
+   ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == [+Secret] -> env = env, res = op2)  
+   ^ immArithGrp(env == _, op1 == [+Secret] -> env = env, res = op1)
+   ^ loadGrp(mem == [+Secret], addr == _, env == _ -> env = env, res = mem )
+   ^ loadGrp(mem == _, addr == [+Secret], env == _ -> env = env, res = addr )
+   ^ storeGrp(mem == _, addr == _, val == [+Secret], env == _ -> env = env, mem = val)
+   ^ storeGrp(mem == [+Secret], addr == _, val == _, env == _ -> env = env, mem = mem ) 
 
-    // Set password protection
-    ^ storeGrp(mem == _, addr == _, val == [+Secret], env == _ -> env = env, mem = val)
-
-    // Propogate password protection
-    ^ arithGrp(env == _, op1 == [+Secret], op2 == _ -> env = env, res = op1)
-    ^ arithGrp(env == _, op1 == _, op2 == [+Secret] -> env = env, res = op2)
-    ^ mulDivRemGrp(code == _, env == _, op1 == [+Secret], op2 == _ -> env = env, res = op1)
-    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == [+Secret] -> env = env, res = op2)
-    ^ immArithGrp(env == _, op1 == [+Secret] -> env = env, res = op1)
-    ^ loadGrp(mem == [+Secret], addr == _, env == _ -> env = env, res = mem )
-    ^ storeGrp(mem == [+Secret], addr == _, val == _, env == _ -> env = env, mem = mem ) 
-
-    // Allow everything else
-    ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
-    ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
-    ^ jumpGrp(code == _, env == _ -> return = {})
-    ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
-    ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
-    ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
-    ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
-    ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
-    ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
-    ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
-    ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
-    ^ privGrp(code == _, env == _ -> env = env)
-    ^ systemGrp(code == _, env == _ -> env = env)
-    ^ floatGrp(code == _, env == _ -> env = env)
-    ^ atomicGrp(code == _, env == _ -> env = env)
-
+   // default: allow other operations
+   ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+   ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
+   ^ jumpGrp(code == _, env == _ -> return = {})
+   ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
+   ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
+   ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+   ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
+   ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
+   ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
+   ^ privGrp(code == _, env == _ -> env = env)
+   ^ systemGrp(code == _, env == _ -> env = env)
+   ^ floatGrp(code == _, env == _ -> env = env)
+   ^ atomicGrp(code == _, env == _ -> env = env)
 
 require:
-  init ISA.RISCV.Reg.Env                   {}
-  init ISA.RISCV.Reg.Default               {}
-  init ISA.RISCV.Reg.RZero                 {}
-  init ISA.RISCV.CSR.Default               {}
-  init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
 
-  init Tools.Link.MemoryMap.Default        {}
-  init Tools.Link.MemoryMap.UserHeap       {}
-  init Tools.Link.MemoryMap.UserStack      {}
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
 
-  init SOC.IO.UART_0                       {Clear}
-  init SOC.IO.GEM0                         {}
-  init SOC.Memory.Flash_0                  {}
-  init SOC.Memory.Ram_0                    {}
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
 
-  init SOC.IO.TEST                         {}
+    init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
 
-  init Tools.Elf.Section.SHF_ALLOC         {}
-  init Tools.Elf.Section.SHF_EXECINSTR     {}
-  init Tools.Elf.Section.SHF_WRITE         {}
-
-  init poc.var.secret                      {Secret}
+    init var.secret                          {Secret}
