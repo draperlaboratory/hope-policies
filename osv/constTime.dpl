@@ -34,7 +34,12 @@ import:
   osv.riscv
 
 metadata:
-  Secret // data like secret keys that should only be used in constant time execution
+
+  // data like secret keys that should only be used in constant time execution
+  Secret,
+  
+  // code regions where we want time invariance enforced
+  Isochronic
 
 policy:
   constTimePol =
@@ -47,17 +52,23 @@ policy:
    //               -> fail "Data labeled as Secret used as operand to mul/div insn")
 
     // Explicit failure for using Secret data in memory addreses
-    loadGrp(mem == _, addr == [+Secret], env == _ 
+    loadGrp(code == [+Isochronic], mem == _, addr == [+Secret], env == _ 
             -> fail "Data labeled as Secret used in address for load operation")
-    ^ storeGrp(mem == _, addr == [+Secret], val == _, env == _
+    ^ storeGrp(code == [+Isochronic], mem == _, addr == [+Secret], val == _, env == _
               -> fail "Data labeled as Secret used in address for load operation")
 
     // Explicit failure for using Secret Data in code flow evaluations
-    ^ branchGrp(code == _, env == _, op1 == [+Secret], op2 == _
+    ^ branchGrp(code == [+Isochronic], env == _, op1 == [+Secret], op2 == _
                -> fail "Data labeled as Secret used as input for branch calculation") 
-    ^ branchGrp(code == _, env == _, op1 == _, op2 == [+Secret]
+    ^ branchGrp(code == [+Isochronic], env == _, op1 == _, op2 == [+Secret]
                -> fail "Data labeled as Secret used as input for branch calculation") 
-    
+
+   // allow ops when not in sensitive region    
+   ^ branchGrp(code == [-Isochronic], env == _, op1 == [+Secret], op2 == _ -> env = env)
+   ^ branchGrp(code == [-Isochronic], env == _, op1 == _, op2 == [+Secret] -> env = env)
+   ^ loadGrp(code == [+Isochronic], mem == _, addr == [+Secret], env == _ -> env = env, res = addr) 
+   ^ storeGrp(code == [+Isochronic], mem == _, addr == [+Secret], val == _, env == _ -> env = env, mem = addr)
+
    // Propogate secret
    ^ arithGrp(env == _, op1 == [+Secret], op2 == _ -> env = env, res = op1)
    ^ arithGrp(env == _, op1 == _, op2 == [+Secret] -> env = env, res = op2)
@@ -106,5 +117,7 @@ require:
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
     init SOC.IO.PLIC                         {}
+
+    init constTime.isochronic                {Isochronic}
 
     init var.secret                          {Secret}
