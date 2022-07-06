@@ -69,7 +69,7 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     
     pex_path = os.path.join(pex_dir,
                             policy_test_common.pexName(sim, policies, global_policies,
-                                                       arch, debug, processor=processor)
+                                                       "rv", debug, processor=processor)
                             )
 
     test_path = testPath(runtime, sim, arch, test)
