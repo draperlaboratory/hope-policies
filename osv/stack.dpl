@@ -43,9 +43,9 @@ metadata:
 
 policy:
 
-    stackPol =
+    stackPol = riscvPol
                 // Prologue and Epilog rules
-               storeGrp (code == [+Prologue], env == _, addr == _, val == _, mem == _ -> mem = {Frame}, env = env)
+             ^ storeGrp (code == [+Prologue], env == _, addr == _, val == _, mem == _ -> mem = {Frame}, env = env)
              ^ storeGrp (code == [+Epilogue], env == _, addr == _, val == _, mem == _ -> mem = mem[-Frame], env = env)
 
                 // Authority for clearing swaths of stack (e.g. for longjmp)
@@ -78,7 +78,6 @@ require:
     init SOC.Memory.Ram_0                    {}
 
     init SOC.IO.GEM0                         {}
-    init SOC.IO.Debug                        {}
     init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}

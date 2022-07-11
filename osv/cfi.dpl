@@ -42,10 +42,10 @@ metadata:
   NoCFI
 
 policy:
-    cfiPol =
+    cfiPol = riscvPol
 
     // special case: allow return to C from asm interrupt handling
-    mretGrp ( env == _ -> env = {} )
+    ^ mretGrp ( env == _ -> env = {} )
 
      // Case for not checking cfi (asm code)
     ^ allGrp    (code == [+NoCFI,-Target], env == _ -> env = env )
@@ -100,7 +100,6 @@ require:
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.Debug                        {}
     init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}

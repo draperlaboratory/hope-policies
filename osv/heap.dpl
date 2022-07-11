@@ -45,9 +45,9 @@ metadata:
   SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
   
 policy:
-  heapPol =
+  heapPol = riscvPol
 // Handle generic pointer arithmetic
-     arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
+   ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
 // since the previous rule didn't fire check for AntiPointer
    ^ arithGrp(env == _, op1 == [+AntiPointer], op2 == _ -> env = env, res = {})
    ^ arithGrp(env == _, op1 == _, op2 == [+AntiPointer] -> env = env, res = {})
@@ -137,7 +137,6 @@ require:
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.Debug                        {}
     init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}

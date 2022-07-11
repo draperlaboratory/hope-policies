@@ -9,11 +9,11 @@ metadata:
   Clean  // can tainted data be written here?
 
 policy:
-  taintPol =
+  taintPol = riscvPol
 
    // explicit failure for write tainted val to clean addr
-   storeGrp(   mem == [+Clean], addr == _, val == [+Taint], env == _
-              -> fail "Tainted data written to clean memory")
+   ^ storeGrp(   mem == [+Clean], addr == _, val == [+Taint], env == _
+                 -> fail "Tainted data written to clean memory")
 
    // Propogate taint
    ^ arithGrp(env == _, op1 == [+Taint], op2 == _ -> env = env, res = op1)
@@ -62,7 +62,6 @@ require:
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.Debug                        {}
     init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}
