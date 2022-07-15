@@ -17,6 +17,7 @@ class AllTests:
         "malloc_prof_2",
         "malloc_works_1",
         "malloc_works_2",
+        "malloc_works_3",
         "string_works_1",
         "longjump_works_1",
         "code_read_works_1",
