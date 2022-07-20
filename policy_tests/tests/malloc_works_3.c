@@ -52,6 +52,7 @@ int test_main(void)
     strcpy(p1, p2);
     t_printf("p1=%s\n", p1);
 
+    test_pass();
     return test_done();
   }
 
