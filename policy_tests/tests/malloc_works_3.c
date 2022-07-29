@@ -33,26 +33,29 @@
 
 
 /*
- * Test to allocate two stirngs in meory, initialize them,
- * and use strcpy to copy the contenxt of one to the other one!
- * This is part of the Juliette suite
+ * Test to check if the heap allocation policy
+ * works with strcpy and friends!!! 
+ * Many of the libc routines use AND and OR between pointers 
+ * for alignment checking reasons. 
+ * This is a known issue with dynamic tainting policies like ours
+ * 
  */
 int test_main(void)
   {
-
     char *p1, *p2;
+
     test_positive(); // identify test as positive (will complete)
-
-    test_begin();
-
     p1 = malloc(32);
     p2 = malloc(32);
     sprintf(p1, "source");
     sprintf(p2, "destination");
+
+    test_begin();
     strcpy(p1, p2);
     t_printf("p1=%s\n", p1);
 
-    test_pass();
+    free(p1);
+    free(p2);
     return test_done();
   }
 
