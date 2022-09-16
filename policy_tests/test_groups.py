@@ -40,6 +40,7 @@ class AllTests:
         "heap/offset_free_fails_1",
         "stack/stack_fails_1",
         "threeClass/jump_data_fails_1",
+        "threeClass/jump_non_calltgt_fails_1",
         "threeClass/call_fails_1",
         "taint/tainted_print_fails",
         "dhrystone/dhrystone-baremetal",
