@@ -1,0 +1,99 @@
+module osv.bbOneBitFlip:
+ 
+/*
+ * Each instr "increments" the a color (mod 3);
+ * thus, the tag sequence inside a BB is Color0, Color1, Color2, Color0, Color1, etc.
+ * A single bit flip w/in a BB can be detected with 3 colors as a single bit flip
+ * corresponds to a change in address of +/- 2^{k}, where k (=2,31) represents
+ * the bit position in the address. Thus, we need to make sure that 2^{k} (mod C) != 0,
+ * where C is the number of colors. The smallest C that satisfies the eq above is 3.
+ * Jumps between BBs are detected with the CFI policy and cannot be detected with 100% certainty
+ * by this (simple) policy.
+ */
+ 
+import:
+    osv.riscv
+ 
+metadata:
+  // color reset -- ignore the color on the next instruction
+  Color-Reset,
+
+  // relevant instruction tags
+  Return-Instr,
+  Block-Start,
+
+  // 3 colors for instructions
+  Color0,
+  Color1,
+  Color2
+ 
+policy:
+    bbOneBitFlipPol = // order is very important here!
+
+    // get out of jail free
+    allGrp (code == {} -> env = {Color-Reset})
+
+    // the env register should always be tagged
+    ^ allGrp (env == {} -> fail "env should always be tagged")
+
+    // if the current code pointer is a return instruction (and the color checks pass), reset the color
+    // this correctly handles calls without needing to split up individual basic blocks
+    ^ allGrp (code == [+Return-Instr, +Color0], env == {Color0} -> env = {Color-Reset})
+    ^ allGrp (code == [+Return-Instr, +Color1], env == {Color1} -> env = {Color-Reset})
+    ^ allGrp (code == [+Return-Instr, +Color2], env == {Color2} -> env = {Color-Reset})
+    ^ allGrp (code == [+Return-Instr], env == {Color-Reset} -> env = {Color-Reset})     // edge-case for existing color reset
+
+    // if the current code pointer is tagged as a block start, assume the color is correct
+    // also implicitly removes Color-Reset
+    ^ allGrp (code == [+Block-Start, +Color0] -> env = {Color1})
+    ^ allGrp (code == [+Block-Start, +Color1] -> env = {Color2})
+    ^ allGrp (code == [+Block-Start, +Color2] -> env = {Color0})
+
+    // color reset handlers
+    ^ allGrp (env == {Color-Reset}, code == [+Color0] -> env = {Color1})
+    ^ allGrp (env == {Color-Reset}, code == [+Color1] -> env = {Color2})
+    ^ allGrp (env == {Color-Reset}, code == [+Color2] -> env = {Color0})
+
+    // if the code and the env have the same color, update the env with the next color
+    ^ allGrp (env == {Color0}, code == [+Color0] -> env = {Color1})
+    ^ allGrp (env == {Color1}, code == [+Color1] -> env = {Color2})
+    ^ allGrp (env == {Color2}, code == [+Color2] -> env = {Color0})
+
+    // we aren't resetting the color and the colors don't match! something is wrong
+    ^ allGrp (-> fail "Bit flip detected")
+ 
+require:
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MTVec                 {}
+
+    init llvm.CFI_Return-Instr               {Return-Instr}
+    init llvm.FI_Block-Start                 {Block-Start}
+    
+    init llvm.FI_Color0                      {Color0}
+    init llvm.FI_Color1                      {Color1}
+    init llvm.FI_Color2                      {Color2}
+
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
+
+    init SOC.IO.UART_0                       {}
+    init SOC.Memory.Flash_0                  {}
+    init SOC.Memory.Ram_0                    {}
+
+    init SOC.IO.Debug                        {}
+    init SOC.IO.TEST                         {}
+    init SOC.IO.CLINT                        {}
+    init SOC.IO.ITIM                         {}
+    init SOC.IO.PLIC                         {}
+
+    init Tools.Elf.Section.SHF_ALLOC         {}
+    init Tools.Elf.Section.SHF_EXECINSTR     {}
+    init Tools.Elf.Section.SHF_WRITE         {}
+
+    init elf.Section.SHF_ALLOC               {}
+    init elf.Section.SHF_EXECINSTR           {}
+    init elf.Section.SHF_WRITE               {}
