@@ -16,10 +16,7 @@ import:
  
 metadata:
   // color reset -- ignore the color on the next instruction
-  Color-Reset,
-
-  // get out of jail free 
-  NoCFI,
+  Color-Reset
 
   // 3 colors for instructions
   Color0,
@@ -29,31 +26,29 @@ metadata:
 policy:
     bbOneBitFlipPol = // note that order is very important here!
 
-    // get out of jail free
-    allGrp (code == {NoCFI} -> env = {Color-Reset})
-
-    // the env register should always be tagged
-    ^ allGrp (env == {} -> fail "env should always be tagged")
+    // env and code should both _always_ be tagged
+    allGrp (env == {} -> fail "env should always be tagged")
+    ^ allGrp (code == {} -> fail "code should always be tagged")
 
     // if the current opcode performs some control transfer (and the color checks pass), add color reset to the env
     // this correctly handles calls, returns, and branches without needing to split up individual basic blocks
     // implicit fallthrough also doesn't need anything special now that we tag everything sequentially
-    ^ controlFlowGrp (code == [+Color0], env == {Color0} -> env = {Color-Reset})
-    ^ controlFlowGrp (code == [+Color1], env == {Color1} -> env = {Color-Reset})
-    ^ controlFlowGrp (code == [+Color2], env == {Color2} -> env = {Color-Reset})
+    ^ controlFlowGrp (code == {Color0}, env == {Color0} -> env = {Color-Reset})
+    ^ controlFlowGrp (code == {Color1}, env == {Color1} -> env = {Color-Reset})
+    ^ controlFlowGrp (code == {Color2}, env == {Color2} -> env = {Color-Reset})
 
     // edge case: existing color reset means the color may not be valid
     ^ controlFlowGrp (env == {Color-Reset} -> env = {Color-Reset})
 
     // color reset handlers
-    ^ allGrp (code == [+Color0], env == {Color-Reset} -> env = {Color1})
-    ^ allGrp (code == [+Color1], env == {Color-Reset} -> env = {Color2})
-    ^ allGrp (code == [+Color2], env == {Color-Reset} -> env = {Color0})
+    ^ allGrp (code == {Color0}, env == {Color-Reset} -> env = {Color1})
+    ^ allGrp (code == {Color1}, env == {Color-Reset} -> env = {Color2})
+    ^ allGrp (code == {Color2}, env == {Color-Reset} -> env = {Color0})
 
     // if the code and the env have the same color, update the env with the next color
-    ^ allGrp (code == [+Color0], env == {Color0} -> env = {Color1})
-    ^ allGrp (code == [+Color1], env == {Color1} -> env = {Color2})
-    ^ allGrp (code == [+Color2], env == {Color2} -> env = {Color0})
+    ^ allGrp (code == {Color0}, env == {Color0} -> env = {Color1})
+    ^ allGrp (code == {Color1}, env == {Color1} -> env = {Color2})
+    ^ allGrp (code == {Color2}, env == {Color2} -> env = {Color0})
 
     // we aren't resetting the color and the colors don't match! something is wrong
     ^ allGrp (-> fail "Bit flip detected")
@@ -66,9 +61,6 @@ require:
     init ISA.RISCV.Reg.RZero                 {}
     init ISA.RISCV.CSR.Default               {}
     init ISA.RISCV.CSR.MTVec                 {}
-
-    // NoCFI is NoCFI
-    init llvm.NoCFI                          {NoCFI}
 
     init llvm.FI_Color0                      {Color0}
     init llvm.FI_Color1                      {Color1}
