@@ -82,6 +82,10 @@ group:
         jal
         jalr
         ecall
+        ebreak
+        uret
+        mret
+        sret
 
     grp pcGrp(-> RD:dest)
         auipc
