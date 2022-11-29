@@ -16,7 +16,7 @@ import:
  
 metadata:
   // color reset -- ignore the color on the next instruction
-  Color-Reset
+  Color-Reset,
 
   // 3 colors for instructions
   Color0,
