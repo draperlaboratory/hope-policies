@@ -37,25 +37,30 @@ policy:
     ^ controlFlowGrp (code == {Color1}, env == {Color1} -> env = {Color-Reset})
     ^ controlFlowGrp (code == {Color2}, env == {Color2} -> env = {Color-Reset})
 
-    // edge case: existing color reset means the color may not be valid
+    // edge case: existing color reset + new control flow instruction means the current env color may not be valid
     ^ controlFlowGrp (env == {Color-Reset} -> env = {Color-Reset})
+
+    // if the code and the env have the same color, update the env with the next color
+    // this is the common case
+    ^ allGrp (code == {Color0}, env == {Color0} -> env = {Color1})
+    ^ allGrp (code == {Color1}, env == {Color1} -> env = {Color2})
+    ^ allGrp (code == {Color2}, env == {Color2} -> env = {Color0})
 
     // color reset handlers
     ^ allGrp (code == {Color0}, env == {Color-Reset} -> env = {Color1})
     ^ allGrp (code == {Color1}, env == {Color-Reset} -> env = {Color2})
     ^ allGrp (code == {Color2}, env == {Color-Reset} -> env = {Color0})
 
-    // if the code and the env have the same color, update the env with the next color
-    ^ allGrp (code == {Color0}, env == {Color0} -> env = {Color1})
-    ^ allGrp (code == {Color1}, env == {Color1} -> env = {Color2})
-    ^ allGrp (code == {Color2}, env == {Color2} -> env = {Color0})
+    // in the case of context switches, the 'code' field is annotated with Color-Reset
+    // check that as a last-ditch effort to not crash
+    ^ allGrp (code == [+Color-Reset], env == _ -> env = {Color-Reset})
 
     // we aren't resetting the color and the colors don't match! something is wrong
     ^ allGrp (-> fail "Bit flip detected")
 
 require:
     // the first instruction to run needs a color reset but also can't be checked for a color
-    // using Color-Reset in env handles that nicely for us
+    // defaulting to Color-Reset in env initially handles that nicely for us
     init ISA.RISCV.Reg.Env                   {Color-Reset}
     init ISA.RISCV.Reg.Default               {}
     init ISA.RISCV.Reg.RZero                 {}
@@ -87,3 +92,8 @@ require:
     init elf.Section.SHF_ALLOC               {}
     init elf.Section.SHF_EXECINSTR           {}
     init elf.Section.SHF_WRITE               {}
+
+    // Context switches need to reset the color since they change the PC unconditionally
+    init contextswitch.save                  {Color-Reset}
+    init contextswitch.load                  {Color-Reset}
+
