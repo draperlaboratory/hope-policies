@@ -43,8 +43,8 @@ metadata:
 
 
 policy:
-  rwxPol =
-      loadGrp(mem == [-Rd] -> fail "read violation")
+  rwxPol = riscvPol
+    ^ loadGrp(mem == [-Rd] -> fail "read violation")
     ^ storeGrp(mem == [-Wr] -> fail "write violation")
     ^ allGrp(code == [-Ex] -> fail "execute violation")
     ^ loadGrp  (code == [+Ex], env == _, mem == [+Rd] -> res = {}, env = env)
@@ -72,7 +72,6 @@ require:
     init SOC.Memory.Code_3                   {Rd, Wr}
     init SOC.Memory.Code_4                   {Rd, Wr}
 
-    init SOC.IO.Debug                        {Rd, Wr, Ex}
     init SOC.IO.TEST                         {Rd, Wr}
     init SOC.IO.CLINT                        {Rd, Wr}
     init SOC.IO.ITIM                         {Rd, Wr, Ex}

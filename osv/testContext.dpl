@@ -11,8 +11,8 @@ metadata:
 
 policy:
 
-    testContextPol=
-              allGrp(code == [+codeProcA], env == [-procB] -> env = env[+procA])
+    testContextPol= riscvPol
+            ^ allGrp(code == [+codeProcA], env == [-procB] -> env = env[+procA])
             ^ allGrp(code == [+codeProcB], env == [-procA] -> env = env[+procB])
             ^ allGrp(code == [+codeProcA], env == _ -> fail "procB PC tag carried over")
             ^ allGrp(code == [+codeProcB], env == _ -> fail "procA PC tag carried over")
@@ -49,7 +49,6 @@ require:
     init testContext.mainProcA              {codeProcA}
     init testContext.mainProcB              {codeProcB}
 
-    init SOC.IO.Debug                        {}
     init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}

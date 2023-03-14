@@ -57,9 +57,9 @@ metadata:
   None
 
 policy:
-    threeClassPol =
+    threeClassPol = riscvPol
          // Case for not checking cfi (asm code)
-    allGrp    (code == [+NoCFI], env == _ -> env = {Jumping-NoCFI})
+    ^ allGrp    (code == [+NoCFI], env == _ -> env = {Jumping-NoCFI})
 
          // cases for landing on a jump (bounce)
     ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr], env == [Jumping-Branch] -> env = {Jumping-Branch})
@@ -115,7 +115,6 @@ require:
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.Debug                        {}
     init SOC.IO.TEST                         {}
     init SOC.IO.CLINT                        {}
     init SOC.IO.ITIM                         {}

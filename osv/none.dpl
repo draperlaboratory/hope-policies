@@ -26,12 +26,15 @@
 
 module osv.none:
 
+import:
+    osv.riscv
+
 /* "none" policy
  * performs no checks whatsoever
  */
 
 policy:
-    nonePol = __NO_CHECKS
+    nonePol = riscvPol ^ __NO_CHECKS
 
 require:
    init ISA.RISCV.Reg.Env                   {}
@@ -48,7 +51,6 @@ require:
    init SOC.Memory.Flash_0                  {}
    init SOC.Memory.Ram_0                    {}
 
-   init SOC.IO.Debug                        {}
    init SOC.IO.TEST                         {}
    init SOC.IO.CLINT                        {}
    init SOC.IO.ITIM                         {}

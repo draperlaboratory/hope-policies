@@ -742,3 +742,28 @@ group:
         amominu.w
         amomaxu.w
         amoswap.w
+
+metadata:
+    Inaccessible
+
+policy:
+  riscvPol =
+    loadGrp(mem == [Inaccessible], addr == _, env == _ -> fail "cannot access inaccessible memory")
+    ^ storeGrp(code == _, mem == [Inaccessible], addr == _, env == _ -> fail "cannot access inaccessible memory")
+
+require:
+    init SOC.IO.DEBUG {Inaccessible}
+    init SOC.IO.PRCI {}
+    init SOC.IO.MTIME {}
+    init SOC.IO.QSPI_0 {}
+    init SOC.IO.OTP {}
+    init SOC.IO.MTIME_CMP {}
+    init SOC.IO.EFLASH {}
+    init SOC.IO.AON {}
+    init SOC.IO.TEST {}
+    init SOC.IO.CLINT {}
+    init SOC.IO.ITIM {}
+    init SOC.IO.PLIC {}
+    init SOC.IO.GPIO_0 {}
+    init SOC.IO.UART_0 {}
+    init SOC.IO.GEM0 {}
