@@ -77,25 +77,26 @@ void test_fail(){
 
 // print the test status for a positive test case
 int test_done(){
-  uint32_t cycle_hi, cycle_lo;
-  if(test_status_passing && test_status_positive && !test_status_negative){
-  printf("PASS: test passed.\n");
+  if (test_status_passing && test_status_positive && !test_status_negative) {
+    printf("PASS: test passed.\n");
 
-  isp_get_cycle_count(&cycle_hi, &cycle_lo);
-  printf("End time: %uus\n", isp_get_time_usec());
-  printf("End cycles: 0x%x%08x\n", cycle_hi, cycle_lo);
+    uint32_t cycle_hi, cycle_lo, stall_hi, stall_lo;
+    isp_get_cycle_count(&cycle_hi, &cycle_lo);
+    stall_hi = *(volatile uint32_t*)0x100c4;
+    stall_lo = *(volatile uint32_t*)0x100c0;
+    printf("End time: %uus\n", isp_get_time_usec());
+    printf("End cycles: 0x%x%08x\n", cycle_hi, cycle_lo);
+    printf("End cycles stalled: 0x%x%08x\n", stall_hi, stall_lo);
 
-  printf("MSG: End test.\n");
-  isp_test_device_pass();
+    printf("MSG: End test.\n");
+    isp_test_device_pass();
   return 0;
-  }
-  else if(test_status_positive && test_status_negative) {
+  } else if (test_status_positive && test_status_negative) {
     printf("FAIL: error in test, can't be both positive and negative test.\n");
     printf("MSG: End test.\n");
     isp_test_device_fail();
     return 1;
-  }
-  else {
+  } else {
     printf("FAIL: test failed.\n");
     printf("MSG: End test.\n");
     isp_test_device_fail();
