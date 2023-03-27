@@ -68,15 +68,15 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.IO.UART_0                       {}
+    init SOC.MMIO.UART_0                       {}
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.TEST                         {}
-    init SOC.IO.CLINT                        {}
-    init SOC.IO.ITIM                         {}
-    init SOC.IO.PLIC                         {}
-    init SOC.IO.GEM0                         {}
+    init SOC.MMIO.TEST                         {}
+    init SOC.MMIO.CLINT                        {}
+    init SOC.MMIO.ITIM                         {}
+    init SOC.MMIO.PLIC                         {}
+    init SOC.MMIO.GEM0                         {}
 
     init elf.Section.SHF_ALLOC         {}
     init elf.Section.SHF_EXECINSTR     {}
