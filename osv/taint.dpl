@@ -58,13 +58,13 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.IO.UART_0                       {Clean}
+    init SOC.MMIO.UART_0                       {Clean}
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
 
-    init SOC.IO.TEST                         {}
-    init SOC.IO.CLINT                        {}
-    init SOC.IO.ITIM                         {}
-    init SOC.IO.PLIC                         {}
+    init SOC.MMIO.TEST                         {}
+    init SOC.MMIO.CLINT                        {}
+    init SOC.MMIO.ITIM                         {}
+    init SOC.MMIO.PLIC                         {}
 
     init poc.var.taint                       {Taint}

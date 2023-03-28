@@ -29,7 +29,7 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.IO.UART_0                       {}
+    init SOC.MMIO.UART_0                       {}
     init SOC.Memory.Flash_0                  {}
     init SOC.Memory.Ram_0                    {}
     init dover.Kernel.MemoryMap.Default       {}
@@ -40,7 +40,7 @@ require:
     init dover.riscv.Mach.RegZero                      {}
     init dover.riscv.User.RegZero                      {}
 
-    init SOC.IO.TEST                         {}
+    init SOC.MMIO.TEST                         {}
 
     init Tools.Elf.Section.SHF_ALLOC         {}
     init Tools.Elf.Section.SHF_EXECINSTR     {}
@@ -49,7 +49,7 @@ require:
     init testContext.mainProcA              {codeProcA}
     init testContext.mainProcB              {codeProcB}
 
-    init SOC.IO.TEST                         {}
-    init SOC.IO.CLINT                        {}
-    init SOC.IO.ITIM                         {}
-    init SOC.IO.PLIC                         {}
+    init SOC.MMIO.TEST                         {}
+    init SOC.MMIO.CLINT                        {}
+    init SOC.MMIO.ITIM                         {}
+    init SOC.MMIO.PLIC                         {}
