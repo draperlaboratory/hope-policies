@@ -1,9 +1,9 @@
 -
-  name: SOC.IO.UART_0
+  name: SOC.MMIO.UART_0
   kind: soc
 -
   name: SOC.Memory.Flash_0
   kind: soc
 -
-  name: SOC.IO.TEST
+  name: SOC.MMIO.TEST
   kind: soc
