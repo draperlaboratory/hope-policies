@@ -88,11 +88,11 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.IO.UART_0                       {AllowIO}
+    init SOC.MMIO.UART_0                       {AllowIO}
     init SOC.Memory.Flash_0                  {AllowRom}
     init SOC.Memory.Ram_0                    {AllowMem}
 
-    init SOC.IO.TEST                         {AllowMem}
+    init SOC.MMIO.TEST                         {AllowMem}
 
     init Tools.Elf.Section.SHF_ALLOC         {AllowMem}
     init Tools.Elf.Section.SHF_EXECINSTR     {AllowCode}

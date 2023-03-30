@@ -83,11 +83,11 @@ require:
   init Tools.Link.MemoryMap.UserHeap       {}
   init Tools.Link.MemoryMap.UserStack      {}
 
-  init SOC.IO.UART_0                       {}
+  init SOC.MMIO.UART_0                       {}
   init SOC.Memory.Flash_0                  {}
   init SOC.Memory.Ram_0                    {}
 
-  init SOC.IO.TEST                         {}
+  init SOC.MMIO.TEST                         {}
 
   init Tools.Elf.Section.SHF_ALLOC         {}
   init Tools.Elf.Section.SHF_EXECINSTR     {}

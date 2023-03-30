@@ -74,21 +74,21 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {Nothing}
     init Tools.Link.MemoryMap.UserStack      {Nothing}
 
-    init SOC.IO.UART_0                       {Nothing}
+    init SOC.MMIO.UART_0                       {Nothing}
     init SOC.Memory.Flash_0                  {Nothing}
     init SOC.Memory.Ram_0                    {Nothing}
 
-    init SOC.IO.TEST                         {Nothing}
-    init SOC.IO.CLINT                        {Nothing}
-    init SOC.IO.ITIM                         {Nothing}
-    init SOC.IO.PLIC                         {Nothing}
-    init SOC.IO.GEM0                         {Nothing}
-    init SOC.IO.I2C_0                        {Nothing}
-    init SOC.IO.GPIO_0                       {Nothing}
-    init SOC.IO.GPIO_1                       {Nothing}
-    init SOC.IO.Ethernet_0                   {Nothing}
+    init SOC.MMIO.TEST                         {Nothing}
+    init SOC.MMIO.CLINT                        {Nothing}
+    init SOC.MMIO.ITIM                         {Nothing}
+    init SOC.MMIO.PLIC                         {Nothing}
+    init SOC.MMIO.GEM0                         {Nothing}
+    init SOC.MMIO.I2C_0                        {Nothing}
+    init SOC.MMIO.GPIO_0                       {Nothing}
+    init SOC.MMIO.GPIO_1                       {Nothing}
+    init SOC.MMIO.Ethernet_0                   {Nothing}
 
-    init SOC.IO.TEST                         {Nothing}
+    init SOC.MMIO.TEST                         {Nothing}
 
     init Tools.Elf.Section.SHF_ALLOC         {Nothing}
     init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}

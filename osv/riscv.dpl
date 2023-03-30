@@ -752,18 +752,18 @@ policy:
     ^ storeGrp(code == _, mem == [Inaccessible], addr == _, env == _ -> fail "cannot access inaccessible memory")
 
 require:
-    init SOC.IO.DEBUG {Inaccessible}
-    init SOC.IO.PRCI {}
-    init SOC.IO.MTIME {}
-    init SOC.IO.QSPI_0 {}
-    init SOC.IO.OTP {}
-    init SOC.IO.MTIME_CMP {}
-    init SOC.IO.EFLASH {}
-    init SOC.IO.AON {}
-    init SOC.IO.TEST {}
-    init SOC.IO.CLINT {}
-    init SOC.IO.ITIM {}
-    init SOC.IO.PLIC {}
-    init SOC.IO.GPIO_0 {}
-    init SOC.IO.UART_0 {}
-    init SOC.IO.GEM0 {}
+    init SOC.MMIO.DEBUG {Inaccessible}
+    init SOC.MMIO.PRCI {}
+    init SOC.MMIO.MTIME {}
+    init SOC.MMIO.QSPI_0 {}
+    init SOC.MMIO.OTP {}
+    init SOC.MMIO.MTIME_CMP {}
+    init SOC.MMIO.EFLASH {}
+    init SOC.MMIO.AON {}
+    init SOC.MMIO.TEST {}
+    init SOC.MMIO.CLINT {}
+    init SOC.MMIO.ITIM {}
+    init SOC.MMIO.PLIC {}
+    init SOC.MMIO.GPIO_0 {}
+    init SOC.MMIO.UART_0 {}
+    init SOC.MMIO.GEM0 {}
