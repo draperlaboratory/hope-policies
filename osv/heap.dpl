@@ -146,6 +146,7 @@ require:
     init SOC.MMIO.GPIO_0                       {}
     init SOC.MMIO.GPIO_1                       {}
     init SOC.MMIO.Ethernet_0                   {}
+    init SOC.PBUS.MAILBOX                    {}
 
     init SOC.Memory.BRAM_CTRL_0              {}
     init SOC.Memory.DMA_0                    {}
