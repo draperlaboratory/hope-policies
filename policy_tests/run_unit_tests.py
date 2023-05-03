@@ -93,12 +93,9 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
 def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
     global push_bitstream
     run_cmd = "isp_run_app"
-    run_args = [test, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir]
+    run_args = [test, soc, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
-
-    if soc != "":
-        run_args += ["--soc", soc]
 
     if extra:
         extra_args = extra.split(",")

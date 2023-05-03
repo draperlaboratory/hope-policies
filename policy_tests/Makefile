@@ -45,6 +45,7 @@ bare-qemu_GPOLICIES =
 bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
 bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
 bare-qemu_XDIST = -n $(JOBS) # run in parallel
+bare-qemu_SOC_CFG = hifive
 bare-qemu_TIMEOUT = 360
 bare-qemu: CONFIG=bare-qemu
 bare-qemu: all
@@ -59,6 +60,7 @@ bare64-qemu_GPOLICIES =
 bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
 bare64-qemu_XDIST = -n $(JOBS) # run in parallel
 bare64-qemu_TIMEOUT = 360
+bare64-qemu_SOC_CFG = hifive
 bare64-qemu: CONFIG=bare64-qemu
 bare64-qemu: all
 
@@ -72,6 +74,7 @@ bare-vcu118_GPOLICIES =
 bare-vcu118_POLICIES = heap,stack,rwx
 bare-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare-vcu118_TIMEOUT = 360
+bare-vcu118_SOC_CFG = vcu118
 bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
 bare-vcu118: CONFIG=bare-vcu118
 bare-vcu118: all
@@ -86,6 +89,7 @@ bare64-vcu118_GPOLICIES =
 bare64-vcu118_POLICIES = heap,rwx
 bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
 bare64-vcu118_TIMEOUT = 360
+bare64-vcu118_SOC_CFG = vcu118
 bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 bare64-vcu118: CONFIG=bare64-vcu118
 bare64-vcu118: all
@@ -100,7 +104,7 @@ bare64-iveia_GPOLICIES =
 bare64-iveia_POLICIES = rwx
 bare64-iveia_XDIST = -n $(JOBS) # run in parallel
 bare64-iveia_TIMEOUT = 360
-bare64-iveia_SOC_CFG = $(ISP_PREFIX)/soc_cfg/iveia.yml
+bare64-iveia_SOC_CFG = iveia
 bare64-iveia_PYTEST_ARGS = --extra=+processor=P2,+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
 bare64-iveia: CONFIG=bare64-iveia
 bare64-iveia: all
@@ -115,6 +119,7 @@ bare-stock_GPOLICIES =
 bare-stock_POLICIES = none
 bare-stock_XDIST = -n $(JOBS) # run in parallel
 bare-stock_TIMEOUT = 360
+bare-stock_SOC_CFG = vcu118
 bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock
 bare-stock: CONFIG=bare-stock
 bare-stock: all
@@ -130,6 +135,7 @@ bare-vcs_POLICIES = rwx
 bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+processor=P1
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
+bare-vcs_SOC_CFG = vcs
 bare-vcs: CONFIG=bare-vcs
 bare-vcs: all
 
@@ -144,6 +150,7 @@ bare64-vcs_POLICIES = rwx
 bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug,+processor=P2
 bare64-vcs_XDIST = -n $(JOBS) # run in parallel
 bare64-vcs_TIMEOUT = 0
+bare64-vcs_SOC_CFG = vcs
 bare64-vcs: CONFIG=bare64-vcs
 bare64-vcs: all
 
@@ -157,6 +164,7 @@ frtos-qemu_GPOLICIES = contextswitch
 frtos-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-qemu_XDIST= -n $(JOBS) # run in parallel
 frtos-qemu_TIMEOUT = 360
+frtos-qemu_SOC_CFG = hifive
 frtos-qemu: CONFIG=frtos-qemu
 frtos-qemu: all
 
@@ -170,6 +178,7 @@ frtos-vcu118_GPOLICIES = contextswitch
 frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos-vcu118_TIMEOUT = 360
+frtos-vcu118_SOC_CFG = vcu118
 frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
 frtos-vcu118: CONFIG=frtos-vcu118
 frtos-vcu118: all
@@ -184,6 +193,7 @@ frtos-vcs_GPOLICIES =
 frtos-vcs_POLICIES = rwx
 frtos-vcs_XDIST= -n $(JOBS) # run in parallel
 frtos-vcs_TIMEOUT = 0
+frtos-vcs_SOC_CFG = vcs
 frtos-vcs_PYTEST_ARGS = --extra=+pex-debug,+processor=P1
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
@@ -198,6 +208,7 @@ frtos64-qemu_GPOLICIES = contextswitch
 frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
 frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
 frtos64-qemu_TIMEOUT = 360
+frtos64-qemu_SOC_CFG = hifive
 frtos64-qemu: CONFIG=frtos64-qemu
 frtos64-qemu: all
 
@@ -211,6 +222,7 @@ frtos64-vcu118_GPOLICIES = contextswitch
 frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
 frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
 frtos64-vcu118_TIMEOUT = 360
+frtos64-fcu118_SOC_CFG = vcu118
 frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
 frtos64-vcu118: CONFIG=frtos64-vcu118
 frtos64-vcu118: all
@@ -223,6 +235,7 @@ dhrystone_ARCH = rv32
 dhrystone_POLICIES = heap,rwx,stack,none,testSimple
 dhrystone_XDIST = -n $(JOBS) # run in parallel
 dhrystone_TIMEOUT = 360
+dhrystone_SOC_CFG = hifive
 dhrystone: CONFIG=dhrystone
 dhrystone: all
 
