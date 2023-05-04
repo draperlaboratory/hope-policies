@@ -264,7 +264,7 @@ ifdef DEBUG
 _DEBUG = debug
 endif
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(_DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --arch=$(ARCH) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(_DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --arch=$(ARCH) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$($(CONFIG)_SOC_CFG)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py

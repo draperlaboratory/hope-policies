@@ -23,7 +23,7 @@ def isRipeTest(test):
     return False
 
 
-def test_copy_build_dir(test, runtime, sim, arch):
+def test_copy_build_dir(test, runtime, sim, soc, arch):
     if not runtime:
         pytest.fail("No target runtime provided")
 
@@ -63,7 +63,7 @@ def test_copy_build_dir(test, runtime, sim, arch):
         shutil.copy(os.path.join("tests", "Makefile"), output_test_dir)
         shutil.copy(os.path.join("tests", test + ".c"), output_test_dir)
 
-    subprocess.Popen(["isp_install_runtime", runtime, sim, "-b", output_test_dir]).wait()
+    subprocess.Popen(["isp_install_runtime", runtime, soc, "-b", output_test_dir]).wait()
 
 
 # function automatically found by pytest
