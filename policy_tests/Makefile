@@ -75,7 +75,7 @@ bare-ssith-p1_POLICIES = heap,rwx
 bare-ssith-p1_XDIST = -n $(JOBS) # run in parallel
 bare-ssith-p1_TIMEOUT = 360
 bare-ssith-p1_SOC_CFG = ssith-p1
-bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
+bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-ssith-p1: CONFIG=bare-ssith-p1
 bare-ssith-p1: all
 
@@ -90,7 +90,7 @@ bare-ssith-p2_POLICIES = heap,rwx
 bare-ssith-p2_XDIST = -n $(JOBS) # run in parallel
 bare-ssith-p2_TIMEOUT = 360
 bare-ssith-p2_SOC_CFG = ssith-p2
-bare-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
+bare-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-ssith-p2: CONFIG=bare-ssith-p2
 bare-ssith-p2: all
 
@@ -105,7 +105,7 @@ bare64-iveia_POLICIES = rwx
 bare64-iveia_XDIST = -n $(JOBS) # run in parallel
 bare64-iveia_TIMEOUT = 360
 bare64-iveia_SOC_CFG = iveia
-bare64-iveia_PYTEST_ARGS = --extra=+processor=P2,+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
+bare64-iveia_PYTEST_ARGS = --extra=+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
 bare64-iveia: CONFIG=bare64-iveia
 bare64-iveia: all
 
@@ -132,7 +132,7 @@ bare-vcs_MODULE = osv
 bare-vcs_ARCH = rv32
 bare-vcs_GPOLICIES = 
 bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+processor=P1
+bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES)
 bare-vcs_XDIST = -n $(JOBS) # run in parallel
 bare-vcs_TIMEOUT = 0
 bare-vcs_SOC_CFG = vcs
@@ -147,7 +147,7 @@ bare64-vcs_ARCH = rv64
 bare64-vcs_MODULE = osv.bare.main
 bare64-vcs_GPOLICIES = 
 bare64-vcs_POLICIES = rwx
-bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug,+processor=P2
+bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
 bare64-vcs_XDIST = -n $(JOBS) # run in parallel
 bare64-vcs_TIMEOUT = 0
 bare64-vcs_SOC_CFG = vcs
@@ -179,7 +179,7 @@ frtos-vcs_POLICIES = rwx
 frtos-vcs_XDIST= -n $(JOBS) # run in parallel
 frtos-vcs_TIMEOUT = 0
 frtos-vcs_SOC_CFG = vcs
-frtos-vcs_PYTEST_ARGS = --extra=+pex-debug,+processor=P1
+frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
 
