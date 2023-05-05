@@ -64,36 +64,6 @@ bare64-qemu_SOC_CFG = hifive
 bare64-qemu: CONFIG=bare64-qemu
 bare64-qemu: all
 
-# config for bare-metal on VCU118 board
-bare-vcu118_SIM = vcu118
-bare-vcu118_TESTS = bare
-bare-vcu118_RUNTIME = bare
-bare-vcu118_MODULE = osv
-bare-vcu118_ARCH = rv32
-bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = heap,stack,rwx
-bare-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare-vcu118_TIMEOUT = 360
-bare-vcu118_SOC_CFG = vcu118
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
-bare-vcu118: CONFIG=bare-vcu118
-bare-vcu118: all
-
-# config for 64-bit bare-metal on VCU118 board
-bare64-vcu118_SIM = vcu118
-bare64-vcu118_TESTS = bare64
-bare64-vcu118_RUNTIME = bare
-bare64-vcu118_ARCH = rv64
-bare64-vcu118_MODULE = osv
-bare64-vcu118_GPOLICIES = 
-bare64-vcu118_POLICIES = heap,rwx
-bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare64-vcu118_TIMEOUT = 360
-bare64-vcu118_SOC_CFG = vcu118
-bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
-bare64-vcu118: CONFIG=bare64-vcu118
-bare64-vcu118: all
-
 # config for SSITH P1 bare-metal on VCU118 board
 bare-ssith-p1_SIM = vcu118
 bare-ssith-p1_TESTS = bare
@@ -198,21 +168,6 @@ frtos-qemu_SOC_CFG = hifive
 frtos-qemu: CONFIG=frtos-qemu
 frtos-qemu: all
 
-# config for FreeRTOS on VCU118 board
-frtos-vcu118_SIM = vcu118
-frtos-vcu118_TESTS = frtos
-frtos-vcu118_RUNTIME = frtos
-frtos-vcu118_MODULE = osv
-frtos-vcu118_ARCH = rv32
-frtos-vcu118_GPOLICIES = contextswitch
-frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
-frtos-vcu118_TIMEOUT = 360
-frtos-vcu118_SOC_CFG = vcu118
-frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
-frtos-vcu118: CONFIG=frtos-vcu118
-frtos-vcu118: all
-
 # config for FreeRTOS in VCS sim
 frtos-vcs_SIM = vcs
 frtos-vcs_TESTS = frtos
@@ -241,21 +196,6 @@ frtos64-qemu_TIMEOUT = 360
 frtos64-qemu_SOC_CFG = hifive
 frtos64-qemu: CONFIG=frtos64-qemu
 frtos64-qemu: all
-
-# config for 64-bit FreeRTOS on VCU118 board
-frtos64-vcu118_SIM = vcu118
-frtos64-vcu118_TESTS = frtos
-frtos64-vcu118_RUNTIME = frtos
-frtos64-vcu118_MODULE = osv
-frtos64-vcu118_ARCH = rv64
-frtos64-vcu118_GPOLICIES = contextswitch
-frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
-frtos64-vcu118_TIMEOUT = 360
-frtos64-fcu118_SOC_CFG = vcu118
-frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
-frtos64-vcu118: CONFIG=frtos64-vcu118
-frtos64-vcu118: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
