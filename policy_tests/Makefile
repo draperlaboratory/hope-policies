@@ -94,6 +94,21 @@ bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
 bare64-vcu118: CONFIG=bare64-vcu118
 bare64-vcu118: all
 
+# config for SSITH P1 bare-metal on VCU118 board
+bare-ssith-p1_SIM = vcu118
+bare-ssith-p1_TESTS = bare
+bare-ssith-p1_RUNTIME = bare
+bare-ssith-p1_ARCH = rv32
+bare-ssith-p1_MODULE = osv
+bare-ssith-p1_GPOLICIES = 
+bare-ssith-p1_POLICIES = heap,rwx
+bare-ssith-p1_XDIST = -n $(JOBS) # run in parallel
+bare-ssith-p1_TIMEOUT = 360
+bare-ssith-p1_SOC_CFG = ssith-p1
+bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
+bare-ssith-p1: CONFIG=bare-ssith-p1
+bare-ssith-p1: all
+
 # config for SSITH P2 bare-metal on VCU118 board
 bare-ssith-p2_SIM = vcu118
 bare-ssith-p2_TESTS = bare64
