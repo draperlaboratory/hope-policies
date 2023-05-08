@@ -274,6 +274,7 @@ list-build: build-tests
 clean-tests:
 	rm -rf build/
 
+build-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 build-tests: SIM ?= $($(CONFIG)_SIM)
 build-tests: TESTS ?= $($(CONFIG)_TESTS)
 build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -287,6 +288,7 @@ build-tests: build-dirs
 build-tests:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
+build-dirs: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
 build-dirs: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -296,11 +298,7 @@ build-dirs: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-dirs:
-	mkdir -p $(TEST_BUILD_DIR)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)/log
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SOC_CFG)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
@@ -310,6 +308,7 @@ clean-policies:
 	rm -rf pex/
 	rm -rf policies/
 
+build-policies: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 build-policies: SIM ?= $($(CONFIG)_SIM)
 build-policies: TESTS ?= $($(CONFIG)_TESTS)
 build-policies: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -328,6 +327,7 @@ build-policies:
 policies: clean-policies build-policies
 
 # run tests
+run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: SIM ?= $($(CONFIG)_SIM)
 run-tests: TESTS ?= $($(CONFIG)_TESTS)
 run-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -345,6 +345,7 @@ run-tests: build-tests build-policies
 PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) --arch=$(ARCH) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
 
 # generate performance report
+performance-report: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 performance-report: SIM ?= $($(CONFIG)_SIM)
 performance-report: TESTS ?= performance
 performance-report: RUNTIME ?= $($(CONFIG)_RUNTIME)

@@ -35,8 +35,8 @@ def xfailReason(test, runtime, policies, global_policies, arch):
     return None
 
 
-def testPath(runtime, sim, arch, test):
-    return os.path.join("build", runtime, sim, arch, test)
+def testPath(runtime, soc, test):
+    return os.path.join("build", runtime, soc, test)
 
 # test function found automatically by pytest. Pytest calls
 #   pytest_generate_tests in conftest.py to determine the
@@ -61,21 +61,13 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     policy_name = policy_test_common.policyName(policies, global_policies, debug)
     policy_dir = os.path.abspath(os.path.join("policies", policy_name))
 
-    pex_dir = os.path.abspath(os.path.join("pex", sim))
-
-    processor=None
-    if extra:
-        processor = policy_test_common.getExtraArg(extra, "processor")
+    pex_dir = os.path.abspath(os.path.join("pex", soc))
     
-    pex_path = os.path.join(pex_dir,
-                            policy_test_common.pexName(sim, policies, global_policies,
-                                                       "rv", debug, processor=processor)
-                            )
+    pex_path = os.path.join(pex_dir, policy_test_common.pexName(soc, sim, policies, global_policies, "rv", debug))
 
-    test_path = testPath(runtime, sim, arch, test)
+    test_path = testPath(runtime, soc, test)
 
-    runTest(test_path, runtime, policy_dir, pex_path, sim, rule_cache, rule_cache_size,
-            output_dir, soc, timeout, arch, extra)
+    runTest(test_path, runtime, policy_dir, pex_path, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra)
 
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy_name]))
 

@@ -30,7 +30,7 @@ def test_copy_build_dir(test, runtime, sim, soc, arch):
     if not test:
         pytest.fail("No test provided to build")
 
-    output_dir = os.path.join("build", runtime, sim, arch, "src")
+    output_dir = os.path.join("build", runtime, soc, "src")
 
     if not os.path.isdir(output_dir):
         os.makedirs(output_dir)
@@ -67,7 +67,7 @@ def test_copy_build_dir(test, runtime, sim, soc, arch):
 
 
 # function automatically found by pytest
-def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
+def test_build(test, soc, runtime, sim, arch, extra_args=None, extra_env=None):
     if not runtime:
         pytest.fail("No target runtime provided")
 
@@ -84,9 +84,9 @@ def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
 
     makefile = "Makefile"
     if not os.path.isfile(os.path.join(test_dir, makefile)):
-        pytest.fail("Test Makefile not found: {}".format(os.path.join(test_dir, makefile)))
+        pytest.fail(f"Test Makefile not found: {os.path.join(test_dir, makefile)}")
 
-    output_dir = os.path.realpath(os.path.join("build", runtime, sim, arch))
+    output_dir = os.path.realpath(os.path.join("build", runtime, soc))
 
     output_subdir = os.path.join(output_dir, os.path.dirname(test))
     if not os.path.isdir(output_subdir):
@@ -96,7 +96,7 @@ def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     if isMakefileTest(test):
         output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
 
-    make_args = ["make", "-C", output_test_dir, "-f", makefile, "RUNTIME={}".format(runtime), "ARCH={}".format(arch)]
+    make_args = ["make", "-C", output_test_dir, "-f", makefile, f"RUNTIME={runtime}", f"ARCH={arch}"]
     if extra_args is not None:
         make_args += extra_args
 
@@ -110,5 +110,5 @@ def test_build(test, runtime, sim, arch, extra_args=None, extra_env=None):
     log_file = open(os.path.join(output_dir, "log", log_basename), 'w')
     
     result = subprocess.Popen(make_args, env=env, stdout=log_file, stderr=subprocess.STDOUT).wait()
-    if result is not 0:
+    if result != 0:
         pytest.fail("Build failed. Command: OUTPUT_DIR={} extra_env={} {}".format(output_dir, extra_env, make_args))
