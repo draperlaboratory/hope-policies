@@ -96,7 +96,7 @@ def test_build(test, soc, runtime, sim, arch, extra_args=None, extra_env=None):
     if isMakefileTest(test):
         output_test_dir = os.path.join(output_test_dir, os.path.basename(test))
 
-    make_args = ["make", "-C", output_test_dir, "-f", makefile, f"RUNTIME={runtime}", f"ARCH={arch}"]
+    make_args = ["make", "-C", output_test_dir, "-f", makefile, f"RUNTIME={runtime}", f"ARCH={arch}", "all"]
     if extra_args is not None:
         make_args += extra_args
 
@@ -111,4 +111,4 @@ def test_build(test, soc, runtime, sim, arch, extra_args=None, extra_env=None):
     
     result = subprocess.Popen(make_args, env=env, stdout=log_file, stderr=subprocess.STDOUT).wait()
     if result != 0:
-        pytest.fail("Build failed. Command: OUTPUT_DIR={} extra_env={} {}".format(output_dir, extra_env, make_args))
+        pytest.fail(f"Build failed. Command: OUTPUT_DIR={output_dir} extra_env={extra_env} {' '.join(make_args)}")
