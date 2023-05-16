@@ -95,19 +95,19 @@ bare-ssith-p2: CONFIG=bare-ssith-p2
 bare-ssith-p2: all
 
 # config for 64-bit bare-metal on Iveia board
-bare64-iveia_SIM = iveia
-bare64-iveia_TESTS = hello_works_1
-bare64-iveia_RUNTIME = bare
-bare64-iveia_ARCH = rv64
-bare64-iveia_MODULE = osv
-bare64-iveia_GPOLICIES =
-bare64-iveia_POLICIES = rwx
-bare64-iveia_XDIST = -n $(JOBS) # run in parallel
-bare64-iveia_TIMEOUT = 360
-bare64-iveia_SOC_CFG = iveia
-bare64-iveia_PYTEST_ARGS = --extra=+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
-bare64-iveia: CONFIG=bare64-iveia
-bare64-iveia: all
+bare-iveia_SIM = iveia
+bare-iveia_TESTS = hello_works_1
+bare-iveia_RUNTIME = bare
+bare-iveia_ARCH = rv64
+bare-iveia_MODULE = osv
+bare-iveia_GPOLICIES =
+bare-iveia_POLICIES = rwx
+bare-iveia_XDIST = -n $(JOBS) # run in parallel
+bare-iveia_TIMEOUT = 360
+bare-iveia_SOC_CFG = iveia
+bare-iveia_PYTEST_ARGS = --extra=+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
+bare-iveia: CONFIG=bare-iveia
+bare-iveia: all
 
 # config for bare-metal on VCU118 board without PIPE
 bare-stock_SIM = vcu118
