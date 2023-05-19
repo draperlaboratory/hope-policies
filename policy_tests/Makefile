@@ -79,6 +79,21 @@ bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-ssith-p1: CONFIG=bare-ssith-p1
 bare-ssith-p1: all
 
+# config for SSITH P1 FRTOS on VCU118 board
+frtos-ssith-p1_SIM = vcu118
+frtos-ssith-p1_TESTS = frtos
+frtos-ssith-p1_RUNTIME = frtos
+frtos-ssith-p1_ARCH = rv32
+frtos-ssith-p1_MODULE = osv
+frtos-ssith-p1_GPOLICIES = 
+frtos-ssith-p1_POLICIES = heap,rwx
+frtos-ssith-p1_XDIST = -n $(JOBS) # run in parallel
+frtos-ssith-p1_TIMEOUT = 360
+frtos-ssith-p1_SOC_CFG = ssith-p1
+frtos-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-ssith-p1: CONFIG=frtos-ssith-p1
+frtos-ssith-p1: all
+
 # config for SSITH P2 bare-metal on VCU118 board
 bare-ssith-p2_SIM = vcu118
 bare-ssith-p2_TESTS = bare64
@@ -93,6 +108,21 @@ bare-ssith-p2_SOC_CFG = ssith-p2
 bare-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
 bare-ssith-p2: CONFIG=bare-ssith-p2
 bare-ssith-p2: all
+
+# config for SSITH P2 FRTOS on VCU118 board
+frtos-ssith-p2_SIM = vcu118
+frtos-ssith-p2_TESTS = frtos64
+frtos-ssith-p2_RUNTIME = frtos
+frtos-ssith-p2_ARCH = rv64
+frtos-ssith-p2_MODULE = osv
+frtos-ssith-p2_GPOLICIES = 
+frtos-ssith-p2_POLICIES = heap,rwx
+frtos-ssith-p2_XDIST = -n $(JOBS) # run in parallel
+frtos-ssith-p2_TIMEOUT = 360
+frtos-ssith-p2_SOC_CFG = ssith-p2
+frtos-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-ssith-p2: CONFIG=frtos-ssith-p2
+frtos-ssith-p2: all
 
 # config for 64-bit bare-metal on Iveia board
 bare-iveia_SIM = iveia
