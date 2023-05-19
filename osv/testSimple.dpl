@@ -82,6 +82,7 @@ require:
     init SOC.MMIO.CLINT                        {Nothing}
     init SOC.MMIO.ITIM                         {Nothing}
     init SOC.MMIO.PLIC                         {Nothing}
+    init SOC.CBUS.PLIC                         {Nothing}
     init SOC.MMIO.GEM0                         {Nothing}
     init SOC.MMIO.I2C_0                        {Nothing}
     init SOC.MMIO.GPIO_0                       {Nothing}

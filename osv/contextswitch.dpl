@@ -76,6 +76,7 @@ require:
     init SOC.MMIO.CLINT                        {}
     init SOC.MMIO.ITIM                         {}
     init SOC.MMIO.PLIC                         {}
+    init SOC.CBUS.PLIC                         {}
     init SOC.MMIO.GEM0                         {}
 
     init elf.Section.SHF_ALLOC         {}

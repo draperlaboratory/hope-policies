@@ -53,3 +53,4 @@ require:
     init SOC.MMIO.CLINT                        {}
     init SOC.MMIO.ITIM                         {}
     init SOC.MMIO.PLIC                         {}
+    init SOC.CBUS.PLIC                         {}

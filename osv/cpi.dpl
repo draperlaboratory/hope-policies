@@ -90,6 +90,7 @@ require:
     init SOC.MMIO.CLINT                        {}
     init SOC.MMIO.ITIM                         {}
     init SOC.MMIO.PLIC                         {}
+    init SOC.CBUS.PLIC                         {}
    
     init Tools.Elf.Section.SHF_ALLOC         {}
     init Tools.Elf.Section.SHF_EXECINSTR     {}
