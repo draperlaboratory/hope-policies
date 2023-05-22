@@ -35,21 +35,6 @@ webapp_TIMEOUT = 360
 webapp: CONFIG=webapp
 webapp: all
 
-# config for bare-metal on QEMU
-bare-qemu_SIM = qemu
-bare-qemu_TESTS = bare
-bare-qemu_RUNTIME = bare
-bare-qemu_MODULE = osv
-bare-qemu_ARCH = rv32
-bare-qemu_GPOLICIES = 
-bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
-bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
-bare-qemu_XDIST = -n $(JOBS) # run in parallel
-bare-qemu_SOC_CFG = hifive
-bare-qemu_TIMEOUT = 360
-bare-qemu: CONFIG=bare-qemu
-bare-qemu: all
-
 # config for 32-bit hifive bare-metal on QEMU
 bare-hifive32_SIM = qemu
 bare-hifive32_TESTS = bare
@@ -74,7 +59,7 @@ frtos-hifive32_GPOLICIES = contextswitch
 frtos-hifive32_POLICIES = rwx,none,testContext,heap,taint,testSimple
 frtos-hifive32_XDIST= -n $(JOBS) # run in parallel
 frtos-hifive32_TIMEOUT = 360
-frtos-hifive32_SOC_CFG = hifive64
+frtos-hifive32_SOC_CFG = hifive32
 frtos-hifive32: CONFIG=frtos-hifive32
 frtos-hifive32: all
 
@@ -195,65 +180,6 @@ bare-stock_SOC_CFG = vcu118
 bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock
 bare-stock: CONFIG=bare-stock
 bare-stock: all
-
-# config for bare-metal in VCS sim
-bare-vcs_SIM = vcs
-bare-vcs_TESTS = bare
-bare-vcs_RUNTIME = bare
-bare-vcs_MODULE = osv
-bare-vcs_ARCH = rv32
-bare-vcs_GPOLICIES = 
-bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES)
-bare-vcs_XDIST = -n $(JOBS) # run in parallel
-bare-vcs_TIMEOUT = 0
-bare-vcs_SOC_CFG = vcs
-bare-vcs: CONFIG=bare-vcs
-bare-vcs: all
-
-# config for 64-bit bare-metal in VCS sim
-bare64-vcs_SIM = vcs
-bare64-vcs_TESTS = bare64
-bare64-vcs_RUNTIME = bare64
-bare64-vcs_ARCH = rv64
-bare64-vcs_MODULE = osv.bare.main
-bare64-vcs_GPOLICIES = 
-bare64-vcs_POLICIES = rwx
-bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug
-bare64-vcs_XDIST = -n $(JOBS) # run in parallel
-bare64-vcs_TIMEOUT = 0
-bare64-vcs_SOC_CFG = vcs
-bare64-vcs: CONFIG=bare64-vcs
-bare64-vcs: all
-
-# config for FreeRTOS on QEMU
-frtos-qemu_SIM = qemu
-frtos-qemu_TESTS = frtos
-frtos-qemu_RUNTIME = frtos
-frtos-qemu_MODULE = osv
-frtos-qemu_ARCH = rv32
-frtos-qemu_GPOLICIES = contextswitch
-frtos-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos-qemu_XDIST= -n $(JOBS) # run in parallel
-frtos-qemu_TIMEOUT = 360
-frtos-qemu_SOC_CFG = hifive
-frtos-qemu: CONFIG=frtos-qemu
-frtos-qemu: all
-
-# config for FreeRTOS in VCS sim
-frtos-vcs_SIM = vcs
-frtos-vcs_TESTS = frtos
-frtos-vcs_RUNTIME = frtos
-frtos-vcs_MODULE = osv
-frtos-vcs_ARCH = rv32
-frtos-vcs_GPOLICIES =
-frtos-vcs_POLICIES = rwx
-frtos-vcs_XDIST= -n $(JOBS) # run in parallel
-frtos-vcs_TIMEOUT = 0
-frtos-vcs_SOC_CFG = vcs
-frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
-frtos-vcs: CONFIG=frtos-vcs
-frtos-vcs: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
