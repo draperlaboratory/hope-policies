@@ -50,19 +50,33 @@ bare-qemu_TIMEOUT = 360
 bare-qemu: CONFIG=bare-qemu
 bare-qemu: all
 
-# config for 64-bit bare-metal on QEMU
-bare64-qemu_SIM = qemu
-bare64-qemu_TESTS = bare64
-bare64-qemu_RUNTIME = bare
-bare64-qemu_ARCH = rv64
-bare64-qemu_MODULE = osv
-bare64-qemu_GPOLICIES = 
-bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
-bare64-qemu_XDIST = -n $(JOBS) # run in parallel
-bare64-qemu_TIMEOUT = 360
-bare64-qemu_SOC_CFG = hifive
-bare64-qemu: CONFIG=bare64-qemu
-bare64-qemu: all
+# config for 32-bit hifive bare-metal on QEMU
+bare-hifive32_SIM = qemu
+bare-hifive32_TESTS = bare
+bare-hifive32_RUNTIME = bare
+bare-hifive32_ARCH = rv32
+bare-hifive32_MODULE = osv
+bare-hifive32_GPOLICIES = 
+bare-hifive32_POLICIES = rwx,none,heap,taint,testSimple
+bare-hifive32_XDIST = -n $(JOBS) # run in parallel
+bare-hifive32_TIMEOUT = 360
+bare-hifive32_SOC_CFG = hifive32
+bare-hifive32: CONFIG=bare-hifive32
+bare-hifive32: all
+
+# config for 64-bit hifive bare-metal on QEMU
+bare-hifive64_SIM = qemu
+bare-hifive64_TESTS = bare64
+bare-hifive64_RUNTIME = bare
+bare-hifive64_ARCH = rv64
+bare-hifive64_MODULE = osv
+bare-hifive64_GPOLICIES = 
+bare-hifive64_POLICIES = rwx,none,heap,taint,testSimple
+bare-hifive64_XDIST = -n $(JOBS) # run in parallel
+bare-hifive64_TIMEOUT = 360
+bare-hifive64_SOC_CFG = hifive64
+bare-hifive64: CONFIG=bare-hifive64
+bare-hifive64: all
 
 # config for SSITH P1 bare-metal on VCU118 board
 bare-ssith-p1_SIM = vcu118
