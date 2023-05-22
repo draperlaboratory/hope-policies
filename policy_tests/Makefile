@@ -64,6 +64,20 @@ bare-hifive32_SOC_CFG = hifive32
 bare-hifive32: CONFIG=bare-hifive32
 bare-hifive32: all
 
+# config for 32-bit hifive FreeRTOS on QEMU
+frtos-hifive32_SIM = qemu
+frtos-hifive32_TESTS = frtos
+frtos-hifive32_RUNTIME = frtos
+frtos-hifive32_ARCH = rv32
+frtos-hifive32_MODULE = osv.frtos.main
+frtos-hifive32_GPOLICIES = contextswitch
+frtos-hifive32_POLICIES = rwx,none,testContext,heap,taint,testSimple
+frtos-hifive32_XDIST= -n $(JOBS) # run in parallel
+frtos-hifive32_TIMEOUT = 360
+frtos-hifive32_SOC_CFG = hifive64
+frtos-hifive32: CONFIG=frtos-hifive32
+frtos-hifive32: all
+
 # config for 64-bit hifive bare-metal on QEMU
 bare-hifive64_SIM = qemu
 bare-hifive64_TESTS = bare64
@@ -77,6 +91,20 @@ bare-hifive64_TIMEOUT = 360
 bare-hifive64_SOC_CFG = hifive64
 bare-hifive64: CONFIG=bare-hifive64
 bare-hifive64: all
+
+# config for 64-bit hifive FreeRTOS on QEMU
+frtos-hifive64_SIM = qemu
+frtos-hifive64_TESTS = frtos64
+frtos-hifive64_RUNTIME = frtos
+frtos-hifive64_ARCH = rv64
+frtos-hifive64_MODULE = osv.frtos.main
+frtos-hifive64_GPOLICIES = contextswitch
+frtos-hifive64_POLICIES = rwx,none,testContext,heap,taint,testSimple
+frtos-hifive64_XDIST= -n $(JOBS) # run in parallel
+frtos-hifive64_TIMEOUT = 360
+frtos-hifive64_SOC_CFG = hifive64
+frtos-hifive64: CONFIG=frtos-hifive64
+frtos-hifive64: all
 
 # config for SSITH P1 bare-metal on VCU118 board
 bare-ssith-p1_SIM = vcu118
@@ -226,20 +254,6 @@ frtos-vcs_SOC_CFG = vcs
 frtos-vcs_PYTEST_ARGS = --extra=+pex-debug
 frtos-vcs: CONFIG=frtos-vcs
 frtos-vcs: all
-
-# config for 64-bit FreeRTOS on QEMU
-frtos64-qemu_SIM = qemu
-frtos64-qemu_TESTS = frtos64
-frtos64-qemu_RUNTIME = frtos
-frtos64-qemu_ARCH = rv64
-frtos64-qemu_MODULE = osv.frtos.main
-frtos64-qemu_GPOLICIES = contextswitch
-frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
-frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
-frtos64-qemu_TIMEOUT = 360
-frtos64-qemu_SOC_CFG = hifive
-frtos64-qemu: CONFIG=frtos64-qemu
-frtos64-qemu: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
