@@ -72,18 +72,18 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy_name]))
 
     if rule_cache != "":
-        test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
+        test_output_dir = f"{test_output_dir}-{rule_cache}-{rule_cache_size}"
 
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test_path)))
-    if exe_dir is not "tests":
-        test_output_dir = test_output_dir + "-" + exe_dir
+    test_output_dir = f"{test_output_dir}-{soc}-{exe_dir}"
 
     testResult(test_output_dir, xfail)
 
 
 def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
     global push_bitstream
+
     run_cmd = "isp_run_app"
     run_args = [test, soc, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
@@ -99,8 +99,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
 
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test)))
-    if exe_dir is not "tests":
-        run_args += ["-S", exe_dir]
+    run_args += ["-S", f"{soc}-{exe_dir}"]
 
     failed_msg = ""
 #    try:
@@ -116,7 +115,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
     try:
         outs, errs = process.communicate(timeout=timeout)
     except subprocess.CalledProcessError as err:
-        failed_msg = "Test errored out with error code: {}\n".format(err.returncode)
+        failed_msg = f"Test errored out with error code: {err.returncode}\n"
         push_bitstream = True
     except subprocess.TimeoutExpired:
         failed_msg = "Test timed out\n"
@@ -125,16 +124,16 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
         os.killpg(os.getpgid(process.pid), signal.SIGKILL)
 
     if failed_msg:
-        pytest.fail(failed_msg + "\n".join(run_cmd) + "\n\twith args:\b" + "\n".join(run_args))
+        pytest.fail(failed_msg + ' '.join(run_cmd) + "\n\twith args: " + ' '.join(run_args))
 
 
-def testResult(test_output_dir,xfail):
+def testResult(test_output_dir, xfail):
     global push_bitstream
     uart_log_file = os.path.join(test_output_dir, "uart.log")   
     pex_log_file = os.path.join(test_output_dir, "pex.log")
 
     if not os.path.isdir(test_output_dir):
-        pytest.fail("No test output directory {}".format(test_output_dir))
+        pytest.fail(f"No test output directory {test_output_dir}")
         return
 
     if not os.path.isfile(uart_log_file):
@@ -168,6 +167,6 @@ def testResult(test_output_dir,xfail):
             if xfail:
                 pytest.xfail(xfail)
             else:
-                pytest.fail("Invalid output in uart file{}".format(uart_data))
+                pytest.fail(f"Invalid output in uart file {uart_data}")
     elif xfail:
-        pytest.fail("XFAIL test passed: "+xfail)
+        pytest.fail("XFAIL test passed: " + xfail)
