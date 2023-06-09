@@ -105,6 +105,7 @@ require:
     init SOC.MMIO.ITIM                         {}
     init SOC.MMIO.PLIC                         {}
     init SOC.CBUS.PLIC                         {}
+    init SOC.PBUS.MAILBOX                    {}
 
 	init elf.Section.SHF_ALLOC               {}
 	init elf.Section.SHF_EXECINSTR           {}
