@@ -92,7 +92,9 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
     if extra:
         extra_args = extra.split(",")
         if not push_bitstream:
-            run_args += ["-e"] + list(filter(lambda arg: not "bitstream" in arg, extra_args))
+            extra_args = list(filter(lambda arg: not "bitstream" in arg, extra_args))
+            if extra_args:
+                run_args += ["-e"] + extra_args
         else:
             run_args += ["-e"] + extra_args
             push_bitstream = False

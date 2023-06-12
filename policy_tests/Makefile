@@ -305,7 +305,6 @@ build-policies: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-policies:
 	mkdir -p policies/log
 	mkdir -p pex
-	mkdir -p pex/$(SIM)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
 
 policies: clean-policies build-policies
