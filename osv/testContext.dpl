@@ -30,8 +30,8 @@ require:
     init Tools.Link.MemoryMap.UserStack      {}
 
     init SOC.MMIO.UART_0                       {}
-    init SOC.Memory.Flash_0                  {}
-    init SOC.Memory.Ram_0                    {}
+    init SOC.MEMORY.FLASH_0                  {}
+    init SOC.MEMORY.RAM_0                    {}
     init dover.Kernel.MemoryMap.Default       {}
     init dover.riscv.Mach.PC                           {}
     init dover.riscv.User.PC                           {}
