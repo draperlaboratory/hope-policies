@@ -17,12 +17,14 @@ push_bitstream = True
 # in this function, a set of policy test parameters is checked
 #   to make sure that the test makes sense. If it doesnt, the
 #   function returns the reason why
-def incompatibleReason(test, policies, arch):
+def incompatibleReason(test, policies, arch, sim):
     # skip negative tests that are not matched to the correct policy
     if "ripe" not in test and "/" in test and (not test.split("/")[0] in policies):
         return "incorrect policy to detect violation in negative test"
     if "ppac" in policies and not all(policy in ["heap", "ppac", "userType"] for policy in policies):
         return "PPAC policy must run with heap and userType policies"
+    if "null_ptr_deref_fails_1" == test and sim in ["vcu118"]:
+        return "null ptr dereference is checked in hw before policy can deny"
     return None
 
 def xfailReason(test, runtime, policies, global_policies, arch):
@@ -32,6 +34,8 @@ def xfailReason(test, runtime, policies, global_policies, arch):
         return "float_works on FreeRTOS is known to fail with the heap policy."
     if test == "inline_asm_works_1" and ("cfi" in policies or runtime == "bare" and "threeClass" in policies):
         return "tagging of inline assembly is currently broken."
+    if test == "malloc_works_3" and "heap" in policies:
+        return "malloc_works_3 is broken with heap until LLVM is updated to indicate when ptr arithmetic should keep pointer tags."
     return None
 
 
@@ -48,7 +52,7 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     global_policies = global_policy.split("-")
     global_policies = list(filter(None, global_policies))
 
-    incompatible = incompatibleReason(test, policies, arch)
+    incompatible = incompatibleReason(test, policies, arch, sim)
     if incompatible:
         pytest.skip(incompatible)
 
@@ -84,7 +88,7 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
 
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test_path)))
-    if exe_dir is not "tests":
+    if exe_dir != "tests":
         test_output_dir = test_output_dir + "-" + exe_dir
 
     testResult(test_output_dir, xfail)
@@ -110,7 +114,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
 
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test)))
-    if exe_dir is not "tests":
+    if exe_dir != "tests":
         run_args += ["-S", exe_dir]
 
     failed_msg = ""
