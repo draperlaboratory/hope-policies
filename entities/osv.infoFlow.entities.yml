@@ -1,0 +1,12 @@
+-
+    name: dover.Kernel.Code.ApplyTag.out
+    elf_name: out
+    kind: symbol
+    tag_all: true
+    optional: true
+-
+    name: dover.Kernel.Code.ApplyTag.tag_pw
+    elf_name: tag_pw
+    kind: symbol
+    tag_all: true
+    optional: true
