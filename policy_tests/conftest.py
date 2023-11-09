@@ -25,7 +25,7 @@ def pytest_addoption(parser):
                      help='Which rule cache to use (ideal, finite, dmhc). Empty for none.')
     parser.addoption('--rule_cache_size', default=16,
                      help='size of rule cache, if one is used.')
-    parser.addoption('--module', default='',
+    parser.addoption('--module', default='osv',
                      help='optional policy prefix')
     parser.addoption('--composite', default='simple',
                      help='What composite policies (simple, full, else none)')
@@ -77,6 +77,10 @@ def extra(request):
     return request.config.getoption('--extra')
 
 @pytest.fixture
+def module(request):
+    return request.config.getoption('--module')
+
+@pytest.fixture
 def global_policies(request):
     return request.config.getoption('--gpolicies').split(",")
 
@@ -90,6 +94,8 @@ def pytest_generate_tests(metafunc):
         metafunc.parametrize("sim", [metafunc.config.option.sim], scope='session')
     if 'debug' in metafunc.fixturenames:
         metafunc.parametrize("debug", ['debug' == metafunc.config.option.isp_debug], scope='session')
+    if 'module' in metafunc.fixturenames:
+        metafunc.parametrize("module", [metafunc.config.option.module], scope='session')
 
     if 'policy' in metafunc.fixturenames:
         all_policies = []
@@ -106,11 +112,11 @@ def pytest_generate_tests(metafunc):
         module = metafunc.config.option.module
         if module:
             if 'simple' in metafunc.config.option.composite:
-                policies = composites(policies, True)
-                gpolicies = composites(gpolicies, True)
+                policies = composites(module, policies, True)
+                gpolicies = composites(module, gpolicies, True)
             elif 'full' in metafunc.config.option.composite:
-                policies = composites(policies, False)
-                gpolicies = composites(gpolicies, False)
+                policies = composites(module, policies, False)
+                gpolicies = composites(module, gpolicies, False)
 
         gpolicies.append('')
         metafunc.parametrize("global_policy", gpolicies, scope='session')
@@ -169,7 +175,7 @@ def permutePols(polStrs):
     return (reduce(operator.concat, combs, []))
 
 # given modules and policies, generate composite policies
-def composites(policies, simple):
+def composites(module, policies, simple):
 
     # generate all permutations
     r = []
