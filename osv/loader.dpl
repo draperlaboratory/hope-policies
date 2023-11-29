@@ -121,8 +121,8 @@ require:
 
     init SOC.MMIO.MROM                         {}
     init SOC.MMIO.UART_0                       {}
-    init SOC.Memory.Flash_0                  {}
-    init SOC.Memory.Ram_0                    {}
+    init SOC.MEMORY.FLASH_0                  {}
+    init SOC.MEMORY.RAM_0                    {}
 
     init SOC.MMIO.DEBUG                        {}
     init SOC.MMIO.TEST                         {}

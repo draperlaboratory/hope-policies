@@ -35,75 +35,136 @@ webapp_TIMEOUT = 360
 webapp: CONFIG=webapp
 webapp: all
 
-# config for bare-metal on QEMU
-bare-qemu_SIM = qemu
-bare-qemu_TESTS = bare
-bare-qemu_RUNTIME = bare
-bare-qemu_MODULE = osv
-bare-qemu_ARCH = rv32
-bare-qemu_GPOLICIES = 
-bare-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple
-bare-qemu_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
-bare-qemu_XDIST = -n $(JOBS) # run in parallel
-bare-qemu_TIMEOUT = 360
-bare-qemu: CONFIG=bare-qemu
-bare-qemu: all
+# config for 32-bit hifive bare-metal on QEMU
+bare-hifive32_SIM = qemu
+bare-hifive32_TESTS = bare
+bare-hifive32_RUNTIME = bare
+bare-hifive32_ARCH = rv32
+bare-hifive32_MODULE = osv
+bare-hifive32_GPOLICIES = 
+bare-hifive32_POLICIES = cfi,heap,rwx,stack,threeClass,none,testSimple
+bare-hifive32_XDIST = -n $(JOBS) # run in parallel
+bare-hifive32_TIMEOUT = 360
+bare-hifive32_SOC_CFG = hifive32
+bare-hifive32: CONFIG=bare-hifive32
+bare-hifive32: all
 
-# config for 64-bit bare-metal on QEMU
-bare64-qemu_SIM = qemu
-bare64-qemu_TESTS = bare64
-bare64-qemu_RUNTIME = bare
-bare64-qemu_ARCH = rv64
-bare64-qemu_MODULE = osv
-bare64-qemu_GPOLICIES = 
-bare64-qemu_POLICIES = rwx,none,heap,taint,testSimple
-bare64-qemu_XDIST = -n $(JOBS) # run in parallel
-bare64-qemu_TIMEOUT = 360
-bare64-qemu: CONFIG=bare64-qemu
-bare64-qemu: all
+# config for 32-bit hifive FreeRTOS on QEMU
+frtos-hifive32_SIM = qemu
+frtos-hifive32_TESTS = frtos
+frtos-hifive32_RUNTIME = frtos
+frtos-hifive32_ARCH = rv32
+frtos-hifive32_MODULE = osv.frtos.main
+frtos-hifive32_GPOLICIES = contextswitch
+frtos-hifive32_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos-hifive32_XDIST= -n $(JOBS) # run in parallel
+frtos-hifive32_TIMEOUT = 360
+frtos-hifive32_SOC_CFG = hifive32
+frtos-hifive32: CONFIG=frtos-hifive32
+frtos-hifive32: all
 
-# config for bare-metal on VCU118 board
-bare-vcu118_SIM = vcu118
-bare-vcu118_TESTS = bare
-bare-vcu118_RUNTIME = bare
-bare-vcu118_MODULE = osv
-bare-vcu118_ARCH = rv32
-bare-vcu118_GPOLICIES = 
-bare-vcu118_POLICIES = heap,stack,rwx
-bare-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare-vcu118_TIMEOUT = 360
-bare-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
-bare-vcu118: CONFIG=bare-vcu118
-bare-vcu118: all
+# config for 64-bit hifive bare-metal on QEMU
+bare-hifive64_SIM = qemu
+bare-hifive64_TESTS = bare64
+bare-hifive64_RUNTIME = bare
+bare-hifive64_ARCH = rv64
+bare-hifive64_MODULE = osv
+bare-hifive64_GPOLICIES = 
+bare-hifive64_POLICIES = rwx,none,heap,taint,testSimple
+bare-hifive64_XDIST = -n $(JOBS) # run in parallel
+bare-hifive64_TIMEOUT = 360
+bare-hifive64_SOC_CFG = hifive64
+bare-hifive64: CONFIG=bare-hifive64
+bare-hifive64: all
 
-# config for 64-bit bare-metal on VCU118 board
-bare64-vcu118_SIM = vcu118
-bare64-vcu118_TESTS = bare64
-bare64-vcu118_RUNTIME = bare
-bare64-vcu118_ARCH = rv64
-bare64-vcu118_MODULE = osv
-bare64-vcu118_GPOLICIES = 
-bare64-vcu118_POLICIES = heap,rwx
-bare64-vcu118_XDIST = -n $(JOBS) # run in parallel
-bare64-vcu118_TIMEOUT = 360
-bare64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P2
-bare64-vcu118: CONFIG=bare64-vcu118
-bare64-vcu118: all
+# config for 64-bit hifive FreeRTOS on QEMU
+frtos-hifive64_SIM = qemu
+frtos-hifive64_TESTS = frtos64
+frtos-hifive64_RUNTIME = frtos
+frtos-hifive64_ARCH = rv64
+frtos-hifive64_MODULE = osv.frtos.main
+frtos-hifive64_GPOLICIES = contextswitch
+frtos-hifive64_POLICIES = rwx,none,testContext,heap,taint,testSimple
+frtos-hifive64_XDIST= -n $(JOBS) # run in parallel
+frtos-hifive64_TIMEOUT = 360
+frtos-hifive64_SOC_CFG = hifive64
+frtos-hifive64: CONFIG=frtos-hifive64
+frtos-hifive64: all
+
+# config for SSITH P1 bare-metal on VCU118 board
+bare-ssith-p1_SIM = vcu118
+bare-ssith-p1_TESTS = bare
+bare-ssith-p1_RUNTIME = bare
+bare-ssith-p1_ARCH = rv32
+bare-ssith-p1_MODULE = osv
+bare-ssith-p1_GPOLICIES = 
+bare-ssith-p1_POLICIES = heap,stack,rwx
+bare-ssith-p1_XDIST = -n $(JOBS) # run in parallel
+bare-ssith-p1_TIMEOUT = 360
+bare-ssith-p1_SOC_CFG = ssith-p1
+bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+bare-ssith-p1: CONFIG=bare-ssith-p1
+bare-ssith-p1: all
+
+# config for SSITH P1 FRTOS on VCU118 board
+frtos-ssith-p1_SIM = vcu118
+frtos-ssith-p1_TESTS = frtos
+frtos-ssith-p1_RUNTIME = frtos
+frtos-ssith-p1_ARCH = rv32
+frtos-ssith-p1_MODULE = osv
+frtos-ssith-p1_GPOLICIES = contextswitch
+frtos-ssith-p1_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos-ssith-p1_XDIST = -n $(JOBS) # run in parallel
+frtos-ssith-p1_TIMEOUT = 360
+frtos-ssith-p1_SOC_CFG = ssith-p1
+frtos-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-ssith-p1: CONFIG=frtos-ssith-p1
+frtos-ssith-p1: all
+
+# config for SSITH P2 bare-metal on VCU118 board
+bare-ssith-p2_SIM = vcu118
+bare-ssith-p2_TESTS = bare64
+bare-ssith-p2_RUNTIME = bare
+bare-ssith-p2_ARCH = rv64
+bare-ssith-p2_MODULE = osv
+bare-ssith-p2_GPOLICIES = 
+bare-ssith-p2_POLICIES = heap,rwx
+bare-ssith-p2_XDIST = -n $(JOBS) # run in parallel
+bare-ssith-p2_TIMEOUT = 360
+bare-ssith-p2_SOC_CFG = ssith-p2
+bare-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+bare-ssith-p2: CONFIG=bare-ssith-p2
+bare-ssith-p2: all
+
+# config for SSITH P2 FRTOS on VCU118 board
+frtos-ssith-p2_SIM = vcu118
+frtos-ssith-p2_TESTS = frtos64
+frtos-ssith-p2_RUNTIME = frtos
+frtos-ssith-p2_ARCH = rv64
+frtos-ssith-p2_MODULE = osv
+frtos-ssith-p2_GPOLICIES = contextswitch
+frtos-ssith-p2_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
+frtos-ssith-p2_XDIST = -n $(JOBS) # run in parallel
+frtos-ssith-p2_TIMEOUT = 360
+frtos-ssith-p2_SOC_CFG = ssith-p2
+frtos-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-ssith-p2: CONFIG=frtos-ssith-p2
+frtos-ssith-p2: all
 
 # config for 64-bit bare-metal on Iveia board
-bare64-iveia_SIM = iveia
-bare64-iveia_TESTS = hello_works_1
-bare64-iveia_RUNTIME = bare
-bare64-iveia_ARCH = rv64
-bare64-iveia_MODULE = osv
-bare64-iveia_GPOLICIES =
-bare64-iveia_POLICIES = rwx
-bare64-iveia_XDIST = -n $(JOBS) # run in parallel
-bare64-iveia_TIMEOUT = 360
-bare64-iveia_SOC_CFG = $(ISP_PREFIX)/soc_cfg/iveia.yml
-bare64-iveia_PYTEST_ARGS = --extra=+processor=P2,+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
-bare64-iveia: CONFIG=bare64-iveia
-bare64-iveia: all
+bare-iveia_SIM = iveia
+bare-iveia_TESTS = hello_works_1
+bare-iveia_RUNTIME = bare
+bare-iveia_ARCH = rv64
+bare-iveia_MODULE = osv
+bare-iveia_GPOLICIES =
+bare-iveia_POLICIES = rwx
+bare-iveia_XDIST = -n $(JOBS) # run in parallel
+bare-iveia_TIMEOUT = 360
+bare-iveia_SOC_CFG = iveia
+bare-iveia_PYTEST_ARGS = --extra=+ap-address="0x78040000",+kernel-address="0x40000000",+pex-br="57600"
+bare-iveia: CONFIG=bare-iveia
+bare-iveia: all
 
 # config for bare-metal on VCU118 board without PIPE
 bare-stock_SIM = vcu118
@@ -115,105 +176,10 @@ bare-stock_GPOLICIES =
 bare-stock_POLICIES = none
 bare-stock_XDIST = -n $(JOBS) # run in parallel
 bare-stock_TIMEOUT = 360
+bare-stock_SOC_CFG = vcu118
 bare-stock_PYTEST_ARGS = --extra=+bitstream=$(STOCK_BITSTREAM),+stock
 bare-stock: CONFIG=bare-stock
 bare-stock: all
-
-# config for bare-metal in VCS sim
-bare-vcs_SIM = vcs
-bare-vcs_TESTS = bare
-bare-vcs_RUNTIME = bare
-bare-vcs_MODULE = osv
-bare-vcs_ARCH = rv32
-bare-vcs_GPOLICIES = 
-bare-vcs_POLICIES = rwx
-bare-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+processor=P1
-bare-vcs_XDIST = -n $(JOBS) # run in parallel
-bare-vcs_TIMEOUT = 0
-bare-vcs: CONFIG=bare-vcs
-bare-vcs: all
-
-# config for 64-bit bare-metal in VCS sim
-bare64-vcs_SIM = vcs
-bare64-vcs_TESTS = bare64
-bare64-vcs_RUNTIME = bare64
-bare64-vcs_ARCH = rv64
-bare64-vcs_MODULE = osv.bare.main
-bare64-vcs_GPOLICIES = 
-bare64-vcs_POLICIES = rwx
-bare64-vcs_PYTEST_ARGS = --extra=+max-cycles=$(MAX_CYCLES),+pex-debug,+processor=P2
-bare64-vcs_XDIST = -n $(JOBS) # run in parallel
-bare64-vcs_TIMEOUT = 0
-bare64-vcs: CONFIG=bare64-vcs
-bare64-vcs: all
-
-# config for FreeRTOS on QEMU
-frtos-qemu_SIM = qemu
-frtos-qemu_TESTS = frtos
-frtos-qemu_RUNTIME = frtos
-frtos-qemu_MODULE = osv
-frtos-qemu_ARCH = rv32
-frtos-qemu_GPOLICIES = contextswitch
-frtos-qemu_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos-qemu_XDIST= -n $(JOBS) # run in parallel
-frtos-qemu_TIMEOUT = 360
-frtos-qemu: CONFIG=frtos-qemu
-frtos-qemu: all
-
-# config for FreeRTOS on VCU118 board
-frtos-vcu118_SIM = vcu118
-frtos-vcu118_TESTS = frtos
-frtos-vcu118_RUNTIME = frtos
-frtos-vcu118_MODULE = osv
-frtos-vcu118_ARCH = rv32
-frtos-vcu118_GPOLICIES = contextswitch
-frtos-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos-vcu118_XDIST= -n $(JOBS) # run in parallel
-frtos-vcu118_TIMEOUT = 360
-frtos-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
-frtos-vcu118: CONFIG=frtos-vcu118
-frtos-vcu118: all
-
-# config for FreeRTOS in VCS sim
-frtos-vcs_SIM = vcs
-frtos-vcs_TESTS = frtos
-frtos-vcs_RUNTIME = frtos
-frtos-vcs_MODULE = osv
-frtos-vcs_ARCH = rv32
-frtos-vcs_GPOLICIES =
-frtos-vcs_POLICIES = rwx
-frtos-vcs_XDIST= -n $(JOBS) # run in parallel
-frtos-vcs_TIMEOUT = 0
-frtos-vcs_PYTEST_ARGS = --extra=+pex-debug,+processor=P1
-frtos-vcs: CONFIG=frtos-vcs
-frtos-vcs: all
-
-# config for 64-bit FreeRTOS on QEMU
-frtos64-qemu_SIM = qemu
-frtos64-qemu_TESTS = frtos64
-frtos64-qemu_RUNTIME = frtos
-frtos64-qemu_ARCH = rv64
-frtos64-qemu_MODULE = osv.frtos.main
-frtos64-qemu_GPOLICIES = contextswitch
-frtos64-qemu_POLICIES = rwx,none,testContext,heap,taint,testSimple
-frtos64-qemu_XDIST= -n $(JOBS) # run in parallel
-frtos64-qemu_TIMEOUT = 360
-frtos64-qemu: CONFIG=frtos64-qemu
-frtos64-qemu: all
-
-# config for 64-bit FreeRTOS on VCU118 board
-frtos64-vcu118_SIM = vcu118
-frtos64-vcu118_TESTS = frtos
-frtos64-vcu118_RUNTIME = frtos
-frtos64-vcu118_MODULE = osv
-frtos64-vcu118_ARCH = rv64
-frtos64-vcu118_GPOLICIES = contextswitch
-frtos64-vcu118_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,testContext
-frtos64-vcu118_XDIST= -n $(JOBS) # run in parallel
-frtos64-vcu118_TIMEOUT = 360
-frtos64-vcu118_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM),+processor=P1
-frtos64-vcu118: CONFIG=frtos64-vcu118
-frtos64-vcu118: all
 
 dhrystone_SIM = qemu
 dhrystone_TESTS = dhrystone
@@ -223,6 +189,7 @@ dhrystone_ARCH = rv32
 dhrystone_POLICIES = heap,rwx,stack,none,testSimple
 dhrystone_XDIST = -n $(JOBS) # run in parallel
 dhrystone_TIMEOUT = 360
+dhrystone_SOC_CFG = hifive
 dhrystone: CONFIG=dhrystone
 dhrystone: all
 
@@ -236,7 +203,7 @@ ifdef DEBUG
 _DEBUG = debug
 endif
 
-PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(_DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --arch=$(ARCH) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$(SOC_CFG)
+PYTEST_ARGS ?= --capture=no -v -rsx --timeout=$(TIMEOUT) --timeout-method=thread $(ERROR_MSGS) --sim=$(SIM) --isp_debug=$(_DEBUG) --test=$(TESTS) --rule_cache=$(RULE_CACHE) --rule_cache_size=$(RULE_CACHE_SIZE) --runtime=$(RUNTIME) --arch=$(ARCH) --gpolicies=$(GPOLICIES) --policies=$(POLICIES) --composite=$(COMPOSITE) --module=$(MODULE) --soc=$($(CONFIG)_SOC_CFG)
 
 # RIPE Tests
 RIPE_CONFIGS := ripe/ripe_configs.py
@@ -291,6 +258,7 @@ list-build: build-tests
 clean-tests:
 	rm -rf build/
 
+build-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 build-tests: SIM ?= $($(CONFIG)_SIM)
 build-tests: TESTS ?= $($(CONFIG)_TESTS)
 build-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -304,6 +272,7 @@ build-tests: build-dirs
 build-tests:
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_build_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_build build_unit_tests.py
 
+build-dirs: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 build-dirs: SIM ?= $($(CONFIG)_SIM)
 build-dirs: TESTS ?= $($(CONFIG)_TESTS)
 build-dirs: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -313,11 +282,7 @@ build-dirs: GPOLICIES ?= $($(CONFIG)_GPOLICIES)
 build-dirs: POLICIES ?= $($(CONFIG)_POLICIES)
 build-dirs: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-dirs:
-	mkdir -p $(TEST_BUILD_DIR)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)
-	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SIM)/$(ARCH)/log
+	mkdir -p $(TEST_BUILD_DIR)/$(RUNTIME)/$(SOC_CFG)/log
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS)  --$(TEST_FORMAT)=$(_DEBUG)_$(TEST_OUTPUT_FILE) $(COLLECT_ONLY) -k test_copy_build_dir build_unit_tests.py
 
 tests: clean-tests build-tests
@@ -327,6 +292,7 @@ clean-policies:
 	rm -rf pex/
 	rm -rf policies/
 
+build-policies: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 build-policies: SIM ?= $($(CONFIG)_SIM)
 build-policies: TESTS ?= $($(CONFIG)_TESTS)
 build-policies: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -339,12 +305,12 @@ build-policies: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 build-policies:
 	mkdir -p policies/log
 	mkdir -p pex
-	mkdir -p pex/$(SIM)
 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_policy_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_install_policy install_policies.py
 
 policies: clean-policies build-policies
 
 # run tests
+run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: SIM ?= $($(CONFIG)_SIM)
 run-tests: TESTS ?= $($(CONFIG)_TESTS)
 run-tests: RUNTIME ?= $($(CONFIG)_RUNTIME)
@@ -362,6 +328,7 @@ run-tests: build-tests build-policies
 PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) --arch=$(ARCH) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
 
 # generate performance report
+performance-report: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 performance-report: SIM ?= $($(CONFIG)_SIM)
 performance-report: TESTS ?= performance
 performance-report: RUNTIME ?= $($(CONFIG)_RUNTIME)

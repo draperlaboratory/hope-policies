@@ -65,8 +65,8 @@ require:
     init SOC.MMIO.MROM                         {Rd, Wr}
     init SOC.MMIO.UART_0                       {Rd, Wr}
     init SOC.MMIO.UART_1                       {Rd, Wr}
-    init SOC.Memory.Flash_0                  {Rd}
-    init SOC.Memory.Ram_0                    {Rd, Wr}
+    init SOC.MEMORY.FLASH_0                  {Rd}
+    init SOC.MEMORY.RAM_0                    {Rd, Wr}
     init SOC.Memory.Code_1                   {Rd, Wr}
     init SOC.Memory.Code_2                   {Rd, Wr}
     init SOC.Memory.Code_3                   {Rd, Wr}
@@ -76,6 +76,7 @@ require:
     init SOC.MMIO.CLINT                        {Rd, Wr}
     init SOC.MMIO.ITIM                         {Rd, Wr, Ex}
     init SOC.MMIO.PLIC                         {Rd, Wr}
+    init SOC.CBUS.PLIC                         {Rd, Wr}
     init SOC.MMIO.GEM0                         {Rd, Wr}
     init SOC.MMIO.I2C_0                        {Rd, Wr}
     init SOC.MMIO.GPIO_0                       {Rd, Wr}

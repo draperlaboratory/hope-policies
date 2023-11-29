@@ -39,8 +39,8 @@ def xfailReason(test, runtime, policies, global_policies, arch):
     return None
 
 
-def testPath(runtime, sim, arch, test):
-    return os.path.join("build", runtime, sim, arch, test)
+def testPath(runtime, soc, test):
+    return os.path.join("build", runtime, soc, test)
 
 # test function found automatically by pytest. Pytest calls
 #   pytest_generate_tests in conftest.py to determine the
@@ -65,49 +65,41 @@ def test_new(test, runtime, policy, global_policy, sim, rule_cache, rule_cache_s
     policy_name = policy_test_common.policyName(policies, global_policies, debug)
     policy_dir = os.path.abspath(os.path.join("policies", policy_name))
 
-    pex_dir = os.path.abspath(os.path.join("pex", sim))
-
-    processor=None
-    if extra:
-        processor = policy_test_common.getExtraArg(extra, "processor")
+    pex_dir = os.path.abspath(os.path.join("pex", soc))
     
-    pex_path = os.path.join(pex_dir,
-                            policy_test_common.pexName(sim, policies, global_policies,
-                                                       "rv", debug, processor=processor)
-                            )
+    pex_path = os.path.join(pex_dir, policy_test_common.pexName(soc, sim, policies, global_policies, "rv", debug))
 
-    test_path = testPath(runtime, sim, arch, test)
+    test_path = testPath(runtime, soc, test)
 
-    runTest(test_path, runtime, policy_dir, pex_path, sim, rule_cache, rule_cache_size,
-            output_dir, soc, timeout, arch, extra)
+    runTest(test_path, runtime, policy_dir, pex_path, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra)
 
     test_output_dir = os.path.join(output_dir, "-".join(["isp", "run", os.path.basename(test), policy_name]))
 
     if rule_cache != "":
-        test_output_dir = test_output_dir + "-{}-{}".format(rule_cache, rule_cache_size)
+        test_output_dir = f"{test_output_dir}-{rule_cache}-{rule_cache_size}"
 
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test_path)))
     if exe_dir != "tests":
-        test_output_dir = test_output_dir + "-" + exe_dir
+        test_output_dir = f"{test_output_dir}-{soc}-{exe_dir}"
 
     testResult(test_output_dir, xfail)
 
 
 def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output_dir, soc, timeout, arch, extra):
     global push_bitstream
+
     run_cmd = "isp_run_app"
-    run_args = [test, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir]
+    run_args = [test, soc, "-p", policy, "--pex", pex, "-s", sim, "-r", runtime, "-o", output_dir]
     if rule_cache != "":
         run_args += ["-C", rule_cache, "-c", rule_cache_size]
-
-    if soc != "":
-        run_args += ["--soc", soc]
 
     if extra:
         extra_args = extra.split(",")
         if not push_bitstream:
-            run_args += ["-e"] + list(filter(lambda arg: not "bitstream" in arg, extra_args))
+            extra_args = list(filter(lambda arg: not "bitstream" in arg, extra_args))
+            if extra_args:
+                run_args += ["-e"] + extra_args
         else:
             run_args += ["-e"] + extra_args
             push_bitstream = False
@@ -115,7 +107,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
     # add policy-specific directory test source is in to output dir
     exe_dir = os.path.basename(os.path.dirname(os.path.dirname(test)))
     if exe_dir != "tests":
-        run_args += ["-S", exe_dir]
+        run_args += ["-S", f"{soc}-{exe_dir}"]
 
     failed_msg = ""
 #    try:
@@ -131,7 +123,7 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
     try:
         outs, errs = process.communicate(timeout=timeout)
     except subprocess.CalledProcessError as err:
-        failed_msg = "Test errored out with error code: {}\n".format(err.returncode)
+        failed_msg = f"Test errored out with error code: {err.returncode}\n"
         push_bitstream = True
     except subprocess.TimeoutExpired:
         failed_msg = "Test timed out\n"
@@ -140,16 +132,16 @@ def runTest(test, runtime, policy, pex, sim, rule_cache, rule_cache_size, output
         os.killpg(os.getpgid(process.pid), signal.SIGKILL)
 
     if failed_msg:
-        pytest.fail(failed_msg + "\n".join(run_cmd) + "\n\twith args:\b" + "\n".join(run_args))
+        pytest.fail(failed_msg + ' '.join(run_cmd) + "\n\twith args: " + ' '.join(run_args))
 
 
-def testResult(test_output_dir,xfail):
+def testResult(test_output_dir, xfail):
     global push_bitstream
     uart_log_file = os.path.join(test_output_dir, "uart.log")   
     pex_log_file = os.path.join(test_output_dir, "pex.log")
 
     if not os.path.isdir(test_output_dir):
-        pytest.fail("No test output directory {}".format(test_output_dir))
+        pytest.fail(f"No test output directory {test_output_dir}")
         return
 
     if not os.path.isfile(uart_log_file):
@@ -183,6 +175,6 @@ def testResult(test_output_dir,xfail):
             if xfail:
                 pytest.xfail(xfail)
             else:
-                pytest.fail("Invalid output in uart file{}".format(uart_data))
+                pytest.fail(f"Invalid output in uart file {uart_data}")
     elif xfail:
-        pytest.fail("XFAIL test passed: "+xfail)
+        pytest.fail("XFAIL test passed: " + xfail)

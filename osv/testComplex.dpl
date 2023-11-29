@@ -89,8 +89,8 @@ require:
     init Tools.Link.MemoryMap.UserStack      {}
 
     init SOC.MMIO.UART_0                       {AllowIO}
-    init SOC.Memory.Flash_0                  {AllowRom}
-    init SOC.Memory.Ram_0                    {AllowMem}
+    init SOC.MEMORY.FLASH_0                  {AllowRom}
+    init SOC.MEMORY.RAM_0                    {AllowMem}
 
     init SOC.MMIO.TEST                         {AllowMem}
 
