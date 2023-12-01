@@ -23,6 +23,8 @@ def incompatibleReason(test, policies, arch, sim):
         return "incorrect policy to detect violation in negative test"
     if "ppac" in policies and not all(policy in ["heap", "ppac", "userType"] for policy in policies):
         return "PPAC policy must run with heap and userType policies"
+    if "float_works" == test and sim in ["vcu118"]:
+        return "float works test does not work on FPGA due to use of sbrk"
     if "null_ptr_deref_fails_1" == test and sim in ["vcu118"]:
         return "null ptr dereference is checked in hw before policy can deny"
     return None
