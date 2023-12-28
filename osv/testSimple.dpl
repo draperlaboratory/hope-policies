@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -46,8 +46,8 @@ metadata:
 
 policy:
         // a policy that allows anything and contributes no results
-    testSimplePol = riscvPol
-            ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
+    testSimplePol =
+              branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
             ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
             ^ jumpGrp(code == _, env == _ -> return = {})
             ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
@@ -55,7 +55,6 @@ policy:
             ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
             ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
             ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
-            ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
             ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
             ^ privGrp(code == _, env == _ -> env = env)
@@ -66,31 +65,22 @@ policy:
 require:
     init ISA.RISCV.Reg.Env                   {Nothing}
     init ISA.RISCV.Reg.Default               {Nothing}
-    init ISA.RISCV.Reg.RZero                 {Nothing}
     init ISA.RISCV.CSR.Default               {Nothing}
-    init ISA.RISCV.CSR.MTVec                 {Nothing}
 
-    init Tools.Link.MemoryMap.Default        {Nothing}
-    init Tools.Link.MemoryMap.UserHeap       {Nothing}
-    init Tools.Link.MemoryMap.UserStack      {Nothing}
-
-    init SOC.MMIO.UART_0                       {Nothing}
+    init SOC.MMIO.UART_0                     {Nothing}
     init SOC.MEMORY.FLASH_0                  {Nothing}
     init SOC.MEMORY.RAM_0                    {Nothing}
 
-    init SOC.MMIO.TEST                         {Nothing}
-    init SOC.MMIO.CLINT                        {Nothing}
-    init SOC.MMIO.ITIM                         {Nothing}
-    init SOC.MMIO.PLIC                         {Nothing}
-    init SOC.CBUS.PLIC                         {Nothing}
-    init SOC.MMIO.GEM0                         {Nothing}
-    init SOC.MMIO.I2C_0                        {Nothing}
-    init SOC.MMIO.GPIO_0                       {Nothing}
-    init SOC.MMIO.GPIO_1                       {Nothing}
-    init SOC.MMIO.Ethernet_0                   {Nothing}
+    init SOC.PBUS.MAILBOX                    {Nothing}
+    init SOC.MMIO.MROM                       {Nothing}
+    init SOC.MMIO.TEST                       {Nothing}
+    init SOC.MMIO.CLINT                      {Nothing}
+    init SOC.MMIO.ITIM                       {Nothing}
+    init SOC.MMIO.PLIC                       {Nothing}
+    init SOC.CBUS.PLIC                       {Nothing}
+    init SOC.MMIO.GEM0                       {Nothing}
+    init SOC.MMIO.I2C_0                      {Nothing}
+    init SOC.MMIO.GPIO_0                     {Nothing}
+    init SOC.MMIO.GPIO_1                     {Nothing}
+    init SOC.MMIO.Ethernet_0                 {Nothing}
 
-    init SOC.MMIO.TEST                         {Nothing}
-
-    init Tools.Elf.Section.SHF_ALLOC         {Nothing}
-    init Tools.Elf.Section.SHF_EXECINSTR     {Nothing}
-    init Tools.Elf.Section.SHF_WRITE         {Nothing}

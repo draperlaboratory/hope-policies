@@ -1,5 +1,5 @@
 -
-    name: dover.Tools.RTL.longjmp
+    name: entities.longjmp
     elf_name: longjmp
     kind: symbol
     tag_all: true

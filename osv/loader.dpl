@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -111,30 +111,24 @@ group:
 require:
     init ISA.RISCV.Reg.Env                   {}
     init ISA.RISCV.Reg.Default               {}
-    init ISA.RISCV.Reg.RZero                 {}
     init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
 
-    init Tools.Link.MemoryMap.Default        {}
-    init Tools.Link.MemoryMap.UserHeap       {}
-    init Tools.Link.MemoryMap.UserStack      {}
-
-    init SOC.MMIO.MROM                         {}
-    init SOC.MMIO.UART_0                       {}
+    init SOC.MMIO.MROM                       {}
+    init SOC.MMIO.UART_0                     {}
     init SOC.MEMORY.FLASH_0                  {}
     init SOC.MEMORY.RAM_0                    {}
 
-    init SOC.MMIO.DEBUG                        {}
-    init SOC.MMIO.TEST                         {}
-    init SOC.MMIO.CLINT                        {}
-    init SOC.MMIO.ITIM                         {}
-    init SOC.MMIO.GEM0                         {}
-    init SOC.MMIO.AON                          {}
+    init SOC.PBUS.MAILBOX                    {}
+    init SOC.MMIO.TEST                       {}
+    init SOC.MMIO.CLINT                      {}
+    init SOC.MMIO.ITIM                       {}
+    init SOC.MMIO.GEM0                       {}
+    init SOC.MMIO.AON                        {}
 
-    init elf.Section.SHF_ALLOC         {}
-    init elf.Section.SHF_EXECINSTR     {}
-    init elf.Section.SHF_WRITE         {}
+    init elf.Section.SHF_ALLOC               {}
+    init elf.Section.SHF_EXECINSTR           {}
+    init elf.Section.SHF_WRITE               {}
 
-	init loader.load                        {Loader}
+    init loader.load                         {Loader}
 
 

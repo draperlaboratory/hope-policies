@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -37,76 +37,62 @@ import:
 
 metadata:
   Target,
-  None,
   Jumping,
   NoCFI
 
 policy:
-    cfiPol = riscvPol
+    cfiPol =
 
-    // special case: allow return to C from asm interrupt handling
-    ^ mretGrp ( env == _ -> env = {} )
+      // special case: allow return to C from asm interrupt handling
+      mretGrp ( env == _ -> env = {} )
 
-     // Case for not checking cfi (asm code)
-    ^ allGrp    (code == [+NoCFI,-Target], env == _ -> env = env )
-         // cases for landing on a jump (bounce)
-    ^ branchGrp (code == [Target], env == [Jumping] -> env = {Jumping})
-    ^ jumpGrp   (code == [Target], env == [Jumping] -> env = {Jumping}, return = {})
-        // cases for a jump to target
-    ^ branchGrp (code == [-Target], env == [-Jumping], op1 == _, op2 == _ -> env = env[Jumping])
-    ^ jumpRegGrp   (code == [-Target], env == [-Jumping], target == _ -> return = {}, env = env[Jumping])
-    ^ jumpGrp   (code == [-Target], env == [-Jumping] -> return = {}, env = env[Jumping])
-        // Case for landing on a target
-    ^ allGrp    (code == [+Target], env == [+Jumping] -> env = env[-Jumping])
-       // Case for normal execution
-    ^ allGrp    (env == [-Jumping] -> env = env)
+      // Case for not checking cfi (asm code)
+    ^ allGrp    (code == {NoCFI}, env == {} -> env = env )
+
+      // Base case for a jump or branch
+    ^ branchGrp (code == {}, env == {}, op1 == _, op2 == _ -> env = {Jumping})
+    ^ jumpRegGrp(code == {}, env == {}, target == _ -> return = {}, env = {Jumping})
+    ^ jumpGrp   (code == {}, env == {} -> return = {}, env = {Jumping})
+
+      // Cases for when a jump/branch lands on another control flow
+    ^ branchGrp (code == {Target}, env == {Jumping} -> env = {Jumping})
+    ^ jumpGrp   (code == {Target}, env == {Jumping} -> env = {Jumping}, return = {})
+
+      // Case for landing on a target
+    ^ allGrp    (code == {Target}, env == {Jumping} -> env = {})
+
+      // Case for normal execution
+    ^ allGrp    (code == _, env == {} -> env = env)
     ^ allGrp (-> fail "cfi: Illegal control flow detected")
 
-    main = cfiPol
-
 require:
-    init ISA.RISCV.Reg.Env                   {}
-    init ISA.RISCV.Reg.Default               {}
-    init ISA.RISCV.Reg.RZero                 {}
-    init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.Reg.Env                          {}
+    init ISA.RISCV.Reg.Default                      {}
+    init ISA.RISCV.CSR.Default                      {}
 
-    init llvm.CFI_Call-Tgt                   {Target}
-    init llvm.CFI_Branch-Tgt                 {Target}
-    init llvm.CFI_Return-Tgt                 {Target}
-    init llvm.CFI_Call-Instr                 {NoCFI}
-    init llvm.CFI_Branch-Instr               {NoCFI}
-    init llvm.CFI_Return-Instr               {NoCFI}
-    init llvm.NoCFI                          {NoCFI}
-    
-    init dover.Kernel.MemoryMap.Default       {}
-    init dover.riscv.Mach.PC                           {}
-    init dover.riscv.User.PC                           {}
-    init dover.riscv.Mach.Reg                          {}
-    init dover.riscv.User.Reg                          {}
-    init dover.riscv.Mach.RegZero                      {}
-    init dover.riscv.User.RegZero                      {}
-    init dover.Kernel.MemoryMap.UserStack     {}
-    init dover.Kernel.MemoryMap.UserHeap      {}
-    init dover.SOC.IO.UART                             {None}
-    init dover.SOC.IO.Flash                            {}
-    init dover.SOC.CSR.Default                         {}
-    init dover.SOC.CSR.MTVec                           {}
-    init dover.Kernel.Code.ElfSection.SHF_WRITE     {}
-    init dover.Kernel.Code.ElfSection.SHF_ALLOC     {}
-    init dover.Kernel.Code.ElfSection.SHF_EXECINSTR {}
+    // While this policy doesn't make use of llvm.CFI_*-Instr, explicitly
+    // setting them ensures that the llvm.NoCFI tag is consistent.
+    init llvm.CFI_Call-Tgt                          {Target}
+    init llvm.CFI_Branch-Tgt                        {Target}
+    init llvm.CFI_Return-Tgt                        {Target}
+    init llvm.CFI_Call-Instr                        {NoCFI}
+    init llvm.CFI_Branch-Instr                      {NoCFI}
+    init llvm.CFI_Return-Instr                      {NoCFI}
+    init llvm.NoCFI                                 {NoCFI}
 
-    init SOC.MMIO.UART_0                       {}
-    init SOC.MEMORY.FLASH_0                  {}
-    init SOC.MEMORY.RAM_0                    {}
+    init SOC.MMIO.UART_0                            {}
+    init SOC.MEMORY.FLASH_0                         {}
+    init SOC.MEMORY.RAM_0                           {}
 
-    init SOC.MMIO.TEST                         {}
-    init SOC.MMIO.CLINT                        {}
-    init SOC.MMIO.ITIM                         {}
-    init SOC.MMIO.PLIC                         {}
-    init SOC.CBUS.PLIC                         {}
-    init SOC.PBUS.MAILBOX                    {}
+    init SOC.MMIO.MROM                              {}
+    init SOC.MMIO.TEST                              {}
+    init SOC.MMIO.CLINT                             {}
+    init SOC.MMIO.ITIM                              {}
+    init SOC.MMIO.PLIC                              {}
+    init SOC.CBUS.PLIC                              {}
+    init SOC.PBUS.MAILBOX                           {}
 
-	init elf.Section.SHF_ALLOC               {}
-	init elf.Section.SHF_EXECINSTR           {}
-	init elf.Section.SHF_WRITE               {}
+    init elf.Section.SHF_ALLOC                      {}
+    init elf.Section.SHF_EXECINSTR                  {}
+    init elf.Section.SHF_WRITE                      {}
+

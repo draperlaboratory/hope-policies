@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -41,126 +41,124 @@ metadata:
   NewColor,          // Special memory cell used with ApplyColor
   DelColor,          // Special memory cell used with RemoveColor
   ModColor,          // Special value used to modify heap cells
-  AntiPointer,       // Special Value that eliminates color from pointers
-  SpecialCaseVFPRINTF  // Mark vprinter code to enable special case hack
-  
-policy:
-  heapPol = riscvPol
-// Handle generic pointer arithmetic
-   ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
-// since the previous rule didn't fire check for AntiPointer
-   ^ arithGrp(env == _, op1 == [+AntiPointer], op2 == _ -> env = env, res = {})
-   ^ arithGrp(env == _, op1 == _, op2 == [+AntiPointer] -> env = env, res = {})
-// pointer plus scalar retains pointer color   
-   ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [-(Pointer _)] -> env = env, res = op1)
-   ^ arithGrp(env == _, op1 == [-(Pointer _)], op2 == [+(Pointer color)] -> env = env, res = op2)
-// Let the compiler mv the tagged data between registers
-   ^ immArithGrp(code == [ApplyColor], env == _, op1 == [ModColor] -> env = env, res = op1)
-   ^ immArithGrp(code == [RemoveColor], env == _, op1 == [ModColor] -> env = env, res = op1)
-// Allow arithmetic on same colored ptrs
-   ^ arithGrp(env == _, op1 == [+(Pointer color)], op2 == [+(Pointer color)] -> env = env, res = op1)
-   ^ arithGrp(env == _, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
-   ^ immArithGrp(env == _, op1 == [-(Pointer _)] -> env = env, res = {})
-   ^ immArithGrp(env == _, op1 == [+(Pointer color)] -> env = env, res = op1)
+  KeepPointer        // When doing ptr arithmetic, keep ptr tag on result
 
-// Apply and remove color from heap allocations
-   ^ storeGrp(   code == [ApplyColor], mem == [RawHeap], addr == [+(Pointer color)], val == [ModColor], env == _
+policy:
+  heapPol =
+    // Handle generic non-pointer arithmetic
+    arithGrp(code == _, env == {}, op1 == [-(Pointer _)], op2 == [-(Pointer _)] -> env = env, res = {})
+
+    // TODO: delete once KeepPointer functionality is added
+  ^ arithGrp(code == _, env == {}, op1 == {Pointer color}, op2 == [-(Pointer _)] -> env = env, res = op1)
+  ^ arithGrp(code == _, env == {}, op1 == [-(Pointer _)], op2 == {(Pointer color)} -> env = env, res = op2)
+    // pointer plus scalar retains pointer color iff LLVM static analysis says to
+//   ^ arithGrp(code == {KeepPointer}, env == {}, op1 == {Pointer color}, op2 == {} -> env = env, res = op1)
+//   ^ arithGrp(code == {KeepPointer}, env == {}, op1 == {}, op2 == {(Pointer color)} -> env = env, res = op2)
+//   ^ arithGrp(code == {KeepPointer}, env == {}, op1 == {}, op2 == {} -> env = env, res = {})
+//   ^ arithGrp(code == {}, env == {}, op1 == {Pointer color}, op2 == {} -> env = env, res = {})
+//   ^ arithGrp(code == {}, env == {}, op1 == {}, op2 == {(Pointer color)} -> env = env, res = {})
+    // Let the compiler mv the tagged data between registers
+  ^ immArithGrp(code == {ApplyColor}, env == {}, op1 == {ModColor} -> env = env, res = op1)
+  ^ immArithGrp(code == {RemoveColor}, env == {}, op1 == {ModColor} -> env = env, res = op1)
+    // Allow arithmetic on same colored ptrs
+  ^ arithGrp(code == _, env == {}, op1 == [+(Pointer color)], op2 == [+(Pointer color)] -> env = env, res = op1)
+  ^ arithGrp(code == _, env == {}, op1 == [+(Pointer _)], op2 == [+(Pointer _)] -> fail "Can not combine different color Pointers")
+  ^ immArithGrp(code == _, env == {}, op1 == [-(Pointer _)] -> env = env, res = {})
+  ^ immArithGrp(code == _, env == {}, op1 == [+(Pointer color)] -> env = env, res = op1)
+
+    // Apply and remove color from heap allocations
+  ^ storeGrp(   code == {ApplyColor}, mem == [RawHeap], addr == [+(Pointer color)], val == {ModColor}, env == {}
               -> mem = {(Cell color)}, env = env )
-   ^ storeGrp(   code == [RemoveColor], mem == [+(Cell color)], addr == [+(Pointer color)], val == [ModColor], env == _
+  ^ storeGrp(   code == {RemoveColor}, mem == [+(Cell color)], addr == {(Pointer color)}, val == {ModColor}, env == {}
               -> mem = {RawHeap}, env = env)
-// Allow load and store to heap
-   ^ loadGrp(    mem == [+(Cell color)], addr == [+(Pointer color)], env == _
+    // Allow load and store to heap
+  ^ loadGrp(    code == [-KeepPointer], mem == [+(Cell color)], addr == [+(Pointer color)], env == {}
              -> res = mem[-(Cell _)], env = env )
-   ^ storeGrp(   mem == [+(Cell color)], addr == [+(Pointer color)], val == _, env == _
+  ^ storeGrp(   code == [-KeepPointer], mem == [+(Cell color)], addr == [+(Pointer color)], val == _, env == {}
               -> mem = val[+(Cell color)], env = env )
 
-// Create new colors
-   ^ storeGrp(   code == [ApplyColor], mem == [+NewColor], env == _
+    // Create new colors
+  ^ storeGrp(   code == {ApplyColor}, mem == [+NewColor], env == {}
               -> mem = mem[(Pointer new)], env = env )
-   ^ storeGrp(   code == [RemoveColor], mem == [+DelColor], env == _
+  ^ storeGrp(   code == {RemoveColor}, mem == [+DelColor], env == {}
               -> mem = mem, env = env )
-   ^ loadGrp(   code == [ApplyColor], mem == [+NewColor], env == _
+  ^ loadGrp(   code == {ApplyColor}, mem == [+NewColor], env == {}
              -> res = mem[-NewColor], env = env )
-   ^ loadGrp(   code == [RemoveColor], mem == [+DelColor], env == _
+  ^ loadGrp(   code == {RemoveColor}, mem == [+DelColor], env == {}
              -> res = {}, env = env )
-             
-// Any other write to pallette needs to maintain its tags
-   ^ storeGrp(   code == _, mem == [+NewColor], env == _
+
+    // Any other write to pallette needs to maintain its tags
+  ^ storeGrp(   code == _, mem == [+NewColor], env == {}
               -> mem = mem, env = env )
-   ^ storeGrp(   code == _, mem == [+DelColor], env == _
+  ^ storeGrp(   code == _, mem == [+DelColor], env == {}
               -> mem = mem, env = env )
-   ^ storeGrp(   code == _, mem == [+ModColor], env == _
+  ^ storeGrp(   code == _, mem == [+ModColor], env == {}
               -> mem = mem, env = env )
 
-// Allow malloc to load store raw heap locations
-   ^ loadGrp(   mem == [RawHeap], addr == [-(Pointer _)], env == _
+    // Allow malloc to load store raw heap locations
+  ^ loadGrp(   code == [-KeepPointer], mem == {RawHeap}, addr == [-(Pointer _)], env == {}
              -> res = {}, env = env )
-   ^ storeGrp(   mem == [RawHeap], addr == [-(Pointer _)], val == _, env == _
+  ^ storeGrp(   code == [-KeepPointer], mem == {RawHeap}, addr == [-(Pointer _)], val == _, env == {}
               -> mem = {RawHeap}, env = env )
 
-// Allow load and store to non-heap locations
-   ^ loadGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], env == _
+    // Allow load and store to non-heap locations
+  ^ loadGrp(   code == [-KeepPointer], mem == [-(Cell _)], addr == [-(Pointer _)], env == {}
              -> res = mem, env = env )
-   ^ storeGrp(   mem == [-(Cell _)], addr == [-(Pointer _)], val == _, env == _
+  ^ storeGrp(   code == [-KeepPointer], mem == [-(Cell _)], addr == [-(Pointer _)], val == _, env == {}
               -> mem = val, env = env )
 
-// non-memory operations
-   ^ branchGrp(code == _, env == _, op1 == _, op2 == _ -> env = env )
-   ^ jumpRegGrp(code == _, env == _, target == _ -> env = env , return = {})
-   ^ jumpGrp(code == _, env == _ -> return = {})
-   ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
-   ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
-   ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
-   ^ mulDivRemGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
-   ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
-   ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})
-   ^ floatGrp(code == _, env == _ -> env = env)
-   ^ privGrp(code == _, env == _ -> env = env)
-
+    // non-memory operations are allowed, but must clear any dest registers
+  ^ branchGrp(code == [-KeepPointer], env == {}, op1 == _, op2 == _ -> env = env )
+  ^ jumpRegGrp(code == [-KeepPointer], env == {}, target == _ -> env = env , return = {})
+  ^ jumpGrp(code == [-KeepPointer], env == {} -> return = {})
+  ^ loadUpperGrp(code == [-KeepPointer], env == {} -> env = env, dest = {})
+  ^ immArithGrp(code == [-KeepPointer], env == {}, op1 == _ -> env = env, res = {})
+  ^ arithGrp(code == [-KeepPointer], env == {}, op1 == _, op2 == _ -> env = env, res = {})
+  ^ csrGrp(code == [-KeepPointer], env == {}, op1 == _, csr == _ -> env = env, csr = {}, res = {})
+  ^ csriGrp(code == [-KeepPointer], env == {}, csr == _ -> env = env, csr = {}, res = {})
+  ^ floatGrp(code == [-KeepPointer], env == {} -> env = env)
+  ^ privGrp(code == [-KeepPointer], env == {} -> env = env)
 
 require:
-    init ISA.RISCV.Reg.Env                   {}
-    init ISA.RISCV.Reg.Default               {}
-    init ISA.RISCV.Reg.RZero                 {}
-    init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.Reg.Env                           {}
+    init ISA.RISCV.Reg.Default                       {}
+    init ISA.RISCV.CSR.Default                       {}
 
-    init Tools.Link.MemoryMap.Default        {}
-    init Tools.Link.MemoryMap.UserHeap       {RawHeap}
-    init Tools.Link.MemoryMap.UserStack      {}
+    // TODO: LLVM doesn't do this yet, nor do the tagging tools handle it.
+    // And it could probably use a better name
+    init llvm.PtrArith_ResPointer                    {KeepPointer}
 
-    init elf.Section.SHF_ALLOC         {}
-    init elf.Section.SHF_EXECINSTR     {}
-    init elf.Section.SHF_WRITE         {}
+    init SOC.MMIO.UART_0                             {}
+    init SOC.MEMORY.FLASH_0                          {}
+    init SOC.MEMORY.RAM_0                            {}
 
-    init SOC.MMIO.UART_0                       {}
-    init SOC.MEMORY.FLASH_0                  {}
-    init SOC.MEMORY.RAM_0                    {}
+    init SOC.MMIO.TEST                               {}
+    init SOC.MMIO.MROM                               {}
+    init SOC.MMIO.CLINT                              {}
+    init SOC.MMIO.ITIM                               {}
+    init SOC.MMIO.PLIC                               {}
+    init SOC.CBUS.PLIC                               {}
+    init SOC.MMIO.GEM0                               {}
+    init SOC.MMIO.I2C_0                              {}
+    init SOC.MMIO.GPIO_0                             {}
+    init SOC.MMIO.GPIO_1                             {}
+    init SOC.MMIO.Ethernet_0                         {}
+    init SOC.PBUS.MAILBOX                            {}
 
-    init SOC.MMIO.TEST                         {}
-    init SOC.MMIO.CLINT                        {}
-    init SOC.MMIO.ITIM                         {}
-    init SOC.MMIO.PLIC                         {}
-    init SOC.CBUS.PLIC                         {}
-    init SOC.MMIO.GEM0                         {}
-    init SOC.MMIO.I2C_0                        {}
-    init SOC.MMIO.GPIO_0                       {}
-    init SOC.MMIO.GPIO_1                       {}
-    init SOC.MMIO.Ethernet_0                   {}
-    init SOC.PBUS.MAILBOX                    {}
+    init SOC.Memory.BRAM_CTRL_0                      {}
+    init SOC.Memory.DMA_0                            {}
+    init SOC.Memory.QSPI_1                           {}
 
-    init SOC.Memory.BRAM_CTRL_0              {}
-    init SOC.Memory.DMA_0                    {}
-    init SOC.Memory.QSPI_1                   {}
-    
-    init dover.Kernel.Code.ApplyTag.ucHeap              {RawHeap}
-    init dover.Kernel.Code.ApplyTag.dover_ptr_zero      {ModColor}
+    init entities.ApplyTag.ucHeap                    {RawHeap}
+    init entities.ApplyTag.dover_ptr_zero            {ModColor}
 
-    init dover.Kernel.Code.ApplyTag.pvPortMalloc        {}
-    init dover.Kernel.Code.ApplyTag.dover_tag           {ApplyColor}
-    init dover.Kernel.Code.ApplyTag.dover_untag         {RemoveColor}
-    init dover.Kernel.Code.ApplyTag.dover_remove_tag    {RemoveColor}
-    init dover.Kernel.Code.ApplyTag.dover_ptr_tag       {NewColor}
-    init dover.Kernel.Code.ApplyTag.dover_ptr_untag     {DelColor}
-    init dover.Tools.RTL._vfprintf_r                    {SpecialCaseVFPRINTF}
-    
+    init entities.ApplyTag.pvPortMalloc              {}
+    init entities.ApplyTag.dover_tag                 {ApplyColor}
+    init entities.ApplyTag.dover_untag               {RemoveColor}
+    init entities.ApplyTag.dover_remove_tag          {RemoveColor}
+    init entities.ApplyTag.dover_ptr_tag             {NewColor}
+    init entities.ApplyTag.dover_ptr_untag           {DelColor}
+
+    init elf.Section.SHF_ALLOC               {}
+    init elf.Section.SHF_EXECINSTR           {}
+    init elf.Section.SHF_WRITE               {}

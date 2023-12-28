@@ -46,59 +46,56 @@ metadata:
   Return-Instr,
   Branch-Instr,
 
-	//State for the 3 cfi classes
+  //State for the 3 cfi classes
   Jumping-Call,
   Jumping-Return,
   Jumping-Branch,
 
   //get out of jail free
   NoCFI,
-  Jumping-NoCFI,
-  None
+  Jumping-NoCFI
 
 policy:
-    threeClassPol = riscvPol
-         // Case for not checking cfi (asm code)
-    ^ allGrp    (code == [+NoCFI], env == _ -> env = {Jumping-NoCFI})
+    threeClassPol =
+      // Case for not checking cfi (asm code)
+      allGrp    (code == {NoCFI}, env == {} -> env = {Jumping-NoCFI})
+    ^ allGrp    (code == {NoCFI}, env == {Jumping-Return} -> env = {Jumping-NoCFI})
+    ^ allGrp    (code == {NoCFI}, env == {Jumping-Call} -> env = {Jumping-NoCFI})
+    ^ allGrp    (code == {NoCFI}, env == {Jumping-Branch} -> env = {Jumping-NoCFI})
 
-         // cases for landing on a jump (bounce)
-    ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr], env == [Jumping-Branch] -> env = {Jumping-Branch})
-    ^ controlFlowGrp  (code == [Return-Tgt, Branch-Instr], env == [Jumping-Return] -> env = {Jumping-Branch})
-    ^ controlFlowGrp  (code == [Call-Tgt, Branch-Instr], env == [Jumping-Call] -> env = {Jumping-Branch})
+      // cases for landing on a jump (bounce)
+    ^ controlFlowGrp  (code == [Branch-Tgt, Branch-Instr, -Call-Instr, -Return-Instr, -NoCFI], env == {Jumping-Branch} -> env = {Jumping-Branch})
+    ^ controlFlowGrp  (code == [Return-Tgt, Branch-Instr, -Call-Instr, -Return-Instr, -NoCFI], env == {Jumping-Return} -> env = {Jumping-Branch})
+    ^ controlFlowGrp  (code == [Call-Tgt, Branch-Instr, -Call-Instr, -Return-Instr, -NoCFI], env == {Jumping-Call} -> env = {Jumping-Branch})
 
-    ^ controlFlowGrp  (code == [Branch-Tgt, Return-Instr], env == [Jumping-Branch] -> env = {Jumping-Return})
-    ^ controlFlowGrp  (code == [Return-Tgt, Return-Instr], env == [Jumping-Return] -> env = {Jumping-Return})
-    ^ controlFlowGrp  (code == [Call-Tgt, Return-Instr], env == [Jumping-Call] -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Branch-Tgt, Return-Instr, -NoCFI], env == {Jumping-Branch} -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Return-Tgt, Return-Instr, -NoCFI], env == {Jumping-Return} -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Call-Tgt, Return-Instr, -NoCFI], env == {Jumping-Call} -> env = {Jumping-Return})
 
-    ^ controlFlowGrp  (code == [Branch-Tgt, Call-Instr], env == [Jumping-Branch] -> env = {Jumping-Call})
-    ^ controlFlowGrp  (code == [Return-Tgt, Call-Instr], env == [Jumping-Return] -> env = {Jumping-Call})
-    ^ controlFlowGrp  (code == [Call-Tgt, Call-Instr], env == [Jumping-Call] -> env = {Jumping-Call})
+    ^ controlFlowGrp  (code == [Branch-Tgt, Call-Instr, -NoCFI], env == {Jumping-Branch} -> env = {Jumping-Call})
+    ^ controlFlowGrp  (code == [Return-Tgt, Call-Instr, -NoCFI], env == {Jumping-Return} -> env = {Jumping-Call})
+    ^ controlFlowGrp  (code == [Call-Tgt, Call-Instr, -NoCFI], env == {Jumping-Call} -> env = {Jumping-Call})
 
-         // cases for a jump to target
-    ^ controlFlowGrp  (code == [Branch-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Branch] -> env = {Jumping-Branch})
-    ^ controlFlowGrp  (code == [Return-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Return] -> env = {Jumping-Return})
-    ^ controlFlowGrp  (code == [Call-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt], env == [-Jumping-Call] -> env = {Jumping-Call})
+      // cases for a jump to target
+    ^ controlFlowGrp  (code == [Branch-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt, -NoCFI], env == {} -> env = {Jumping-Branch})
+    ^ controlFlowGrp  (code == [Return-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt, -NoCFI], env == {} -> env = {Jumping-Return})
+    ^ controlFlowGrp  (code == [Call-Instr, -Branch-Tgt, -Call-Tgt, -Return-Tgt, -NoCFI], env == {} -> env = {Jumping-Call})
 
-         // Case for landing on a target -- has to be allGrp
-    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-Call] -> env = env[-Jumping-Call])
-    ^ allGrp    (code == [Call-Tgt], env == [+Jumping-NoCFI] -> env = env[-Jumping-NoCFI])
-    ^ allGrp    (code == [Return-Tgt], env == [+Jumping-Return] -> env = env[-Jumping-Return])
-    ^ allGrp    (code == [Branch-Tgt], env == [+Jumping-Branch] -> env = env[-Jumping-Branch])
+      // Case for landing on a target -- has to be allGrp
+    ^ allGrp    (code == [Call-Tgt, -NoCFI], env == {Jumping-Call} -> env = env[-Jumping-Call])
+    ^ allGrp    (code == [Call-Tgt, -NoCFI], env == {Jumping-NoCFI} -> env = env[-Jumping-NoCFI])
+    ^ allGrp    (code == [Return-Tgt, -NoCFI], env == {Jumping-Return} -> env = env[-Jumping-Return])
+    ^ allGrp    (code == [Branch-Tgt, -NoCFI], env == {Jumping-Branch} -> env = env[-Jumping-Branch])
 
-         // Case for normal execution
-    ^ allGrp    (env == [-Jumping-Branch, -Jumping-Return, -Jumping-Call] -> env = env)
-    ^ allGrp (-> fail "Illegal control flow detected")
-
-    //main = threeClassPol
+      // Case for normal execution
+    ^ allGrp    (code == _, env == [-Jumping-Branch, -Jumping-Return, -Jumping-Call] -> env = env)
+    ^ allGrp    (code == _, env == _ -> fail "Illegal control flow detected")
 
 require:
     init ISA.RISCV.Reg.Env                   {}
     init ISA.RISCV.Reg.Default               {}
-    init ISA.RISCV.Reg.RZero                 {}
     init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
 
-    /* TODO - this needs to be adjusted for my new tags somehow */
     init llvm.CFI_Call-Tgt                   {Call-Tgt}
     init llvm.CFI_Branch-Tgt                 {Branch-Tgt}
     init llvm.CFI_Return-Tgt                 {Return-Tgt}
@@ -107,24 +104,19 @@ require:
     init llvm.CFI_Return-Instr               {Return-Instr}
     init llvm.NoCFI                          {NoCFI}
 
-    init Tools.Link.MemoryMap.Default        {}
-    init Tools.Link.MemoryMap.UserHeap       {}
-    init Tools.Link.MemoryMap.UserStack      {}
-
-    init SOC.MMIO.UART_0                       {}
+    init SOC.MMIO.UART_0                     {}
     init SOC.MEMORY.FLASH_0                  {}
     init SOC.MEMORY.RAM_0                    {}
 
-    init SOC.MMIO.TEST                         {}
-    init SOC.MMIO.CLINT                        {}
-    init SOC.MMIO.ITIM                         {}
-    init SOC.MMIO.PLIC                         {}
-    init SOC.CBUS.PLIC                         {}
+    init SOC.PBUS.MAILBOX                    {}
+    init SOC.MMIO.MROM                       {}
+    init SOC.MMIO.TEST                       {}
+    init SOC.MMIO.CLINT                      {}
+    init SOC.MMIO.ITIM                       {}
+    init SOC.MMIO.PLIC                       {}
+    init SOC.CBUS.PLIC                       {}
 
-    init Tools.Elf.Section.SHF_ALLOC         {}
-    init Tools.Elf.Section.SHF_EXECINSTR     {}
-    init Tools.Elf.Section.SHF_WRITE         {}
+    init elf.Section.SHF_ALLOC               {}
+    init elf.Section.SHF_EXECINSTR           {}
+    init elf.Section.SHF_WRITE               {}
 
-	init elf.Section.SHF_ALLOC               {}
-	init elf.Section.SHF_EXECINSTR           {}
-	init elf.Section.SHF_WRITE               {}

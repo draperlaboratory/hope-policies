@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -27,11 +27,11 @@
 module osv.cpi:
 
 /* Function pointers written to memory are tagged.  A write of any other value
- * to that location destroys the tag.  Loads of memory preserve the function pointer 
+ * to that location destroys the tag.  Loads of memory preserve the function pointer
  * tag.  Indirect calls must use a register with the function pointer tag, meaning
  * that it came from an intended fptr write and hasn't been overwritten since.
- * This is effectively CPI in HW, and should be a precise, performant version of 
- * control flow protection.  
+ * This is effectively CPI in HW, and should be a precise, performant version of
+ * control flow protection.
  */
 
 import:
@@ -46,12 +46,12 @@ metadata:
 policy:
     cpiPol = riscvPol
        //When to set FPtr -- always allow jumps through registers set by auipc. this is a must for compatability with
-       //handwrite asm.  
+       //handwrite asm.
      ^ pcGrp ( -> dest = {FPtrMem})
-     ^ addiGrp (code == [+FPtrCreate] -> dest = {FPtrMem}) 
+     ^ addiGrp (code == [+FPtrCreate] -> dest = {FPtrMem})
      ^ storeGrp (code == [+FPtrStore], val == [+FPtrMem], mem == _ -> mem = mem[+FPtrMem])
      ^ loadGrp (mem == [+FPtrMem]  -> res = {FPtrMem})
-     
+
        //When to clear FPtr
      ^ storeGrp (code == [-FPtrCreate], mem == _ -> mem = mem[-FPtrMem])
      ^ loadGrp (mem == [-FPtrMem] -> res = {})
@@ -77,7 +77,7 @@ require:
     init llvm.CPI.FPtrCreate                 {FPtrCreate}
     init llvm.CPI.FPtrStore                  {FPtrStore}
     init llvm.CFI_Return-Instr               {Return-Instr}
-    
+
     init Tools.Link.MemoryMap.Default        {}
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
@@ -91,7 +91,7 @@ require:
     init SOC.MMIO.ITIM                         {}
     init SOC.MMIO.PLIC                         {}
     init SOC.CBUS.PLIC                         {}
-   
+
     init Tools.Elf.Section.SHF_ALLOC         {}
     init Tools.Elf.Section.SHF_EXECINSTR     {}
     init Tools.Elf.Section.SHF_WRITE         {}
