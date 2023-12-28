@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2019 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -47,7 +47,7 @@ policy:
         storeMemGrp(code == [+CSSave], env == {}, addr == _, val == _, mem == _ -> env = env, mem = mem[+(Saved val)])
       ^ storeMemGrp(code == [+CSSave], env == _, addr == _, val == _, mem == _ -> env = {}, mem = mem[+(Saved val),+(SavedPC env)])
       ^ loadMemGrp (code == [+CSLoad], env == _, addr == _, mem == [+(Saved regTags),+(SavedPC envTag)] -> env = envTag, res = regTags)
-      ^ loadMemGrp (code == [+CSLoad], env == _, addr == _, mem == [+(Saved regTags)] -> env = env, res = regTags)
+      ^ loadMemGrp (code == [+CSLoad], env == _, addr == _, mem == [+(Saved regTags)] -> env = {}, res = regTags)
 
 group:
     grp loadMemGrp(RS1:addr, MEM:mem -> RD:res)
@@ -58,31 +58,21 @@ group:
         sd
 
 require:
-    init ISA.RISCV.Reg.Env                   {}
-    init ISA.RISCV.Reg.Default               {}
-    init ISA.RISCV.Reg.RZero                 {}
-    init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.Reg.Env                {}
+    init ISA.RISCV.Reg.Default            {}
+    init ISA.RISCV.CSR.Default            {}
 
-    init Tools.Link.MemoryMap.Default        {}
-    init Tools.Link.MemoryMap.UserHeap       {}
-    init Tools.Link.MemoryMap.UserStack      {}
+    init SOC.MMIO.UART_0                  {}
+    init SOC.MEMORY.FLASH_0               {}
+    init SOC.MEMORY.RAM_0                 {}
 
-    init SOC.MMIO.UART_0                       {}
-    init SOC.MEMORY.FLASH_0                  {}
-    init SOC.MEMORY.RAM_0                    {}
+    init SOC.PBUS.MAILBOX                 {}
+    init SOC.MMIO.TEST                    {}
+    init SOC.MMIO.CLINT                   {}
+    init SOC.MMIO.ITIM                    {}
+    init SOC.MMIO.PLIC                    {}
+    init SOC.CBUS.PLIC                    {}
+    init SOC.MMIO.GEM0                    {}
 
-    init SOC.MMIO.TEST                         {}
-    init SOC.MMIO.CLINT                        {}
-    init SOC.MMIO.ITIM                         {}
-    init SOC.MMIO.PLIC                         {}
-    init SOC.CBUS.PLIC                         {}
-    init SOC.MMIO.GEM0                         {}
-
-    init elf.Section.SHF_ALLOC         {}
-    init elf.Section.SHF_EXECINSTR     {}
-    init elf.Section.SHF_WRITE         {}
-
-    init contextswitch.save {CSSave}
-    init contextswitch.load {CSLoad}
-
+    init entities.contextswitch.save      {CSSave}
+    init entities.contextswitch.load      {CSLoad}

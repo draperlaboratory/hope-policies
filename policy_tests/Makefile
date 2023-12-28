@@ -15,7 +15,8 @@ JOBS   ?= 1
 all: build-dirs run-tests
 
 # Arguments specific to running on an FPGA
-BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
+BITSTREAM32 ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p1.bit
+BITSTREAM64 ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_pipe_p2.bit
 STOCK_BITSTREAM ?= $(ISP_PREFIX)/vcu118/bitstreams/soc_chisel_p1.bit
 
 # Standard build configurations can be listed here:
@@ -102,7 +103,7 @@ bare-ssith-p1_POLICIES = heap,stack,rwx
 bare-ssith-p1_XDIST = -n $(JOBS) # run in parallel
 bare-ssith-p1_TIMEOUT = 360
 bare-ssith-p1_SOC_CFG = ssith-p1
-bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+bare-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM32)
 bare-ssith-p1: CONFIG=bare-ssith-p1
 bare-ssith-p1: all
 
@@ -117,7 +118,7 @@ frtos-ssith-p1_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,te
 frtos-ssith-p1_XDIST = -n $(JOBS) # run in parallel
 frtos-ssith-p1_TIMEOUT = 360
 frtos-ssith-p1_SOC_CFG = ssith-p1
-frtos-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-ssith-p1_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM32)
 frtos-ssith-p1: CONFIG=frtos-ssith-p1
 frtos-ssith-p1: all
 
@@ -132,7 +133,7 @@ bare-ssith-p2_POLICIES = heap,rwx
 bare-ssith-p2_XDIST = -n $(JOBS) # run in parallel
 bare-ssith-p2_TIMEOUT = 360
 bare-ssith-p2_SOC_CFG = ssith-p2
-bare-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+bare-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM64)
 bare-ssith-p2: CONFIG=bare-ssith-p2
 bare-ssith-p2: all
 
@@ -147,7 +148,7 @@ frtos-ssith-p2_POLICIES = cfi,heap,rwx,stack,taint,threeClass,none,testSimple,te
 frtos-ssith-p2_XDIST = -n $(JOBS) # run in parallel
 frtos-ssith-p2_TIMEOUT = 360
 frtos-ssith-p2_SOC_CFG = ssith-p2
-frtos-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM)
+frtos-ssith-p2_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM64)
 frtos-ssith-p2: CONFIG=frtos-ssith-p2
 frtos-ssith-p2: all
 

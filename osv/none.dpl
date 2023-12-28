@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -34,38 +34,42 @@ import:
  */
 
 policy:
-    nonePol = riscvPol ^ __NO_CHECKS
+    nonePol = __NO_CHECKS
 
 require:
-   init ISA.RISCV.Reg.Env                   {}
-   init ISA.RISCV.Reg.Default               {}
-   init ISA.RISCV.Reg.RZero                 {}
-   init ISA.RISCV.CSR.Default               {}
-   init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.Reg.Env                   {}
+    init ISA.RISCV.Reg.Default               {}
+    init ISA.RISCV.Reg.RZero                 {}
+    init ISA.RISCV.CSR.Default               {}
+    init ISA.RISCV.CSR.MEPC                  {}
+    init ISA.RISCV.CSR.MTVec                 {}
+    init ISA.RISCV.CSR.MTVal                 {}
 
-   init Tools.Link.MemoryMap.Default        {}
-   init Tools.Link.MemoryMap.UserHeap       {}
-   init Tools.Link.MemoryMap.UserStack      {}
+    init Tools.Link.MemoryMap.Default        {}
+    init Tools.Link.MemoryMap.UserHeap       {}
+    init Tools.Link.MemoryMap.UserStack      {}
 
-   init SOC.MMIO.UART_0                       {}
-   init SOC.MEMORY.FLASH_0                  {}
-   init SOC.MEMORY.RAM_0                    {}
+    init SOC.MMIO.UART_0                     {}
+    init SOC.MEMORY.FLASH_0                  {}
+    init SOC.MEMORY.RAM_0                    {}
 
-   init SOC.MMIO.TEST                         {}
-   init SOC.MMIO.CLINT                        {}
-   init SOC.MMIO.ITIM                         {}
-   init SOC.MMIO.PLIC                         {}
-   init SOC.CBUS.PLIC                         {}
-   init SOC.MMIO.GEM0                         {}
-   init SOC.MMIO.I2C_0                        {}
-   init SOC.MMIO.GPIO_0                       {}
-   init SOC.MMIO.GPIO_1                       {}
-   init SOC.MMIO.Ethernet_0                   {}
+    init SOC.PBUS.MAILBOX                    {}
+    init SOC.MMIO.MROM                       {}
+    init SOC.MMIO.TEST                       {}
+    init SOC.MMIO.CLINT                      {}
+    init SOC.MMIO.ITIM                       {}
+    init SOC.MMIO.PLIC                       {}
+    init SOC.CBUS.PLIC                       {}
+    init SOC.MMIO.GEM0                       {}
+    init SOC.MMIO.I2C_0                      {}
+    init SOC.MMIO.GPIO_0                     {}
+    init SOC.MMIO.GPIO_1                     {}
+    init SOC.MMIO.Ethernet_0                 {}
 
-   init SOC.Memory.BRAM_CTRL_0              {}
-   init SOC.Memory.DMA_0                    {}
-   init SOC.Memory.QSPI_1                   {}
+    init SOC.Memory.BRAM_CTRL_0              {}
+    init SOC.Memory.DMA_0                    {}
+    init SOC.Memory.QSPI_1                   {}
 
-   init elf.Section.SHF_ALLOC               {}
-   init elf.Section.SHF_EXECINSTR           {}
-   init elf.Section.SHF_WRITE               {}
+    init elf.Section.SHF_ALLOC               {}
+    init elf.Section.SHF_EXECINSTR           {}
+    init elf.Section.SHF_WRITE               {}

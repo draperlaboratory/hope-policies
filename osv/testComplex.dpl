@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -27,7 +27,7 @@
 module osv.testComplex:
 
 /*
- * The Complex Test policy provides very little security in a complicated 
+ * The Complex Test policy provides very little security in a complicated
  * way.  It is intended to stress test policy compilation, system tag
  * initialization, and policy execution.
  *
@@ -75,7 +75,7 @@ policy:           // Allow most ops involving regular registers, memory & csrs
    ^ csriGrp(code == [AllowCode], env == [AllowEnv], csr == [AllowCSR] -> csr = {AllowCSR}, res = {AllowReg}, env = {AllowEnv} )
      // Change privledge mode
    ^ privGrp(code == [AllowCode], env == [AllowEnv] -> env = {AllowEnv})
-   
+
 
 require:
     init ISA.RISCV.Reg.Env                   {AllowEnv}

@@ -1,8 +1,8 @@
 /*
  * Copyright © 2017-2018 The Charles Stark Draper Laboratory, Inc. and/or Dover Microsystems, Inc.
- * All rights reserved. 
+ * All rights reserved.
  *
- * Use and disclosure subject to the following license. 
+ * Use and disclosure subject to the following license.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -43,48 +43,48 @@ metadata:
 
 policy:
 
-    stackPol = riscvPol
-                // Prologue and Epilog rules
-             ^ storeGrp (code == [+Prologue], env == _, addr == _, val == _, mem == _ -> mem = {Frame}, env = env)
-             ^ storeGrp (code == [+Epilogue], env == _, addr == _, val == _, mem == _ -> mem = mem[-Frame], env = env)
+    stackPol =
+      // Prologue and Epilog rules
+      storeGrp (code == {Prologue}, env == {}, addr == {}, val == {}, mem == _ -> mem = {Frame}, env = env)
+    ^ storeGrp (code == {Epilogue}, env == {}, addr == {}, val == {}, mem == _ -> mem = {}, env = env)
 
-                // Authority for clearing swaths of stack (e.g. for longjmp)
-             ^ storeGrp (code == [ClearAuthority], env == _, addr == _, val == _, mem == _ -> mem = mem[-Frame], env = env)
-             
-                // Explicit violation for regular code to modify stack frame
-             ^ storeGrp (code == [-Prologue, -Epilogue], env == _, addr == _, val == _, mem == [+Frame] -> fail "Illegal stack access")
-                // Allow regular stores to non-frame memory
-             ^ storeGrp (code == _, env == _, addr == _, val == _, mem == [-Frame] -> mem = mem, env = env)
-                // Strip Frame Tags on load to keep out of registers
-             ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
-                // Everything else allowed
-             ^ notMemGrp(code == _, env == _ -> env = env)
+      // Authority for clearing swaths of stack (e.g. for longjmp)
+    ^ storeGrp (code == {ClearAuthority}, env == {}, addr == {}, val == {}, mem == _ -> mem = {}, env = env)
 
-    
+      // Explicit violation for regular code to modify stack frame
+    ^ storeGrp (code == {}, env == {}, addr == {}, val == {}, mem == {Frame} -> fail "Illegal stack access")
+      // Allow regular stores to non-frame memory
+    ^ storeGrp (code == {}, env == {}, addr == {}, val == {}, mem == {} -> mem = mem, env = env)
+      // Strip Frame Tags on load to keep out of registers
+    ^ loadGrp(code == _, env == {}, addr == {}, mem == _ -> env = env, res = {})
+      // Other non-memory instructions allowed
+    ^ loadGrp(code == _, env == _, addr == _, mem == _ -> fail "Illegal load")
+    ^ storeGrp(code == _, env == _, addr == _, mem == _ -> fail "Illegal store")
+    ^ allGrp(code == _, env == {} -> env = env)
+
 require:
 
     init ISA.RISCV.Reg.Env                   {}
     init ISA.RISCV.Reg.Default               {}
-    init ISA.RISCV.Reg.RZero                 {}
     init ISA.RISCV.CSR.Default               {}
-    init ISA.RISCV.CSR.MTVec                 {}
 
-    init dover.Tools.RTL.longjmp             {ClearAuthority}
-    init llvm.Prologue            {Prologue}
-    init llvm.Epilogue            {Epilogue}
+    init entities.longjmp                    {ClearAuthority}
+    init llvm.Prologue                       {Prologue}
+    init llvm.Epilogue                       {Epilogue}
 
-    init SOC.MMIO.UART_0                       {}
+    init SOC.MMIO.UART_0                     {}
     init SOC.MEMORY.FLASH_0                  {}
     init SOC.MEMORY.RAM_0                    {}
 
-    init SOC.MMIO.GEM0                         {}
-    init SOC.MMIO.TEST                         {}
-    init SOC.MMIO.CLINT                        {}
-    init SOC.MMIO.ITIM                         {}
-    init SOC.MMIO.PLIC                         {}
-    init SOC.CBUS.PLIC                         {}
-    init SOC.MMIO.GEM0                         {}
+    init SOC.MMIO.GEM0                       {}
+    init SOC.MMIO.TEST                       {}
+    init SOC.MMIO.CLINT                      {}
+    init SOC.MMIO.ITIM                       {}
+    init SOC.MMIO.PLIC                       {}
+    init SOC.CBUS.PLIC                       {}
+    init SOC.MMIO.GEM0                       {}
     init SOC.PBUS.MAILBOX                    {}
+    init SOC.MMIO.MROM                       {}
 
     init elf.Section.SHF_ALLOC               {}
     init elf.Section.SHF_EXECINSTR           {}

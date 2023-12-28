@@ -1,41 +1,41 @@
 -
-  name: contextswitch.save
+  name: entities.contextswitch.save
   elf_name: freertos_risc_v_trap_handler
   tag_all: true
   kind: symbol
   optional: true
 -
-  name: contextswitch.load
+  name: entities.contextswitch.load
   elf_name: freertos_risc_v_trap_handler
   tag_all: true
   kind: symbol
   optional: true
 -
-  name: contextswitch.save
+  name: entities.contextswitch.save
   elf_name: trap_entry
   tag_all: true
   kind: symbol
   optional: true
 -
-  name: contextswitch.load
+  name: entities.contextswitch.load
   elf_name: restore_user_context
   tag_all: true
   kind: symbol
   optional: true
 -
-  name: contextswitch.save
+  name: entities.contextswitch.save
   elf_name: trap_vector
   tag_all: true
   kind: symbol
   optional: true
 -
-  name: contextswitch.load
+  name: entities.contextswitch.load
   elf_name: fastpath_restore
   tag_all: true
   kind: symbol
   optional: true
 -
-  name: contextswitch.load
+  name: entities.contextswitch.load
   elf_name: restore_regs
   tag_all: true
   kind: symbol
