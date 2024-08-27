@@ -81,6 +81,11 @@ require:
     init SOC.Memory.BRAM_CTRL_0              {Rd, Wr}
     init SOC.Memory.DMA_0                    {Rd, Wr}
     init SOC.Memory.QSPI_1                   {Rd}
+    init SOC.CBUS.DEBUG                        {Rd, Wr}
+    init SOC.CBUS.CPU_INTERNAL                 {Rd, Wr}
+    init SOC.PBUS.CONFIG_CSR                   {Rd, Wr}
+    init SOC.IO.CLINT                          {Rd, Wr}
+    init SOC.IO.UART_0                         {Rd, Wr}
 
     init elf.Section.SHF_ALLOC               {Rd}
     init elf.Section.SHF_EXECINSTR           {Ex}
