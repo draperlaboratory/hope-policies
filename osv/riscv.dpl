@@ -92,7 +92,6 @@ group:
         fadd.q
         fsub.q
         amoadd.w
-        amoadd.w.q
         amoxor.w
         amoor.w
         amoand.w
@@ -115,7 +114,10 @@ group:
         fdiv.d
         fmul.q
         fdiv.q
-
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
 
 
     grp loadGrp(RS1:addr, MEM:mem -> RD:res)
@@ -130,7 +132,8 @@ group:
         fld
         flq
         lr.w
-
+        lr.d
+        
     grp storeGrp(RS1:addr, RS2:val, MEM:mem -> MEM:mem)
         sb
         sh
@@ -140,6 +143,7 @@ group:
         fsd
         fsq
         sc.w
+        sc.d
 
     grp csrGrp(RS1:op1, CSR:csr -> CSR:csr, RD:res)
         csrrw
@@ -270,7 +274,6 @@ group:
         lr.w
         sc.w
         amoadd.w
-        amoadd.w.q
         amoxor.w
         amoor.w
         amoand.w
@@ -279,6 +282,17 @@ group:
         amominu.w
         amomaxu.w
         amoswap.w
+        lr.d
+        sc.d
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
+        amomin.d
+        amomax.d
+        amominu.d
+        amomaxu.d
+        amoswap.d
 
     grp allGrp( -> )
     // branchGrp(RS1:op1, RS2:op2 -> )
@@ -475,7 +489,6 @@ group:
         lr.w
         sc.w
         amoadd.w
-        amoadd.w.q
         amoxor.w
         amoor.w
         amoand.w
@@ -484,4 +497,15 @@ group:
         amominu.w
         amomaxu.w
         amoswap.w
+        lr.d
+        sc.d
+        amoadd.d
+        amoxor.d
+        amoor.d
+        amoand.d
+        amomin.d
+        amomax.d
+        amominu.d
+        amomaxu.d
+        amoswap.d
 
