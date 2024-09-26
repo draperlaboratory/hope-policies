@@ -167,6 +167,21 @@ bare-iveia_PYTEST_ARGS = --extra=+ap-address="0x78040000",+kernel-address="0x400
 bare-iveia: CONFIG=bare-iveia
 bare-iveia: all
 
+# config for SSITH P2 bare-metal on VCU118 board
+bare-omaha_SIM = vcu118
+bare-omaha_TESTS = bare64
+bare-omaha_RUNTIME = bare
+bare-omaha_ARCH = rv64
+bare-omaha_MODULE = osv
+bare-omaha_GPOLICIES = 
+bare-omaha_POLICIES = rwx
+bare-omaha_XDIST = -n $(JOBS) # run in parallel
+bare-omaha_TIMEOUT = 360
+bare-omaha_SOC_CFG = omaha
+bare-omaha_PYTEST_ARGS = --extra=+bitstream=$(BITSTREAM64)
+bare-omaha: CONFIG=bare-omaha
+bare-omaha: all
+
 # config for bare-metal on VCU118 board without PIPE
 bare-stock_SIM = vcu118
 bare-stock_TESTS = bare
