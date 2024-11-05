@@ -169,7 +169,7 @@ bare-iveia: all
 
 # config for SSITH P2 bare-metal on VCU118 board
 bare-omaha_SIM = vcu118
-bare-omaha_TESTS = bare64
+bare-omaha_TESTS = omaha64
 bare-omaha_RUNTIME = bare
 bare-omaha_ARCH = rv64
 bare-omaha_MODULE = osv

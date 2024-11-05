@@ -9,6 +9,7 @@ class AllTests:
         "printf_works_1",
         "stanford_int_treesort_fixed",
         "ping_pong_works_1",
+        "csr_test",
         "link_list_works_1",
         "hello_works_1",
         "hello_works_2",
@@ -101,6 +102,11 @@ class bare(AllTests):
 class bare64(bare):
     tests = bare.tests + AllTests.tests64
 
+class omaha64(AllTests):
+    tests = bare.tests + AllTests.tests64
+    tests.remove("float_works")
+    tests.remove("null_ptr_deref_fails_1")
+
 
 class mibench(AllTests):
     tests = [
@@ -133,6 +139,7 @@ class performance(AllTests):
 test_groups = {'all' : AllTests,
                'frtos' : frtos,
                'frtos64' : frtos64,
+               'omaha64' : omaha64,
                'bare' : bare,
                'bare64' : bare64,
                'webapp' : webapp,
