@@ -44,19 +44,19 @@ int test_main(void) {
   Blowfish_Init (&ctx, (unsigned char*)"TESTKEY", 7);
 
   Blowfish_Encrypt(&ctx, &L, &R);
-  t_printf("%08lX %08lX\n", L, R);
+  printf("%08lX %08lX\n", L, R);
   if (L == expect_L && R == expect_R)
-	  t_printf("Test encryption OK.\n");
+	  printf("Test encryption OK.\n");
   else
 	  test_error("Test encryption failed.\n");
 
   Blowfish_Decrypt(&ctx, &L, &R);
   if (L == 1 && R == 2)
-	  t_printf("Test decryption OK.\n");
+	  printf("Test decryption OK.\n");
   else
 	  test_error("Test decryption failed.\n");
     
-  t_printf("Encrypt message\n");
+  printf("Encrypt message\n");
   Blowfish_Init (&ctx, KEY, sizeof(KEY));
 
   unsigned long * plaintextPtr = (unsigned long *)test_data;
@@ -65,7 +65,7 @@ int test_main(void) {
       plaintextPtr += 2;
   }
 
-  t_printf("Decrypt message\n");
+  printf("Decrypt message\n");
   Blowfish_Init (&ctx, KEY, sizeof(KEY));
     
   plaintextPtr = (unsigned long *)test_data;

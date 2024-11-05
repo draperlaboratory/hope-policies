@@ -44,7 +44,7 @@ void procA_main(void *arg) {
   int adder2='c';
 
   for ( j = 0; j < 4; j++ ) { 
-    t_printf("Proc A in loop\n");
+    printf("Proc A in loop\n");
 
     for ( i = 0; i < 2; i++ )
       adder = adder + j;
@@ -64,7 +64,7 @@ void procB_main(void *a) {
   int adder2='d';
 
   for ( j = 0; j < 4; j++ ) {
-    t_printf("Proc B in loop\n");
+    printf("Proc B in loop\n");
     
     for ( i = 0; i < 2; i++ )
       b += j + i + adder + adder2;
@@ -86,17 +86,17 @@ int test_main(void)
     
     test_positive(); // identify test as positive (will complete)
 
-    t_printf("hello doing context test\n");
+    printf("hello doing context test\n");
     
     xTaskCreate(procB_main, "procB", 1000, NULL, 1, NULL);
 
-    t_printf("before scheduler invokation\n");
+    printf("before scheduler invokation\n");
     
     procA_main(0x0);
 
-    t_printf("after scheduler invokation\n");
+    printf("after scheduler invokation\n");
 
-    t_printf("Hello Test\n");
+    printf("Hello Test\n");
     
     test_pass();
     

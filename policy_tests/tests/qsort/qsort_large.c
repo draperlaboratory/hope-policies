@@ -36,17 +36,17 @@ int test_main(void)
   for(count = 0; count < sizeof(array)/sizeof(struct my3DVertexStruct); ++count)
 	 array[count].distance = sqrt(pow(array[count].x, 2) + pow(array[count].y, 2) + pow(array[count].z, 2));
   
-  t_printf("\nSorting %d vectors based on distance from the origin.\n\n",count);
+  printf("\nSorting %d vectors based on distance from the origin.\n\n",count);
   qsort(array,count,sizeof(struct my3DVertexStruct),compare);
   
   for(i = 0; i < 10; ++i)
   {
-    t_printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
+    printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
   }
-  t_printf("...\n");
+  printf("...\n");
   for(i = count - 10; i < count; ++i)
   {
-    t_printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
+    printf("%d %d %d\n", array[i].x, array[i].y, array[i].z);
   }
 
   test_print_total_time();

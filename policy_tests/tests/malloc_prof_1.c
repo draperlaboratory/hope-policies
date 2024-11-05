@@ -49,7 +49,7 @@ int test_main(void)
     for(int count = MALLOC_COUNT; count > 1; count = count >> 1){
       for(int j = 0; j < count; j++){
 
-	//t_printf("test_malloc_prof_1: malloc # %d\n", count); 
+	//printf("test_malloc_prof_1: malloc # %d\n", count); 
 
 	ptr = malloc(size * sizeof(uintptr_t));
 

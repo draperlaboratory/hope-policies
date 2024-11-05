@@ -56,7 +56,7 @@ int test_main(void)
   test_begin();
   test_start_timer();
   
-  t_printf("Bit counter algorithm benchmark\n");
+  printf("Bit counter algorithm benchmark\n");
   
   for (i = 0; i < FUNCS; i++) {
     start = isp_get_time_usec();
@@ -81,10 +81,10 @@ int test_main(void)
     ct_sec = ct / US_PER_SEC;
     ct_frac = ct % US_PER_SEC;
 
-    t_printf("%-38s> Time: %d.%06d s.; Bits: %ld\n", text[i], ct_sec, ct_frac, n);
+    printf("%-38s> Time: %d.%06d s.; Bits: %ld\n", text[i], ct_sec, ct_frac, n);
   }
-  t_printf("\nBest  > %s\n", text[cminix]);
-  t_printf("Worst > %s\n", text[cmaxix]);
+  printf("\nBest  > %s\n", text[cminix]);
+  printf("Worst > %s\n", text[cmaxix]);
 
   test_print_total_time();
   return test_done();

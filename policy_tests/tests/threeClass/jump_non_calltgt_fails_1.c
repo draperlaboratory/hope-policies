@@ -56,7 +56,7 @@ int test_main(void)
 
     // this should fail
     magic(1234);
-    t_printf("CFI jump_non_calltgt_fails_1 Test - should not execute this\n");
+    printf("CFI jump_non_calltgt_fails_1 Test - should not execute this\n");
 
     return test_done();
   }

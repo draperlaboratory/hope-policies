@@ -51,7 +51,7 @@ int test_main(void)
     
     test_begin();
     
-    t_printf("print test %d\n", local);
+    printf("print test %d\n", local);
     
     test_fail();
     return test_done();

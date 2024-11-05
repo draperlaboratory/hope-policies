@@ -54,7 +54,7 @@ void print_path (NODE *rgnNodes, int chNode)
     {
       print_path(rgnNodes, rgnNodes[chNode].iPrev);
     }
-  //t_printf (" %d", chNode);
+  //printf (" %d", chNode);
   fflush(stdout);
 }
 
@@ -121,7 +121,7 @@ int dijkstra(int chStart, int chEnd)
     }
   if (chStart == chEnd) 
     {
-      //t_printf("Shortest path is 0 in cost. Just stay where you are.\n");
+      //printf("Shortest path is 0 in cost. Just stay where you are.\n");
     }
   else
     {
@@ -147,10 +147,10 @@ int dijkstra(int chStart, int chEnd)
 	    }
 	}
       
-      t_printf("Shortest path is %d in cost. ", rgnNodes[chEnd].iDist);
-      //t_printf("Path is: ");
+      printf("Shortest path is %d in cost. ", rgnNodes[chEnd].iDist);
+      //printf("Path is: ");
       //t_print_path(rgnNodes, chEnd);
-      t_printf("\n");
+      printf("\n");
     }
     return 0;
 }

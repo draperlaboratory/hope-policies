@@ -54,13 +54,13 @@ int test_main(void)
 
     // this is the actual test
 
-    t_printf("test_printf_works1: print         int ptr @ %ld = %ld\n", read_ptr, *read_ptr );
+    printf("test_printf_works1: print         int ptr @ %ld = %ld\n", read_ptr, *read_ptr );
     read_ptr++;
-    t_printf("test_printf_works1: print         hex ptr @ %lx = %ld\n", read_ptr, *read_ptr );
+    printf("test_printf_works1: print         hex ptr @ %lx = %ld\n", read_ptr, *read_ptr );
     read_ptr++;
-    t_printf("test_printf_works1: print         oct ptr @ %lo = %ld\n", read_ptr, *read_ptr );
+    printf("test_printf_works1: print         oct ptr @ %lo = %ld\n", read_ptr, *read_ptr );
     read_ptr++;
-    t_printf("test_printf_works1: print     pointer ptr @ %p = %ld\n", read_ptr, *read_ptr );
+    printf("test_printf_works1: print     pointer ptr @ %p = %ld\n", read_ptr, *read_ptr );
     
     free(ptr);
 

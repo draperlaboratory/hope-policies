@@ -47,7 +47,7 @@ int test_main(void)
     foo_ptr = (int*) test_main;
 
     // should pass
-    t_printf("foo = %d\n", foo);
+    printf("foo = %d\n", foo);
 
     // should also pass
     foo = *foo_ptr;

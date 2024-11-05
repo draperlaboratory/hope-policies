@@ -39,7 +39,7 @@
 
 jmp_buf jmp_here;
 void recurse(int i) {
-  t_printf("recurse(%d)\n", i);
+  printf("recurse(%d)\n", i);
   if (i)
     recurse(i - 1);
   else
@@ -48,7 +48,7 @@ void recurse(int i) {
 
 void test_longjmp() {
   if (setjmp(jmp_here)) {
-    t_printf("landed!\n");
+    printf("landed!\n");
   } else {
     recurse(10);
   }

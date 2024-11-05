@@ -42,16 +42,17 @@ int test_main(void)
 
     test_negative(); // identify test as negative (will not complete)
     
-    foo_ptr = (int*) test_main;
 
     // should pass
-    t_printf("foo = %d\n", foo);
+    printf("foo = %d\n", 42);
+
+    foo_ptr = (int*) test_main;
     test_begin();
 
     // should fail
     *foo_ptr = foo;
 
-    t_printf("RWX code_write_fails_1 Test - should not execute this\n");
+    printf("RWX code_write_fails_1 Test - should not execute this\n");
     
     return test_done();
   }

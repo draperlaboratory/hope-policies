@@ -3,8 +3,8 @@
 #include "test.h"
 
 __attribute__((noinline)) void target(void){
-  t_printf("this is a target function\n");
-  t_printf("canst thou hack it?\n");
+  printf("this is a target function\n");
+  printf("canst thou hack it?\n");
   return;
 }
 

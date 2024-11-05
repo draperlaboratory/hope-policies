@@ -40,17 +40,17 @@ int test_main(void)
     test_positive();
     float a = 2.5f;
     float b = 3.2f;
-    t_printf("a should be 2.5");
-    t_printf("a is %f", a);
-    t_printf("b should be 3.2");
-    t_printf("b is %f", b);
-    t_printf("c = a + b should be 5.7");
+    printf("a should be 2.5");
+    printf("a is %f", a);
+    printf("b should be 3.2");
+    printf("b is %f", b);
+    printf("c = a + b should be 5.7");
     float c = a + b;
-    t_printf("c is %f", c);
+    printf("c is %f", c);
     if (a < b) {
       test_pass();
     } else {
-      t_printf("a was not less than b!");
+      printf("a was not less than b!");
       test_fail();
     }
     return test_done();

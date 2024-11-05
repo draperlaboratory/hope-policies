@@ -7,12 +7,12 @@
 
 __attribute__((noinline))
 void func1(void){
-  t_printf("function 1\n");
+  printf("function 1\n");
 }
 
 __attribute__((noinline))
 void func2(void){
-  t_printf("function 2\n");
+  printf("function 2\n");
 }
 
 int test_main(void){

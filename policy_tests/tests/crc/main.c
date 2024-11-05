@@ -32,13 +32,13 @@ int test_main(void)
 	/*
 	 * Print the check value for the selected CRC algorithm.
 	 */
-	t_printf("The check value for the %s standard is 0x%X\n", CRC_NAME, CHECK_VALUE);
+	printf("The check value for the %s standard is 0x%X\n", CRC_NAME, CHECK_VALUE);
 	
 	/*
 	 * Compute the CRC of the test message, slowly.
 	 */
 	result = crcSlow(test, strlen(test));
-	t_printf("The crcSlow() of \"123456789\" is 0x%X\n", result);
+	printf("The crcSlow() of \"123456789\" is 0x%X\n", result);
 	if (result != CHECK_VALUE)
 	{
 		test_error("Incorrect crcSlow result\n");
@@ -49,7 +49,7 @@ int test_main(void)
 	 */
 	crcInit();
 	result = crcFast(test, strlen(test));
-	t_printf("The crcFast() of \"123456789\" is 0x%X\n", result);
+	printf("The crcFast() of \"123456789\" is 0x%X\n", result);
 	if (result != CHECK_VALUE)
 	{
 		test_error("Incorrect crcFast result\n");

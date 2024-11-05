@@ -317,9 +317,9 @@ void dhry_proc0(void)
 	endtime = isp_get_time_usec();
 	nulltime = endtime - starttime; /* Computes overhead of looping */
 
-	t_printf("Start Time: %u (us)\n", starttime);
-	t_printf("End Time  : %u (us)\n", endtime);
-	t_printf("Null Time : %u (us)\n", nulltime);
+	printf("Start Time: %u (us)\n", starttime);
+	printf("End Time  : %u (us)\n", endtime);
+	printf("Null Time : %u (us)\n", nulltime);
 
 	PtrGlbNext = (RecordPtr)malloc(sizeof(RecordType));
 	PtrGlb = (RecordPtr) malloc(sizeof(RecordType));
@@ -335,7 +335,7 @@ void dhry_proc0(void)
 	/*****************
 	-- Start Timer --
 	*****************/
-	t_printf("Starting Timer for %lu Loops\n", (long)DHRY_LOOPS);
+	printf("Starting Timer for %lu Loops\n", (long)DHRY_LOOPS);
 	starttime = isp_get_time_usec();
 	for (i = 0; i < DHRY_LOOPS; ++i)
 	{
@@ -365,16 +365,16 @@ void dhry_proc0(void)
 	}
 	benchtime_us = isp_get_time_usec() - starttime - nulltime;
 
-	t_printf("===================================================\n");
-	t_printf("Passes: %u\n", DHRY_LOOPS);
-	t_printf("Benchtime (us): %u\n", benchtime_us);
-	t_printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
+	printf("===================================================\n");
+	printf("Passes: %u\n", DHRY_LOOPS);
+	printf("Benchtime (us): %u\n", benchtime_us);
+	printf("Benchtime (s) : %u\n", (benchtime_us/US_IN_SEC));
 	/*
 	 * Doing multiplication first keeps more precision in benchtime,
 	 * but requires a 64-bit value to hold DHRY_LOOPS*US_IN_SEC
 	 */
 	dhrystones = (uint64_t) DHRY_LOOPS*US_IN_SEC/(benchtime_us);
-	t_printf("Dhrystones:     %u dhrystones/second\n", dhrystones);
+	printf("Dhrystones:     %u dhrystones/second\n", dhrystones);
 
 }
 
@@ -382,7 +382,7 @@ int test_main (void)
 {
 	test_positive();
 	test_begin();
-	t_printf("Starting dhry_proc0\n");
+	printf("Starting dhry_proc0\n");
 	dhry_proc0();
 
 	test_pass();

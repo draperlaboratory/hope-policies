@@ -52,7 +52,7 @@ int test_main(void)
 
     test_begin();
     strcpy(p1, p2);
-    t_printf("p1=%s\n", p1);
+    printf("p1=%s\n", p1);
 
     free(p1);
     free(p2);

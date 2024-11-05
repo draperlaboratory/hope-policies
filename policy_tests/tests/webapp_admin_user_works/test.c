@@ -18,13 +18,13 @@ void TestAdminModifyRecord(void)
 
   user = UserCreate("patient_user", "password123", "Pat", "Ient", "123 Main St.");
   if(user == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }                                                                         
 
   admin_user = UserCreate("admin_user", "password123", "Pat", "Ient", "123 Main St.");
   if(admin_user == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }
 

@@ -29,7 +29,7 @@ int test_main() {
     const unsigned char * currentN = test_data;
     int maxN = sizeof(test_data) / INPUT_FRAC;
     
-    t_printf("Initial valprev=%d, index=%d\n", state.valprev, state.index);
+    printf("Initial valprev=%d, index=%d\n", state.valprev, state.index);
     
     while(1) {
         int bytesIntoRead = ((unsigned int)currentN) - ((unsigned int)test_data);
@@ -42,7 +42,7 @@ int test_main() {
         currentN = test_data + bytesIntoRead + n;
     }
     
-    t_printf("Final valprev=%d, index=%d\n", state.valprev, state.index);
+    printf("Final valprev=%d, index=%d\n", state.valprev, state.index);
 
     test_print_total_time();
     return test_done();

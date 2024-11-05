@@ -57,7 +57,7 @@ int test_main(void)
    test_positive();
    test_begin();
 
-   t_printf("Still Running on RV%dV\n", read_mxl_inasm());
+   printf("Still Running on RV%dV\n", read_mxl_inasm());
 
    return test_done();
 }

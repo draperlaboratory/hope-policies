@@ -40,7 +40,7 @@ int test_main(void)
   {
     test_positive(); // identify test as positive (will complete)
 
-    t_printf("Hello Test\n");
+    printf("Hello Test\n");
     
     test_pass();
     return test_done();

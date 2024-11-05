@@ -19,19 +19,19 @@ void TestPatientRead(void)
 
   patient_user1 = UserCreate("patient_user1", "password123", "Pat", "Ient", "123 Main St.");
   if(patient_user1 == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }
 
   patient_user2 = UserCreate("patient_user2", "password123", "Pat", "Ient", "123 Main St.");
   if(patient_user2 == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }
 
   doctor_user = UserCreate("doctor_user", "password123", "Pat", "Ient", "123 Main St.");
   if(doctor_user == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }
 
@@ -47,7 +47,7 @@ void TestPatientRead(void)
   patient_data = MedicalGetPatient(patient_user2);
 
   // PPAC policy should not violate since patient 2 is the active user
-  t_printf("Patient User 2 has %lu records\n", patient_data->record_count);
+  printf("Patient User 2 has %lu records\n", patient_data->record_count);
 }
 
 int test_main()

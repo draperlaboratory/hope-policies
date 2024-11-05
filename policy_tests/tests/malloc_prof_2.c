@@ -55,20 +55,20 @@ int test_main(void){
    
     for(int i= 0; i < ITERATIONS;i++){
  
-      t_printf("allocate\n");
+      printf("allocate\n");
       for(int count = 0; count < MALLOC_COUNT; count++){
         size = (count & 0x07) +1;
         ptr[count] = malloc(size * sizeof(int));
       } 
       
-      t_printf("test\n");
+      printf("test\n");
       for(int j = 0; j < TEST_LENGTH_COUNT;j++){
         index = rand() % MALLOC_COUNT; // rand
         ptr[index][0]++;
       }
       
       
-      t_printf("free\n");
+      printf("free\n");
       for(int count = 0; count < MALLOC_COUNT; count++){
         free(ptr[count]);
       }

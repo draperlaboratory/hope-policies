@@ -17,13 +17,13 @@ void TestDoctorAddRecord(void)
 
   user = UserCreate("patient_user", "password123", "Pat", "Ient", "123 Main St.");
   if(user == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }                                                                         
 
   doctor_user = UserCreate("doctor_user", "password123", "Pat", "Ient", "123 Main St.");
   if(doctor_user == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }
 

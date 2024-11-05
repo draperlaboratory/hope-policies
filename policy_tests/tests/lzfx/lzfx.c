@@ -316,27 +316,27 @@ int test_main ( void )
 
     def_len=sizeof(def_data);
     ret=lzfx_compress(test_data,TEST_DATA_LEN,def_data,&def_len);
-    t_printf("%d\n",ret);
-    t_printf("%u\n",def_len);
+    printf("%d\n",ret);
+    printf("%u\n",def_len);
     if(ret) return(ret);
     inf_len = sizeof(inf_data);
     ret=lzfx_decompress(def_data,def_len,inf_data,&inf_len);
-    t_printf("%d\n",ret);
-    t_printf("%u\n",inf_len);
+    printf("%d\n",ret);
+    printf("%u\n",inf_len);
     if(ret) return(ret);
     if(inf_len!=TEST_DATA_LEN) return(1);
     for(ra=0;ra<TEST_DATA_LEN;ra++) if(inf_data[ra]!=test_data[ra]) break;
     if(ra<TEST_DATA_LEN) return(1);
-    t_printf("good\n");
+    printf("good\n");
 
     ret=lzfx_decompress_tiny(def_data,def_len,inf_data,&inf_len);
-    t_printf("%d\n",ret);
-    t_printf("%u\n",inf_len);
+    printf("%d\n",ret);
+    printf("%u\n",inf_len);
     if(ret) return(ret);
     if(inf_len!=TEST_DATA_LEN) return(1);
     for(ra=0;ra<TEST_DATA_LEN;ra++) if(inf_data[ra]!=test_data[ra]) break;
     if(ra<TEST_DATA_LEN) return(1);
-    t_printf("good\n");
+    printf("good\n");
 
     test_print_total_time();
     return test_done();

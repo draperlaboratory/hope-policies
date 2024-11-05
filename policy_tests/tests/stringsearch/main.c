@@ -1711,11 +1711,11 @@ NULL};
       {
             init_search(find_strings[i]);
             here = strsearch(search_strings[i]);
-            t_printf("\"%s\" is%s in \"%s\"", find_strings[i],
+            printf("\"%s\" is%s in \"%s\"", find_strings[i],
                   here ? "" : " not", search_strings[i]);
             if (here)
-                  t_printf(" [\"%s\"]", here);
-            t_printf("\n");
+                  printf(" [\"%s\"]", here);
+            printf("\n");
       }
       }
 

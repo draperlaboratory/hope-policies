@@ -15,12 +15,12 @@ TestPasswordLeak(void)
 
   user = UserCreate("user", "password123", "User", "One", "123 Main St.");
   if(user == NULL) {
-    t_printf("Failed to create user\n");
+    printf("Failed to create user\n");
     return;
   }
 
   // leak will fail with password policy
-  t_printf("User password: %s\n", user->password);
+  printf("User password: %s\n", user->password);
 }
 
 int test_main()

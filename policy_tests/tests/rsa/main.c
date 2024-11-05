@@ -670,15 +670,15 @@ int test_main (void) {
     test_begin();
     test_start_timer();
 
-    t_printf("Plaintext:\n\r");
+    printf("Plaintext:\n\r");
     for(cnt = 0; cnt < KEYLEN; ++cnt)
-      t_printf("0x%08X\n\r", plaintext[cnt]);
+      printf("0x%08X\n\r", plaintext[cnt]);
 
     test_rsa_encrypt();
 
-    t_printf("Ciphertext:\n\r");
+    printf("Ciphertext:\n\r");
     for(cnt = 0; cnt < KEYLEN; ++cnt)
-      t_printf("0x%08X\n\r", ciphertext[cnt]);
+      printf("0x%08X\n\r", ciphertext[cnt]);
 
     for(cnt = 0; cnt < KEYLEN; ++cnt) {
         if (ciphertext[cnt] != correct[cnt]) {

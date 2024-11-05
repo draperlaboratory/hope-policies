@@ -149,7 +149,7 @@ int test_main ( void )
     }
     else
     {
-        t_printf("0 errors found\n");
+        printf("0 errors found\n");
         test_print_total_time();
     }
 

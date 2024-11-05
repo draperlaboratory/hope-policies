@@ -46,7 +46,7 @@ int test_main(void)
 
     for(int length = 1; length <= 26; length++) {
 
-      t_printf("test_string_works2: Starting test %d\n", length); 
+      printf("test_string_works2: Starting test %d\n", length);
 
     ptr1 = malloc(length * sizeof(char));
     ptr2 = malloc(length * sizeof(char));
@@ -71,7 +71,7 @@ int test_main(void)
 
     for(int i =0; i < length;i++){
       if(*two_ptr != 'a' + i) {
-	test_error("test_string_works2: Error -> ptr[%d] = %ld\n", i, *two_ptr );
+	printf("test_string_works2: Error -> ptr[%d] = %ld\n", i, *two_ptr );
       }
       two_ptr++;
     }

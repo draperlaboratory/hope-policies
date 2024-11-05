@@ -94,15 +94,15 @@ int old_main() {
  /* regular*/
  fft_float (MAXSIZE,invfft,RealIn,ImagIn,RealOut,ImagOut);
  
- t_printf("RealOut:\n");
+ printf("RealOut:\n");
  for (i=0;i<MAXSIZE;i++)
-   t_printf("%f \t", RealOut[i]);
- t_printf("\n");
+   printf("%f \t", RealOut[i]);
+ printf("\n");
 
-t_printf("ImagOut:\n");
+printf("ImagOut:\n");
  for (i=0;i<MAXSIZE;i++)
-   t_printf("%f \t", ImagOut[i]);
-   t_printf("\n");
+   printf("%f \t", ImagOut[i]);
+   printf("\n");
 
 /* free(RealIn);
  free(ImagIn);

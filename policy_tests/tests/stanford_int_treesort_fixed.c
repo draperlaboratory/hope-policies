@@ -98,11 +98,11 @@ Initarr ()
         if (sortlist[i] > biggest) biggest = sortlist[i];
             else if ( sortlist[i] < littlest) littlest = sortlist[i];
 #ifdef  DEBUG
-        t_printf("sortlist[%.4d] = %.8x\n", i, sortlist[i]);
+        printf("sortlist[%.4d] = %.8x\n", i, sortlist[i]);
 #endif  // DEBUG
     };
 #ifdef  DEBUG
-        t_printf("littlest = %.8x, biggest = %.8x\n", littlest, biggest);
+        printf("littlest = %.8x, biggest = %.8x\n", littlest, biggest);
 #endif  // DEBUG
 }
 
@@ -113,9 +113,9 @@ CreateNode (t,n)
 //    *t = (struct node *) simple_malloc (sizeof(struct node));
     *t = (struct node *) malloc (sizeof(struct node));
       if(!tree)
-        t_printf("ERROR: Out of memory\n");
+        printf("ERROR: Out of memory\n");
 #ifdef  DEBUG
-    t_printf ("malloc call = %d\n", (sizeof(struct node)));
+    printf ("malloc call = %d\n", (sizeof(struct node)));
 #endif  // DEBUG
     (*t)->left  = nil;
     (*t)->right = nil;
@@ -181,7 +181,7 @@ Trees ()
 //    tree = (struct node *) simple_malloc (sizeof(struct node));
     tree = (struct node *) malloc (sizeof(struct node));
 #ifdef  DEBUG
-    t_printf ("malloc call = %d\n", (sizeof(struct node)));
+    printf ("malloc call = %d\n", (sizeof(struct node)));
 #endif  // DEBUG
     tree->left  = nil;
     tree->right = nil;
@@ -191,7 +191,7 @@ Trees ()
             Insert (sortlist[i], tree);
 
     if (!Checktree(tree))
-            t_printf ("Error in Tree\n");
+            printf ("Error in Tree\n");
     /* Free inserted memory */
     Prune(tree);
     /* free the root node */
@@ -203,7 +203,7 @@ int test_main (void)
   test_positive(); // identify test as positive (will complete)
 
 #ifdef  DEBUG
-  t_printf ("TREE\n");
+  printf ("TREE\n");
 #endif  // DEBUG
 
   for(int i= 0; i < ITERATIONS;i++){

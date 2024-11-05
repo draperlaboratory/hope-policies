@@ -17,7 +17,7 @@ unsigned char pjpeg_need_bytes_callback(unsigned char* pBuf, unsigned char buf_s
 //   uint n;
   // pCallback_data;
 
-    //t_printf("callback buf_size %u\n",buf_size);
+    //printf("callback buf_size %u\n",buf_size);
 
 //   n = min(g_nInFileSize - g_nInFileOfs, buf_size);
    //if (n && (fread(pBuf, 1, n, g_pInFile) != n))
@@ -74,7 +74,7 @@ int test_main ( void )
     while(status==0)
     {
         status=pjpeg_decode_mcu();
-        //t_printf("decode %u\n",ra);
+        //printf("decode %u\n",ra);
         if(status==0)
         {
             switch(pInfo.m_scanType)
@@ -128,19 +128,19 @@ int test_main ( void )
     }
     if(status!=PJPG_NO_MORE_BLOCKS)
     {
-        t_printf("status %u\n",status);
+        printf("status %u\n",status);
         return(1);
     }
-    t_printf("----\n");
-    t_printf("%d\n",pInfo.m_width);
-    t_printf("%d\n",pInfo.m_height);
-    t_printf("%d\n",pInfo.m_comps);
-    t_printf("%d\n",pInfo.m_MCUSPerRow);
-    t_printf("%d\n",pInfo.m_MCUSPerCol);
-    t_printf("%d\n",pInfo.m_scanType);
-    t_printf("%d\n",pInfo.m_MCUWidth);
-    t_printf("%d\n",pInfo.m_MCUHeight);
-    t_printf("---- sum 0x%08X %u\n",sum,sum);
+    printf("----\n");
+    printf("%d\n",pInfo.m_width);
+    printf("%d\n",pInfo.m_height);
+    printf("%d\n",pInfo.m_comps);
+    printf("%d\n",pInfo.m_MCUSPerRow);
+    printf("%d\n",pInfo.m_MCUSPerCol);
+    printf("%d\n",pInfo.m_scanType);
+    printf("%d\n",pInfo.m_MCUWidth);
+    printf("%d\n",pInfo.m_MCUHeight);
+    printf("---- sum 0x%08X %u\n",sum,sum);
 
 
     //fwrite(odat,1,sizeof(odat),fpout);

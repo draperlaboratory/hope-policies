@@ -45,9 +45,9 @@ int test_main(void)
     // should fail
     strcpy(buff, "fdhsjkfdskfsdkfdsjkfjksdfjklsdfjklsjfkdfjsdklfjsdfjdsklfdfjklsdjfklsdfjklsdjfklsdajfklsdfksdlfjksdfjksdlfjksdlafjkladsf");
     // just ensuring that buff and strcpy that don't get optimized away:
-    t_printf("buff: %s\n", buff);
+    printf("buff: %s\n", buff);
 
-    t_printf("Stack Test - should not execute this\n");
+    printf("Stack Test - should not execute this\n");
     
     return test_done();
   }

@@ -63,7 +63,7 @@ static void done_task(void *p) {
             test_done();
         }
         else {
-            t_printf("Check if done: %d < %d\r\n",msg_count, MSG_MAX);
+            printf("Check if done: %d < %d\r\n",msg_count, MSG_MAX);
         }
 #ifdef PREEMPTIVE  
         vTaskDelayUntil(&last_wake_time, TICK_INTERVAL);
@@ -84,7 +84,7 @@ static void ping_task(void *p) {
           uint64_t raw = isp_get_time_usec();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
-          t_printf("ping %x %x\r\n", high, low);
+          printf("ping %x %x\r\n", high, low);
           pong = true;
       }
 #ifdef PREEMPTIVE  
@@ -106,7 +106,7 @@ static void pong_task(void *p) {
           uint64_t raw = isp_get_time_usec();
           uint32_t low = (uint32_t)(raw & 0xFFFFFFFF);
           uint32_t high = ((uint32_t)(raw >> 32)) & 0xFFFFFFFF;
-          t_printf("pong %x %x\r\n", high, low);
+          printf("pong %x %x\r\n", high, low);
           pong = false;
           msg_count++;
       }
@@ -125,15 +125,15 @@ int test_main( void )
     test_begin();
     
   /* no need to init uart */
-  t_printf("main: create ping task\r\n");
+  printf("main: create ping task\r\n");
   xTaskCreate(ping_task, "Ping task", 512, NULL, 1, NULL);
-  t_printf("main: create pong task\r\n");
+  printf("main: create pong task\r\n");
   xTaskCreate(pong_task, "Pong task", 512, NULL, 1, NULL);
 
-  t_printf("main: create done task\r\n");
+  printf("main: create done task\r\n");
   xTaskCreate(done_task, "Done task", 512, NULL, 1, NULL);
 
-  t_printf("timer ticks: 0x%x\r\n", TIMER_INTERVAL);
+  printf("timer ticks: 0x%x\r\n", TIMER_INTERVAL);
 
   // scheduler is already running so just wait
   TickType_t last_wake_time;

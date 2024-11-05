@@ -44,7 +44,7 @@ int test_main(void)
     test_negative(); // identify test as negative (will not complete)
     
     // should pass
-    t_printf("&foo = %lx\n", &foo);
+    printf("&foo = %lx\n", &foo);
     test_pass();
 
     foo_fn_ptr = (void (*)()) &foo;
@@ -54,7 +54,7 @@ int test_main(void)
     // should fail
     foo_fn_ptr();
 
-    t_printf("RWX Test - should not execute this\n");
+    printf("RWX Test - should not execute this\n");
     
     return test_done();
   }

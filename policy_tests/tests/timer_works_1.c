@@ -59,9 +59,9 @@ int test_main(void)
     }
     end_time = isp_get_time_usec();
 
-    t_printf("Test Complete\n");
-    t_printf("Executed %d instructions\n", inst_count);
-    t_printf("Elapsed %d usec\n", end_time - start_time);
+    printf("Test Complete\n");
+    printf("Executed %d instructions\n", inst_count);
+    printf("Elapsed %d usec\n", end_time - start_time);
     
     test_pass();
     return test_done();
