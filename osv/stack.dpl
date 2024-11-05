@@ -86,6 +86,9 @@ require:
     init SOC.PBUS.MAILBOX                    {}
     init SOC.MMIO.MROM                       {}
 
+    init SOC.IO.UART_0                       {}
+    init SOC.IO.UART_1                       {}
+    init SOC.PBUS.CONFIG_CSR                 {}
     init elf.Section.SHF_ALLOC               {}
     init elf.Section.SHF_EXECINSTR           {}
     init elf.Section.SHF_WRITE               {}

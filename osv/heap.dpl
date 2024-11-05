@@ -148,6 +148,10 @@ require:
     init SOC.Memory.BRAM_CTRL_0                      {}
     init SOC.Memory.DMA_0                            {}
     init SOC.Memory.QSPI_1                           {}
+    init SOC.IO.UART_0                               {}
+    init SOC.IO.UART_1                               {}
+    init SOC.PBUS.CONFIG_CSR                         {}
+    init SOC.CBUS.SIM_CTRL  {}
 
     init entities.ApplyTag.ucHeap                    {RawHeap}
     init entities.ApplyTag.dover_ptr_zero            {ModColor}
@@ -159,6 +163,6 @@ require:
     init entities.ApplyTag.dover_ptr_tag             {NewColor}
     init entities.ApplyTag.dover_ptr_untag           {DelColor}
 
-    init elf.Section.SHF_ALLOC               {}
-    init elf.Section.SHF_EXECINSTR           {}
-    init elf.Section.SHF_WRITE               {}
+    init elf.Section.SHF_ALLOC                       {}
+    init elf.Section.SHF_EXECINSTR                   {}
+    init elf.Section.SHF_WRITE                       {}

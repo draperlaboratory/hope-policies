@@ -57,8 +57,8 @@ require:
     init ISA.RISCV.CSR.Default               {Rd}
 
     init SOC.MMIO.MROM                       {Rd, Wr}
-    init SOC.MMIO.UART_0                     {Rd, Wr}
-    init SOC.MMIO.UART_1                     {Rd, Wr}
+    init SOC.IO.UART_0                       {Rd, Wr}
+    init SOC.IO.UART_1                       {Rd, Wr}
     init SOC.MEMORY.FLASH_0                  {Rd}
     init SOC.MEMORY.RAM_0                    {Rd, Wr}
     init SOC.Memory.Code_1                   {Rd, Wr}
@@ -77,15 +77,16 @@ require:
     init SOC.MMIO.GPIO_1                     {Rd, Wr}
     init SOC.MMIO.Ethernet_0                 {Rd, Wr}
     init SOC.PBUS.MAILBOX                    {Rd, Wr}
+    init SOC.PBUS.L2CC                       {Rd, Wr}
 
     init SOC.Memory.BRAM_CTRL_0              {Rd, Wr}
     init SOC.Memory.DMA_0                    {Rd, Wr}
     init SOC.Memory.QSPI_1                   {Rd}
-    init SOC.CBUS.DEBUG                        {Rd, Wr}
-    init SOC.CBUS.CPU_INTERNAL                 {Rd, Wr}
-    init SOC.PBUS.CONFIG_CSR                   {Rd, Wr}
-    init SOC.IO.CLINT                          {Rd, Wr}
-    init SOC.IO.UART_0                         {Rd, Wr}
+    init SOC.CBUS.DEBUG                      {Rd, Wr}
+    init SOC.CBUS.CPU_INTERNAL               {Rd, Wr}
+    init SOC.PBUS.CONFIG_CSR                 {Rd, Wr}
+    init SOC.IO.CLINT                        {Rd, Wr}
+    init SOC.CBUS.SIM_CTRL                   {Rd, Wr}
 
     init elf.Section.SHF_ALLOC               {Rd}
     init elf.Section.SHF_EXECINSTR           {Ex}

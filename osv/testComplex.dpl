@@ -54,7 +54,6 @@ policy:           // Allow most ops involving regular registers, memory & csrs
   testComplexPol =
      arithGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], op2 == [AllowReg] -> env = {AllowEnv}, res = {AllowReg})
    ^ immArithGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg] -> env = {AllowEnv}, res = {AllowReg})
-   ^ mulDivRemGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], op2 == [AllowReg] -> env = {AllowEnv}, res = {AllowReg})
    ^ branchGrp(code == [AllowCode], env == [AllowEnv], op1 == [AllowReg], op2 == [AllowReg] -> env = {AllowEnv})
    ^ jumpRegGrp(code == [AllowCode], env == [AllowEnv], target == [AllowReg] -> env = {AllowEnv}, return = {AllowReg})
    ^ jumpGrp(code == [AllowCode], env == [AllowEnv] -> env = {AllowEnv}, return = {AllowReg})
@@ -88,13 +87,16 @@ require:
     init Tools.Link.MemoryMap.UserHeap       {}
     init Tools.Link.MemoryMap.UserStack      {}
 
-    init SOC.MMIO.UART_0                       {AllowIO}
+    init SOC.MMIO.UART_0                     {AllowIO}
     init SOC.MEMORY.FLASH_0                  {AllowRom}
     init SOC.MEMORY.RAM_0                    {AllowMem}
 
-    init SOC.MMIO.TEST                         {AllowMem}
+    init SOC.MMIO.TEST                       {AllowMem}
+    init SOC.IO.UART_0                       {AllowIO}
+    init SOC.IO.UART_1                       {AllowIO}
+    init SOC.PBUS.CONFIG_CSR                 {AllowMem}
 
-    init Tools.Elf.Section.SHF_ALLOC         {AllowMem}
-    init Tools.Elf.Section.SHF_EXECINSTR     {AllowCode}
-    init Tools.Elf.Section.SHF_WRITE         {AllowMem}
+    init elf.Section.SHF_ALLOC               {AllowMem}
+    init elf.Section.SHF_EXECINSTR           {AllowCode}
+    init elf.Section.SHF_WRITE               {AllowMem}
 

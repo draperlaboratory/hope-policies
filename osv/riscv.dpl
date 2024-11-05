@@ -34,10 +34,13 @@ group:
         bge
         bltu
         bgeu
-    grp jumpRegGrp(RS1:target -> RD:return)
+    grp jumpRegGrp(RS3:target -> RD:return)
         jalr
     grp jumpGrp( -> RD:return)
         jal
+
+    grp sysGrp( -> )
+        fence
 
     grp controlFlowGrp( -> )
         beq

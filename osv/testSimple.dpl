@@ -84,3 +84,7 @@ require:
     init SOC.MMIO.GPIO_1                     {Nothing}
     init SOC.MMIO.Ethernet_0                 {Nothing}
 
+    init SOC.IO.UART_0                       {Nothing}
+    init SOC.IO.UART_1                       {Nothing}
+    init SOC.PBUS.CONFIG_CSR                 {Nothing}
+    init SOC.CBUS.SIM_CTRL                   {Nothing}
