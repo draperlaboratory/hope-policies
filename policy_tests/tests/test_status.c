@@ -83,11 +83,11 @@ int test_done(){
 
     uint32_t cycle_hi, cycle_lo, stall_hi, stall_lo;
     isp_get_cycle_count(&cycle_hi, &cycle_lo);
-    stall_hi = *(volatile uint32_t*)0x100c4;
-    stall_lo = *(volatile uint32_t*)0x100c0;
+//     stall_hi = *(volatile uint32_t*)0x100c4;
+//     stall_lo = *(volatile uint32_t*)0x100c0;
     printf("End time: %uus\n", isp_get_time_usec());
     printf("End cycles: 0x%x%08x\n", cycle_hi, cycle_lo);
-    printf("End cycles stalled: 0x%x%08x\n", stall_hi, stall_lo);
+//     printf("End cycles stalled: 0x%x%08x\n", stall_hi, stall_lo);
 
     printf("MSG: End test.\n");
     isp_test_device_pass();
