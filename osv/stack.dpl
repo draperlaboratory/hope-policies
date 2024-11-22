@@ -46,7 +46,7 @@ policy:
     stackPol =
       // Prologue and Epilog rules
       storeGrp (code == {Prologue}, env == {}, addr == {}, val == {}, mem == _ -> mem = {Frame}, env = env)
-    ^ storeGrp (code == {Epilogue}, env == {}, addr == {}, val == {}, mem == _ -> mem = {}, env = env)
+    ^ loadGrp (code == {Epilogue}, env == {}, addr == {}, mem == _ -> res = {}, mem = {}, env = env)
 
       // Authority for clearing swaths of stack (e.g. for longjmp)
     ^ storeGrp (code == {ClearAuthority}, env == {}, addr == {}, val == {}, mem == _ -> mem = {}, env = env)
@@ -56,7 +56,7 @@ policy:
       // Allow regular stores to non-frame memory
     ^ storeGrp (code == {}, env == {}, addr == {}, val == {}, mem == {} -> mem = mem, env = env)
       // Strip Frame Tags on load to keep out of registers
-    ^ loadGrp(code == _, env == {}, addr == {}, mem == _ -> env = env, res = {})
+    ^ loadGrp(code == _, env == {}, addr == {}, mem == _ -> env = env, res = {}, mem = mem)
       // Other non-memory instructions allowed
     ^ loadGrp(code == _, env == _, addr == _, mem == _ -> fail "Illegal load")
     ^ storeGrp(code == _, env == _, addr == _, mem == _ -> fail "Illegal store")

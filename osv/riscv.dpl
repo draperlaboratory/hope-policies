@@ -123,7 +123,7 @@ group:
         amoand.d
 
 
-    grp loadGrp(RS1:addr, MEM:mem -> RD:res)
+    grp loadGrp(RS1:addr, MEM:mem -> CSR:mem, RD:res)
         lb
         lh
         lw

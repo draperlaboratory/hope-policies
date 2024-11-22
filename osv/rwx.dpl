@@ -47,7 +47,7 @@ policy:
     ^ storeGrp(mem == [-Wr] -> fail "write violation")
     ^ allGrp(code == [-Ex] -> fail "execute violation")
 
-    ^ loadGrp  (code == [+Ex], env == {}, mem == [+Rd], addr == {} -> res = {}, env = env)
+    ^ loadGrp  (code == [+Ex], env == {}, mem == [+Rd], addr == {} -> res = {}, mem = mem, env = env)
     ^ storeGrp (code == [+Ex], env == {}, mem == [+Wr] -> mem = mem, env = env)
     ^ allGrp(code == [+Ex], env == {} -> env = env)
 

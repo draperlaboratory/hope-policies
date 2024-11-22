@@ -79,7 +79,7 @@ policy:
     // NOTE: the first rule only matches if the two colors are equal
     // Otherwise, the second rule matches and the policy fails
     ^ loadGrp(mem == [+(PatientData color)], env == [+(PatientPointer color), -Doctor, -Admin]
-              -> env = env, res = mem)
+              -> env = env, mem = mem, res = mem)
     ^ loadGrp(mem == [+(PatientData color1)], env == [+(PatientPointer color2), -Doctor, -Admin]
               -> fail "Active patient attempting to read data from an inactive patient")
 

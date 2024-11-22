@@ -73,7 +73,7 @@ policy:
               -> mem = {RawHeap}, env = env)
     // Allow load and store to heap
   ^ loadGrp(    code == [-KeepPointer], mem == [+(Cell color)], addr == [+(Pointer color)], env == {}
-             -> res = mem[-(Cell _)], env = env )
+             -> mem = mem, res = mem[-(Cell _)], env = env )
   ^ storeGrp(   code == [-KeepPointer], mem == [+(Cell color)], addr == [+(Pointer color)], val == _, env == {}
               -> mem = val[+(Cell color)], env = env )
 
@@ -83,9 +83,9 @@ policy:
   ^ storeGrp(   code == {RemoveColor}, mem == [+DelColor], env == {}
               -> mem = mem, env = env )
   ^ loadGrp(   code == {ApplyColor}, mem == [+NewColor], env == {}
-             -> res = mem[-NewColor], env = env )
+             -> mem = mem, res = mem[-NewColor], env = env )
   ^ loadGrp(   code == {RemoveColor}, mem == [+DelColor], env == {}
-             -> res = {}, env = env )
+             -> mem = mem, res = {}, env = env )
 
     // Any other write to pallette needs to maintain its tags
   ^ storeGrp(   code == _, mem == [+NewColor], env == {}
@@ -97,13 +97,13 @@ policy:
 
     // Allow malloc to load store raw heap locations
   ^ loadGrp(   code == [-KeepPointer], mem == {RawHeap}, addr == [-(Pointer _)], env == {}
-             -> res = {}, env = env )
+             -> mem = mem, res = {}, env = env )
   ^ storeGrp(   code == [-KeepPointer], mem == {RawHeap}, addr == [-(Pointer _)], val == _, env == {}
               -> mem = {RawHeap}, env = env )
 
     // Allow load and store to non-heap locations
   ^ loadGrp(   code == [-KeepPointer], mem == [-(Cell _)], addr == [-(Pointer _)], env == {}
-             -> res = mem, env = env )
+             -> mem = mem, res = mem, env = env )
   ^ storeGrp(   code == [-KeepPointer], mem == [-(Cell _)], addr == [-(Pointer _)], val == _, env == {}
               -> mem = val, env = env )
 

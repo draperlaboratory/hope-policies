@@ -53,7 +53,7 @@ policy:
             ^ loadUpperGrp(code == _, env == _ -> env = env, dest = {})
             ^ immArithGrp(code == _, env == _, op1 == _ -> env = env, res = {})
             ^ arithGrp(code == _, env == _, op1 == _, op2 == _ -> env = env, res = {})
-            ^ loadGrp(code == _, env == _, addr == _, mem == _ -> env = env, res = {})
+            ^ loadGrp(code == _, env == _, addr == _, mem == _ -> mem = mem, env = env, res = {})
             ^ storeGrp(code == _, env == _, addr == _, val == _, mem == _ -> env = env, mem = {})
             ^ csrGrp(code == _, env == _, op1 == _, csr == _ -> env = env, csr = {}, res = {})
             ^ csriGrp(code == _, env == _, csr == _ -> env = env, csr = {}, res = {})

@@ -59,12 +59,12 @@ policy:           // Allow most ops involving regular registers, memory & csrs
    ^ jumpGrp(code == [AllowCode], env == [AllowEnv] -> env = {AllowEnv}, return = {AllowReg})
      // Allow load store to memory
    ^ loadGrp(   code == [AllowCode],  mem == [AllowMem], addr == [AllowReg], env == [AllowEnv]
-             -> res = {AllowReg}, env = {AllowEnv} )
+             -> res = {AllowReg}, mem = mem, env = {AllowEnv} )
    ^ storeGrp(  code == [AllowCode],  mem == [AllowMem], addr == [AllowReg], val == [AllowReg], env == [AllowEnv]
               -> mem = {AllowMem}, env = {AllowEnv} )
      // Allow load store to IO
    ^ loadGrp(   code == [AllowCode],  mem == [AllowIO], addr == [AllowReg], env == [AllowEnv]
-             -> res = {AllowReg}, env = {AllowEnv} )
+             -> res = {AllowReg},mem = mem,  env = {AllowEnv} )
    ^ storeGrp(  code == [AllowCode],  mem == [AllowIO], addr == [AllowReg], val == [AllowReg], env == [AllowEnv]
               -> mem = {AllowIO}, env = {AllowEnv} )
    ^ loadUpperGrp(code == [AllowCode], env == [AllowEnv] -> env = {AllowEnv}, dest = {AllowReg})

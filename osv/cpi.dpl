@@ -50,11 +50,11 @@ policy:
      ^ pcGrp ( -> dest = {FPtrMem})
      ^ addiGrp (code == [+FPtrCreate] -> dest = {FPtrMem})
      ^ storeGrp (code == [+FPtrStore], val == [+FPtrMem], mem == _ -> mem = mem[+FPtrMem])
-     ^ loadGrp (mem == [+FPtrMem]  -> res = {FPtrMem})
+     ^ loadGrp (mem == [+FPtrMem]  -> mem = mem, res = {FPtrMem})
 
        //When to clear FPtr
      ^ storeGrp (code == [-FPtrCreate], mem == _ -> mem = mem[-FPtrMem])
-     ^ loadGrp (mem == [-FPtrMem] -> res = {})
+     ^ loadGrp (mem == [-FPtrMem] -> mem = mem, res = {})
 
        //Enforcement -- get out of jail free for returns
      ^ retGrp (code == [+Return-Instr], env == _ -> env = env)
