@@ -1,0 +1,135 @@
+Require:
+  SOC:
+    IO:
+      CLINT:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+      UART_0:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+      TEST:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+      PLIC:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+      Debug:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+      GEM0:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+      GEM0:
+        metadata:
+        - name: osv.Comp.special-obj-IO
+          fields: []
+    Memory:
+      Ram_0:
+        metadata:
+        - name: osv.Comp.special-obj-RAM
+          fields: []
+      Flash_0:
+        metadata:
+        - name: osv.Comp.special-obj-FLASH
+          fields: []
+  dover:
+    Kernel:
+      Code:
+        ApplyTag:
+          dover_untag:
+            metadata:
+            - name: osv.heap.RemoveColor
+              fields: []
+          dover_tag:
+            metadata:
+            - name: osv.heap.ApplyColor
+              fields: []
+          ucHeap:
+            metadata:
+            - name: osv.heap.RawHeap
+              fields: []
+          dover_ptr_untag:
+            metadata:
+            - name: osv.heap.DelColor
+              fields: []
+          dover_ptr_zero:
+            metadata:
+            - name: osv.heap.ModColor
+              fields: []
+          pvPortMalloc:
+            metadata: []
+          dover_remove_tag:
+            metadata:
+            - name: osv.heap.RemoveColor
+              fields: []
+          dover_ptr_tag:
+            metadata:
+            - name: osv.heap.NewColor
+              fields: []
+    Tools:
+      RTL:
+        _vfprintf_r:
+          metadata:
+          - name: osv.heap.SpecialCaseVFPRINTF
+            fields: []
+  Tools:
+    Link:
+      MemoryMap:
+        Default:
+          metadata: []
+        UserStack:
+          metadata: []
+        UserHeap:
+          metadata:
+          - name: osv.heap.RawHeap
+            fields: []
+  ISA:
+    RISCV:
+      CSR:
+        Default:
+          metadata: []
+        MTVec:
+          metadata: []
+      Reg:
+        Env:
+          metadata: []
+        RZero:
+          metadata: []
+        Default:
+          metadata: []
+  Comp:
+    funcID:
+      metadata:
+      - name: osv.Comp.funcID
+        fields: []
+    globalID:
+      metadata:
+      - name: osv.Comp.globalID
+        fields: []
+    special-obj-IO:
+      metadata:
+      - name: osv.Comp.special-obj-IO
+        fields: []
+  llvm:
+    CFI_Call-Instr:
+      metadata:
+      - name: osv.threeClass.Call-Instr
+        fields: []
+    CFI_Return-Instr:
+      metadata:
+      - name: osv.threeClass.Return-Instr
+        fields: []
+    CFI_Call-Tgt:
+      metadata:
+      - name: osv.threeClass.Call-Tgt
+        fields: []
+    CFI_Return-Tgt:
+      metadata:
+      - name: osv.threeClass.Return-Tgt
+        fields: []
