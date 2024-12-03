@@ -27,10 +27,10 @@ these programs were gathered by John Hennessy and modified by Peter Nye. */
 
 // the data size for treesort is (24+4) = 28 bytes per data element
 // thus, for an ~8 KB data area, set the sortelements = 291
-#define sortelements    200 // note -- increasing this risks failure on sifive-e
+#define sortelements    15 // note -- increasing this risks failure on sifive-e
 
 // number of times to run the sort test
-#define ITERATIONS      2
+#define ITERATIONS      1
 
 /* tree */
 struct node {

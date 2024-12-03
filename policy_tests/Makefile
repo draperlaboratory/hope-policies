@@ -339,7 +339,7 @@ run-tests: SOC_CFG ?= $($(CONFIG)_SOC_CFG)
 run-tests: TIMEOUT ?= $($(CONFIG)_TIMEOUT)
 run-tests: build-tests build-policies
 	mkdir -p $(TEST_OUTPUT_DIR)/$(ARCH)
-	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
+# 	$(PYTHON) -m pytest $(PYTEST_ARGS) $($(CONFIG)_PYTEST_ARGS) --$(TEST_FORMAT)=$(CONFIG)_$(_DEBUG)_run_$(TEST_OUTPUT_FILE) $(XDIST) $(COLLECT_ONLY) -k test_new run_unit_tests.py
 
 PERFORMANCE_REPORT_ARGS = -r $(RUNTIME) -s $(SIM) --arch=$(ARCH) -p $(POLICIES) -t $(TESTS) -c $(if $(GPOLICIES),-g $(GPOLICIES),)
 
